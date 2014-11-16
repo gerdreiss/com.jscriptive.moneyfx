@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jscriptive.moneyfx.ui.transaction.TransactionFrame?>
+<?import javafx.scene.control.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.cell.PropertyValueFactory?>
+<TransactionFrame xmlns:fx="http://javafx.com/fxml/1" id="transactionFrame"
+                  fx:controller="com.jscriptive.moneyfx.ui.transaction.TransactionFrame">
+    <padding>
+        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
+    </padding>
+    <top>
+        <HBox spacing="4">
+            <padding>
+                <Insets bottom="10.0" />
+            </padding>
+            <Button text="Import transactions" onAction="#importTransactionsFired"/>
+        </HBox>
+    </top>
+    <center>
+        <TableView fx:id="transactionTable">
+            <columns>
+                <TableColumn fx:id="accountColumn" text="Account">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="account"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="categoryColumn" text="Category">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="category"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="conceptColumn" text="Concept">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="concept"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="dtOpColumn" text="Date operation">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="dtOp"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="dtValColumn" text="Date value">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="dtVal"/>
+                    </cellValueFactory>
+                </TableColumn>
+                <TableColumn fx:id="amountColumn" text="Amount">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="amount"/>
+                    </cellValueFactory>
+                </TableColumn>
+            </columns>
+        </TableView>
+    </center>
+</TransactionFrame>
