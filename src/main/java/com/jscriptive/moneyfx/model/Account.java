@@ -3,13 +3,19 @@ package com.jscriptive.moneyfx.model;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 /**
  * Created by jscriptive.com on 29/10/2014.
  */
-public class Account extends Entity {
+@Document
+public class Account  {
 
     private static String REPO_NAME = "accounts";
 
+    @Id
+    private Long id;
     private Bank bank;
     private String number;
     private String name;
@@ -17,7 +23,6 @@ public class Account extends Entity {
     private LocalDate balanceDate;
 
     public Account() {
-        super(REPO_NAME);
     }
 
     public Account(Bank bank, String number, String name) {
@@ -31,6 +36,14 @@ public class Account extends Entity {
         setName(name);
         setBalance(balance);
         setBalanceDate(LocalDate.now());
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Bank getBank() {

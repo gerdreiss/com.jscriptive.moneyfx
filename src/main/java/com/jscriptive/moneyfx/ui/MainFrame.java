@@ -5,7 +5,10 @@
  */
 package com.jscriptive.moneyfx.ui;
 
+import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Bank;
+import com.jscriptive.moneyfx.repository.AccountRepository;
+import com.jscriptive.moneyfx.repository.BankRepository;
 import com.jscriptive.moneyfx.ui.account.AccountFrame;
 import com.jscriptive.moneyfx.ui.category.CategoryFrame;
 import com.jscriptive.moneyfx.ui.chart.ChartFrame;
@@ -15,6 +18,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.FileChooser;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.io.File;
 import java.net.URL;
@@ -36,6 +42,11 @@ public class MainFrame extends BorderPane implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("classpath*:**/application-context.xml");
+        BankRepository bankRepository = context.getBean(BankRepository.class);
+        AccountRepository accountRepository = context.getBean(AccountRepository.class);
+        accountFrame.setBankRepository(bankRepository);
+        accountFrame.setAccountRepository(accountRepository);
     }
 
     public void importFired(ActionEvent actionEvent) {
@@ -49,5 +60,10 @@ public class MainFrame extends BorderPane implements Initializable {
     public void exitFired(ActionEvent actionEvent) {
         System.exit(0);
     }
+
+
+
+
+
 
 }

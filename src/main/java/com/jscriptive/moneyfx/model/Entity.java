@@ -1,7 +1,5 @@
 package com.jscriptive.moneyfx.model;
 
-import org.bson.types.ObjectId;
-
 /**
  * Created by jscriptive.com on 15/11/14.
  */
@@ -12,17 +10,17 @@ public class Entity {
 
     private final String repositoryName;
 
-    private ObjectId id;
+    private Long id;
 
     protected Entity(String repositoryName) {
         this.repositoryName = repositoryName;
     }
 
-    public ObjectId getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(ObjectId id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

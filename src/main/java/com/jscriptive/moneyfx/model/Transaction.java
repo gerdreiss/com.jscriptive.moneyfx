@@ -1,15 +1,21 @@
 package com.jscriptive.moneyfx.model;
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
 /**
  * Created by jscriptive.com on 29/10/2014.
  */
-public class Transaction extends Entity {
+@Document
+public class Transaction {
 
     private static String REPO_NAME = "transactions";
 
+    @Id
+    private Long id;
     private Account account;
     private String concept;
     private LocalDate dtOp;
@@ -18,7 +24,6 @@ public class Transaction extends Entity {
     private Category category;
 
     public Transaction() {
-        super(REPO_NAME);
     }
 
     public Transaction(Account account, String concept, LocalDate dtOp, LocalDate dtVal, BigDecimal amount) {
@@ -33,6 +38,14 @@ public class Transaction extends Entity {
         setDtOp(dtOp);
         setDtVal(dtVal);
         setAmount(amount);
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Account getAccount() {
