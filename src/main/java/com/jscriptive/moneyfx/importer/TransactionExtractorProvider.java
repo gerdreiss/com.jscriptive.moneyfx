@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by Igor on 17/11/2014.
+ * Created by jscriptive.com on 17/11/2014.
  */
 public class TransactionExtractorProvider {
 
