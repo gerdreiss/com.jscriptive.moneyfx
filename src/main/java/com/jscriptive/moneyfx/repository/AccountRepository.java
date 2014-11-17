@@ -1,7 +1,7 @@
 package com.jscriptive.moneyfx.repository;
 
 import com.jscriptive.moneyfx.model.Account;
-import org.springframework.data.repository.CrudRepository;
+import com.jscriptive.moneyfx.model.Bank;
 
 import java.util.List;
 
@@ -11,6 +11,8 @@ import java.util.List;
 public interface AccountRepository {
 
     List<Account> findAll();
+
+    List<Account> findByBank(Bank bank);
 
     Account findByNumber(String number);
 

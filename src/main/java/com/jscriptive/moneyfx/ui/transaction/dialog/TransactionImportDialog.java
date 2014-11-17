@@ -16,7 +16,7 @@ import java.io.File;
 import java.util.Collection;
 
 /**
- * Created by Igor on 17/11/2014.
+ * Created by jscriptive.com on 17/11/2014.
  */
 public class TransactionImportDialog extends Dialog<Pair<Bank, File>> {
 

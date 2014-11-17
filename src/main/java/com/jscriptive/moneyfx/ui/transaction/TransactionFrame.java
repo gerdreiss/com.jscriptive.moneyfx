@@ -26,6 +26,7 @@ import javafx.util.Pair;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
@@ -66,6 +67,14 @@ public class TransactionFrame extends BorderPane implements Initializable {
         accountRepository = RepositoryProvider.getInstance().getAccountRepository();
         categoryRepository = RepositoryProvider.getInstance().getCategoryRepository();
         transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
+        loadTransactionData();
+        setTransactionData();
+        setupAccountData();
+        transactionTable.setItems(transactionData);
+        initializeColumns();
+    }
+
+    private void loadTransactionData() {
         transactionRepository.findAll().forEach(trx -> transactionData.add(new TransactionItem(
                 trx.getAccount().getNumber(),
                 trx.getCategory().getName(),
@@ -74,6 +83,9 @@ public class TransactionFrame extends BorderPane implements Initializable {
                 trx.getDtVal().toString(),
                 trx.getAmount().doubleValue()
         )));
+    }
+
+    private void setTransactionData() {
         transactionData.addListener(new ListChangeListener<TransactionItem>() {
             @Override
             public void onChanged(Change<? extends TransactionItem> c) {
@@ -86,6 +98,9 @@ public class TransactionFrame extends BorderPane implements Initializable {
                 }
             }
         });
+    }
+
+    private void setupAccountData() {
         accountData.addListener(new ListChangeListener<AccountItem>() {
             @Override
             public void onChanged(Change<? extends AccountItem> c) {
@@ -98,7 +113,9 @@ public class TransactionFrame extends BorderPane implements Initializable {
                 }
             }
         });
-        transactionTable.setItems(transactionData);
+    }
+
+    private void initializeColumns() {
         accountColumn.setCellValueFactory(cellData -> cellData.getValue().accountProperty());
         categoryColumn.setCellValueFactory(cellData -> cellData.getValue().categoryProperty());
         conceptColumn.setCellValueFactory(cellData -> cellData.getValue().conceptProperty());
@@ -144,34 +161,42 @@ public class TransactionFrame extends BorderPane implements Initializable {
                 bankRepository.insert(bank);
             }
             TransactionExtractor extractor = TransactionExtractorProvider.getInstance().getTransactionExtractor(bank);
-            Account extracted = extractor.extractAccountData(bankFile.getValue().toURI());
-            Account found = accountRepository.findByNumber(extracted.getNumber());
-            if (found == null) {
-                extracted.setBank(bank);
-                try {
-                    AccountDialog.showAndWait(transactionTable.getScene().getWindow(), accountData, extracted);
-                } catch (Exception e) {
-                    ExceptionDialog alert = new ExceptionDialog(e);
-                    alert.showAndWait();
-                }
-            }
-            Account account = accountRepository.findByNumber(extracted.getNumber());
+            Account account = extractAccountData(bankFile.getValue().toURI(), bank, extractor);
             if (account != null) {
                 if (!bank.equals(account.getBank())) {
                     throw new BusinessException("Bank changed when creating the account");
                 }
-                List<Transaction> transactions = extractor.extractTransactionData(bankFile.getValue().toURI());
-                account.updateBalance(transactions);
-                transactions.forEach(trx -> trx.setAccount(account));
-                transactions.forEach(trx -> transactionData.add(new TransactionItem(
-                        trx.getAccount().getNumber(),
-                        trx.getCategory().getName(),
-                        trx.getConcept(),
-                        trx.getDtOp().toString(),
-                        trx.getDtVal().toString(),
-                        trx.getAmount().doubleValue()
-                )));
+                extractTransactionData(bankFile.getValue().toURI(), extractor, account);
             }
         });
+    }
+
+    private Account extractAccountData(URI file, Bank bank, TransactionExtractor extractor) {
+        Account extracted = extractor.extractAccountData(file);
+        Account found = accountRepository.findByNumber(extracted.getNumber());
+        if (found == null) {
+            extracted.setBank(bank);
+            try {
+                AccountDialog.showAndWait(transactionTable.getScene().getWindow(), accountData, extracted);
+            } catch (Exception e) {
+                ExceptionDialog alert = new ExceptionDialog(e);
+                alert.showAndWait();
+            }
+        }
+        return accountRepository.findByNumber(extracted.getNumber());
+    }
+
+    private void extractTransactionData(URI file, TransactionExtractor extractor, Account account) {
+        List<Transaction> transactions = extractor.extractTransactionData(file);
+        account.updateBalance(transactions);
+        transactions.forEach(trx -> trx.setAccount(account));
+        transactions.forEach(trx -> transactionData.add(new TransactionItem(
+                trx.getAccount().getNumber(),
+                trx.getCategory().getName(),
+                trx.getConcept(),
+                trx.getDtOp().toString(),
+                trx.getDtVal().toString(),
+                trx.getAmount().doubleValue()
+        )));
     }
 }

@@ -8,7 +8,7 @@ import javafx.scene.layout.Priority;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
- * Created by Igor on 14/11/2014.
+ * Created by jscriptive.com on 14/11/2014.
  */
 public class ExceptionDialog extends Alert {
     public ExceptionDialog(Throwable e) {

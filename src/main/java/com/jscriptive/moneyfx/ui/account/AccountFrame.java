@@ -49,7 +49,6 @@ public class AccountFrame extends BorderPane implements Initializable {
     @FXML
     private TableColumn<AccountItem, String> balanceDateColumn;
 
-
     /**
      * The data as an observable list of Persons.
      */
@@ -61,14 +60,25 @@ public class AccountFrame extends BorderPane implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         bankRepository = RepositoryProvider.getInstance().getBankRepository();
         accountRepository = RepositoryProvider.getInstance().getAccountRepository();
-        accountRepository.findAll().forEach(account -> accountData.add(new AccountItem(
-                account.getBank().getName(),
-                account.getNumber(),
-                account.getName(),
-                account.getType(),
-                account.getBalanceDate(),
-                account.getBalance().doubleValue()
-        )));
+        loadAccountData();
+        setupAccountData();
+        accountTable.setItems(accountData);
+        initializeColumns();
+    }
+
+    private void loadAccountData() {
+        accountRepository.findAll().forEach(account ->
+                accountData.add(new AccountItem(
+                        account.getBank().getName(),
+                        account.getNumber(),
+                        account.getName(),
+                        account.getType(),
+                        account.getBalanceDate(),
+                        account.getBalance().doubleValue()
+                )));
+    }
+
+    private void setupAccountData() {
         accountData.addListener(new ListChangeListener<AccountItem>() {
             @Override
             public void onChanged(Change<? extends AccountItem> c) {
@@ -78,7 +88,9 @@ public class AccountFrame extends BorderPane implements Initializable {
                 }
             }
         });
-        accountTable.setItems(accountData);
+    }
+
+    private void initializeColumns() {
         bankColumn.setCellValueFactory(cellData -> cellData.getValue().bankProperty());
         numberColumn.setCellValueFactory(cellData -> cellData.getValue().numberProperty());
         nameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
