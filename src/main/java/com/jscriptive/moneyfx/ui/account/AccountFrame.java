@@ -9,6 +9,7 @@ import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Bank;
 import com.jscriptive.moneyfx.repository.AccountRepository;
 import com.jscriptive.moneyfx.repository.BankRepository;
+import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.ui.account.dialog.AccountDialog;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
 import com.jscriptive.moneyfx.ui.exception.ExceptionDialog;
@@ -58,14 +59,21 @@ public class AccountFrame extends BorderPane implements Initializable {
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        bankRepository = RepositoryProvider.getInstance().getBankRepository();
+        accountRepository = RepositoryProvider.getInstance().getAccountRepository();
+        accountRepository.findAll().forEach(account -> accountData.add(new AccountItem(
+                account.getBank().getName(),
+                account.getNumber(),
+                account.getName(),
+                account.getType(),
+                account.getBalanceDate(),
+                account.getBalance().doubleValue()
+        )));
         accountData.addListener(new ListChangeListener<AccountItem>() {
             @Override
             public void onChanged(Change<? extends AccountItem> c) {
                 if (c.next()) {
                     List<? extends AccountItem> added = c.getAddedSubList();
-                    if (added.isEmpty()) {
-                        return;
-                    }
                     added.forEach(item -> persistAccount(item));
                 }
             }
@@ -80,15 +88,12 @@ public class AccountFrame extends BorderPane implements Initializable {
     }
 
     private void persistAccount(AccountItem item) {
-        List<Bank> banks = bankRepository.findByName(item.getName());
-        Bank bank = null;
-        if (banks.isEmpty()) {
-            bank = new Bank(item.getName());
+        Bank bank = bankRepository.findByName(item.getBank());
+        if (bank == null) {
+            bank = new Bank(item.getBank());
             bankRepository.insert(bank);
-        } else {
-            bank = banks.get(0);
         }
-        Account account = new Account(bank, item.getNumber(), item.getName(), new BigDecimal(item.getBalance()));
+        Account account = new Account(bank, item.getNumber(), item.getName(), item.getType(), new BigDecimal(item.getBalance()));
         account.setBalanceDate(LocalDate.parse(item.getBalanceDate()));
         accountRepository.insert(account);
     }
@@ -100,17 +105,5 @@ public class AccountFrame extends BorderPane implements Initializable {
             ExceptionDialog alert = new ExceptionDialog(e);
             alert.showAndWait();
         }
-    }
-
-    public void setAccountRepository(AccountRepository accountRepository) {
-        this.accountRepository = accountRepository;
-    }
-
-    public void setBankRepository(BankRepository bankRepository) {
-        this.bankRepository = bankRepository;
-    }
-
-    public AccountRepository getAccountRepository() {
-        return accountRepository;
     }
 }

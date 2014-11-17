@@ -11,10 +11,8 @@ public class Category {
 
     public static final Category DEFAULT = new Category("default");
 
-    private static final String REPO_NAME = "categories";
-
     @Id
-    private Long id;
+    private String id;
     private String name;
 
     public Category() {
@@ -25,11 +23,11 @@ public class Category {
         setName(name);
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -45,7 +43,6 @@ public class Category {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Category)) return false;
-        if (!super.equals(o)) return false;
 
         Category category = (Category) o;
 
@@ -56,9 +53,7 @@ public class Category {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
+        return name != null ? name.hashCode() : 0;
     }
 
     @Override

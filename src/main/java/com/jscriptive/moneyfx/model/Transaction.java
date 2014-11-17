@@ -12,10 +12,8 @@ import java.time.LocalDate;
 @Document
 public class Transaction {
 
-    private static String REPO_NAME = "transactions";
-
     @Id
-    private Long id;
+    private String id;
     private Account account;
     private String concept;
     private LocalDate dtOp;
@@ -40,11 +38,11 @@ public class Transaction {
         setAmount(amount);
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -96,11 +94,11 @@ public class Transaction {
         this.category = category;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Transaction)) return false;
-        if (!super.equals(o)) return false;
 
         Transaction that = (Transaction) o;
 
@@ -116,8 +114,7 @@ public class Transaction {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (account != null ? account.hashCode() : 0);
+        int result = account != null ? account.hashCode() : 0;
         result = 31 * result + (concept != null ? concept.hashCode() : 0);
         result = 31 * result + (dtOp != null ? dtOp.hashCode() : 0);
         result = 31 * result + (dtVal != null ? dtVal.hashCode() : 0);
@@ -128,6 +125,6 @@ public class Transaction {
 
     @Override
     public String toString() {
-        return String.format("Transaction{account=%s, category='%s', concept='%s', dtOp=%s, dtVal=%s, amount=%s}", account, category, concept, dtOp, dtVal, amount);
+        return String.format("Transaction{account=%s, concept='%s', dtOp=%s, dtVal=%s, amount=%s, category=%s}", account, concept, dtOp, dtVal, amount, category);
     }
 }

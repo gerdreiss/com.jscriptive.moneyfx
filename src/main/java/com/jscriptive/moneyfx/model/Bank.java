@@ -9,10 +9,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class Bank {
 
-    private static final String REPO_NAME = "banks";
-
     @Id
-    private Long id;
+    private String id;
     private String name;
 
     public Bank() {
@@ -23,11 +21,11 @@ public class Bank {
         setName(name);
     }
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -43,7 +41,6 @@ public class Bank {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Bank)) return false;
-        if (!super.equals(o)) return false;
 
         Bank bank = (Bank) o;
 
@@ -54,9 +51,7 @@ public class Bank {
 
     @Override
     public int hashCode() {
-        int result = super.hashCode();
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
+        return name != null ? name.hashCode() : 0;
     }
 
     @Override

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,6 +20,21 @@ public class TransactionRepositoryMongo implements TransactionRepository {
 
     @Autowired
     private MongoTemplate mongoTemplate;
+
+    @Override
+    public void insert(Transaction transaction) {
+        mongoTemplate.insert(transaction);
+    }
+
+    @Override
+    public void insert(Collection<Transaction> transactions) {
+        mongoTemplate.insert(transactions);
+    }
+
+    @Override
+    public List<Transaction> findAll() {
+        return mongoTemplate.findAll(Transaction.class);
+    }
 
     @Override
     public List<Transaction> findByAccount(Account account) {

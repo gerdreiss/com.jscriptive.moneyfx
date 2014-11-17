@@ -9,6 +9,10 @@ import java.util.List;
  * Created by jscriptive.com on 15/11/14.
  */
 public interface AccountRepository {
-    List<Account> findByNumber(String number);
+
+    List<Account> findAll();
+
+    Account findByNumber(String number);
+
     void insert(Account account);
 }

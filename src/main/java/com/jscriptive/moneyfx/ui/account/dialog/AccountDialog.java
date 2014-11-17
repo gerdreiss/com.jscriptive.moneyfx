@@ -1,5 +1,6 @@
 package com.jscriptive.moneyfx.ui.account.dialog;
 
+import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -8,7 +9,6 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.fxml.JavaFXBuilderFactory;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.DatePicker;
@@ -48,9 +48,13 @@ public class AccountDialog extends GridPane implements Initializable {
 
     private Stage stage;
     private ObservableList<AccountItem> data;
+    private Account account;
 
     public static void showAndWait(Window owner, ObservableList<AccountItem> accountData) throws IOException {
+        showAndWait(owner, accountData, null);
+    }
 
+    public static void showAndWait(Window owner, ObservableList<AccountItem> accountData, Account account) throws IOException {
         URL resource = AccountDialog.class.getResource("AccountDialog.fxml");
         FXMLLoader loader = new FXMLLoader(resource, null, new JavaFXBuilderFactory());
 
@@ -74,6 +78,7 @@ public class AccountDialog extends GridPane implements Initializable {
         AccountDialog controller = loader.getController();
         controller.setStage(dialogStage);
         controller.setData(accountData);
+        controller.setAccount(account);
 
         // Show the dialog and wait until the user closes it
         dialogStage.showAndWait();
@@ -92,6 +97,29 @@ public class AccountDialog extends GridPane implements Initializable {
         this.data = accountData;
     }
 
+    public void setAccount(Account account) {
+        this.account = account;
+        if (this.account != null) {
+            if (this.account.getBank() != null) {
+                this.bankField.setText(this.account.getBank().getName());
+            }
+            if (this.account.getNumber() != null) {
+                this.numberField.setText(this.account.getNumber());
+            }
+            if (this.account.getName() != null) {
+                this.nameField.setText(this.account.getName());
+            }
+            if (this.account.getType() != null) {
+                this.typeField.setText(this.account.getType());
+            }
+            if (this.account.getBalance() != null) {
+                this.balanceField.setText(this.account.getBalance().toString());
+            }
+            if (this.account.getBalanceDate() != null) {
+                this.balanceDateField.setValue(this.account.getBalanceDate());
+            }
+        }
+    }
 
     public void addFired(ActionEvent actionEvent) {
         AccountItem item = new AccountItem(

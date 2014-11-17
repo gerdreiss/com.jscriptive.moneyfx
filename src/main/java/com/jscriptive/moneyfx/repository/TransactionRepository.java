@@ -3,14 +3,22 @@ package com.jscriptive.moneyfx.repository;
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.model.Transaction;
-import org.springframework.data.repository.CrudRepository;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
  * Created by jscriptive.com on 15/11/14.
  */
 public interface TransactionRepository {
+
+    void insert(Transaction transaction);
+
+    void insert(Collection<Transaction> transactions);
+
+    List<Transaction> findAll();
+
     List<Transaction> findByAccount(Account account);
+
     List<Transaction> findByCategory(Category category);
 }

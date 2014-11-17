@@ -5,10 +5,9 @@
  */
 package com.jscriptive.moneyfx.ui.chart;
 
-import com.jscriptive.moneyfx.importer.TransactionReader;
-import com.jscriptive.moneyfx.importer.TransactionReaderBarclaysSearchResult;
+import com.jscriptive.moneyfx.importer.TransactionExtractor;
+import com.jscriptive.moneyfx.importer.barclays.TransactionReaderBarclaysSearchResult;
 import com.jscriptive.moneyfx.model.Account;
-import com.jscriptive.moneyfx.model.Bank;
 import com.jscriptive.moneyfx.model.Transaction;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -39,10 +38,10 @@ public class ChartFrame extends BorderPane implements Initializable {
 
     }
 
-    public void importFired(Bank bank, File file) {
-        TransactionReader reader = new TransactionReaderBarclaysSearchResult();
+    public void importFired(Account account, File file) {
+        TransactionExtractor reader = new TransactionReaderBarclaysSearchResult();
         try {
-            List<Transaction> read = reader.read(bank, file.toURI());
+            List<Transaction> read = reader.extractTransactionData(file.toURI());
 
             XYChart.Series series = new XYChart.Series();
             series.setName("Money flow");
