@@ -1,7 +1,7 @@
 package com.jscriptive.moneyfx.ui;
 
+import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
 import javafx.event.Event;
-import javafx.event.EventType;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
 import javafx.scene.control.Tab;
@@ -19,4 +19,16 @@ public class MainFrame extends BorderPane implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
     }
 
+    public void tabSelectionChanged(Event event) {
+        Tab t = (Tab) event.getTarget();
+        if (t.isSelected()) {
+            Node node = t.getContent().lookup("#dataTable");
+            if (node == null) {
+                node = t.getContent().lookup("#lineChart");
+            }
+            if (node != null) {
+                node.fireEvent(new TabSelectionEvent());
+            }
+        }
+    }
 }

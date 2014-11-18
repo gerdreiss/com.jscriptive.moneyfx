@@ -1,152 +1,64 @@
 package com.jscriptive.moneyfx.ui.account.dialog;
 
+import com.jscriptive.moneyfx.exception.TechnicalException;
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
-import javafx.collections.ObservableList;
-import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.fxml.JavaFXBuilderFactory;
-import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.TextField;
-import javafx.scene.layout.GridPane;
-import javafx.stage.Modality;
-import javafx.stage.Stage;
-import javafx.stage.Window;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
+import javafx.scene.Node;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.time.LocalDate;
-import java.util.ResourceBundle;
 
 /**
- * Created by jscriptive.com on 13/11/2014.
+ * Created by jscriptive.com on 17/11/2014.
  */
-public class AccountDialog extends GridPane implements Initializable {
+public class AccountDialog extends Dialog<AccountItem> {
 
-    @FXML
-    private TextField bankField;
-    @FXML
-    private TextField numberField;
-    @FXML
-    private TextField nameField;
-    @FXML
-    private TextField typeField;
-    @FXML
-    private TextField balanceField;
-    @FXML
-    private DatePicker balanceDateField;
-    @FXML
-    private Button addButton;
-
-    private Stage stage;
-    private ObservableList<AccountItem> data;
-    private Account account;
-
-    public static void showAndWait(Window owner, ObservableList<AccountItem> accountData) throws IOException {
-        showAndWait(owner, accountData, null);
+    public AccountDialog() {
+        this(null);
     }
 
-    public static void showAndWait(Window owner, ObservableList<AccountItem> accountData, Account account) throws IOException {
+    public AccountDialog(Account account) {
+        setTitle("Edit account");
+        setHeaderText("Fill in the account data");
+
+        // Set the button types.
+        ButtonType importButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
+        getDialogPane().getButtonTypes().addAll(importButtonType, ButtonType.CANCEL);
+        // Enable/Disable login button depending on whether a username was entered.
+        Node importButton = getDialogPane().lookupButton(importButtonType);
+        importButton.setDisable(true);
+
         URL resource = AccountDialog.class.getResource("AccountDialog.fxml");
         FXMLLoader loader = new FXMLLoader(resource, null, new JavaFXBuilderFactory());
 
-        InputStream in = resource.openStream();
-        AccountDialog page = null;
+        InputStream in = null;
         try {
-            page = (AccountDialog) loader.load(in);
+            in = resource.openStream();
+            getDialogPane().setContent(loader.load(in));
+        } catch (IOException e) {
+            throw new TechnicalException(e);
         } finally {
-            try {
-                in.close();
-            } catch (Exception ignored) {
-            }
+            IOUtils.closeQuietly(in);
         }
 
-        Stage dialogStage = new Stage();
-        dialogStage.setScene(new Scene(page));
-        dialogStage.setTitle("Add account");
-        dialogStage.initModality(Modality.WINDOW_MODAL);
-        dialogStage.initOwner(owner);
-
-        AccountDialog controller = loader.getController();
-        controller.setStage(dialogStage);
-        controller.setData(accountData);
+        AccountDialogController controller = loader.getController();
+        controller.setDisabledNodeToObserve(importButton);
         controller.setAccount(account);
 
-        // Show the dialog and wait until the user closes it
-        dialogStage.showAndWait();
-    }
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        this.balanceDateField.setValue(LocalDate.now());
-    }
-
-    public void setStage(Stage stage) {
-        this.stage = stage;
-    }
-
-    public void setData(ObservableList<AccountItem> accountData) {
-        this.data = accountData;
-    }
-
-    public void setAccount(Account account) {
-        this.account = account;
-        if (this.account != null) {
-            if (this.account.getBank() != null) {
-                this.bankField.setText(this.account.getBank().getName());
+        // Convert the result to a username-password-pair when the login button is clicked.
+        setResultConverter(dialogButtonType -> {
+            if (dialogButtonType == importButtonType) {
+                return controller.getAccount();
             }
-            if (this.account.getNumber() != null) {
-                this.numberField.setText(this.account.getNumber());
-            }
-            if (this.account.getName() != null) {
-                this.nameField.setText(this.account.getName());
-            }
-            if (this.account.getType() != null) {
-                this.typeField.setText(this.account.getType());
-            }
-            if (this.account.getBalance() != null) {
-                this.balanceField.setText(this.account.getBalance().toString());
-            }
-            if (this.account.getBalanceDate() != null) {
-                this.balanceDateField.setValue(this.account.getBalanceDate());
-            }
-        }
+            return null;
+        });
     }
 
-    public void addFired(ActionEvent actionEvent) {
-        AccountItem item = new AccountItem(
-                bankField.getText(),
-                numberField.getText(),
-                nameField.getText(),
-                typeField.getText(),
-                balanceDateField.getValue(),
-                Double.valueOf(balanceField.getText()));
-        this.data.add(item);
-        stage.close();
-    }
-
-    public void cancelFired(ActionEvent actionEvent) {
-        stage.close();
-    }
-
-    public void valueChanged(Event event) {
-        addButton.setDisable(anyInvalidFieldValues());
-    }
-
-    private boolean anyInvalidFieldValues() {
-        return StringUtils.isAnyBlank(
-                bankField.getText(),
-                numberField.getText(),
-                nameField.getText(),
-                typeField.getText(),
-                balanceField.getText()) || !NumberUtils.isNumber(balanceField.getText());
-    }
 }

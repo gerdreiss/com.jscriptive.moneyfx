@@ -2,18 +2,27 @@ package com.jscriptive.moneyfx.ui.transaction.dialog;
 
 import com.jscriptive.moneyfx.model.Bank;
 import javafx.collections.FXCollections;
+import javafx.event.ActionEvent;
+import javafx.event.Event;
+import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseButton;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.FileChooser;
 import javafx.util.Pair;
 import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
+import org.controlsfx.control.textfield.TextFields;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * Created by jscriptive.com on 17/11/2014.
@@ -41,60 +50,36 @@ public class TransactionImportDialog extends Dialog<Pair<Bank, File>> {
         grid.setVgap(10);
         grid.setPadding(new Insets(20, 150, 10, 10));
 
-        final Control bankControl;
-        if (banks.isEmpty()) {
-            TextField bankTextField = new TextField();
-            bankTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-                if (StringUtils.isBlank(newValue)) {
-                    selectedBank = null;
-                } else {
-                    selectedBank = new Bank(newValue);
-                }
-                importButton.setDisable(selectedBank == null || selectedFile == null || !selectedFile.exists());
-            });
-            bankControl = bankTextField;
-        } else {
-            ComboBox<Bank> bankComboBox = new ComboBox<>(FXCollections.observableArrayList(banks));
-            bankComboBox.setConverter(new StringConverter<Bank>() {
-                @Override
-                public String toString(Bank bank) {
-                    return bank.getName();
-                }
-
-                @Override
-                public Bank fromString(String name) {
-                    return bankComboBox.getItems().stream().filter(bank -> name.equals(bank.getName())).findFirst().get();
-                }
-            });
-            bankComboBox.setOnAction(event -> {
-                selectedBank = bankComboBox.getValue();
-                importButton.setDisable(selectedBank == null || selectedFile == null || !selectedFile.exists());
-            });
-            bankControl = bankComboBox;
-        }
-
-        TextField filePathTextField = new TextField();
-        filePathTextField.setEditable(false);
-
-        Button fileSelectionButton = new Button("Select");
-        fileSelectionButton.setOnAction((event) -> {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Excel sheets", "*.xls"));
-            selectedFile = fileChooser.showOpenDialog(getOwner());
-            if (selectedFile != null) {
-                filePathTextField.setText(selectedFile.getAbsolutePath());
+        TextField bankTextField = new TextField();
+        bankTextField.textProperty().addListener((observable, oldValue, newValue) -> {
+            if (StringUtils.isBlank(newValue)) {
+                selectedBank = null;
+            } else {
+                selectedBank = new Bank(newValue);
             }
             importButton.setDisable(selectedBank == null || selectedFile == null || !selectedFile.exists());
         });
+        TextFields.bindAutoCompletion(bankTextField, banks.stream().map(bank -> bank.getName()).collect(Collectors.toList()));
+
+        TextField filePathTextField = new TextField();
+        filePathTextField.setEditable(false);
+        filePathTextField.addEventHandler(KeyEvent.ANY, event -> {
+            String character = event.getCharacter();
+            selectFile(filePathTextField, importButton);
+        });
+        filePathTextField.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
+            MouseButton mouseButton = event.getButton();
+            selectFile(filePathTextField, importButton);
+        });
+
 
         grid.add(new Label("Bank:"), 0, 0);
-        grid.add(bankControl, 1, 0);
+        grid.add(bankTextField, 1, 0);
         grid.add(new Label("File:"), 0, 1);
         grid.add(filePathTextField, 1, 1);
-        grid.add(fileSelectionButton, 2, 1);
 
 
-        GridPane.setHgrow(bankControl, Priority.ALWAYS);
+        GridPane.setHgrow(bankTextField, Priority.ALWAYS);
         GridPane.setHgrow(filePathTextField, Priority.ALWAYS);
 
 
@@ -103,13 +88,19 @@ public class TransactionImportDialog extends Dialog<Pair<Bank, File>> {
         // Convert the result to a username-password-pair when the login button is clicked.
         setResultConverter(dialogButtonType -> {
             if (dialogButtonType == importButtonType) {
-                return new Pair<>(
-                        banks.isEmpty()
-                                ? new Bank(((TextField) bankControl).getText())
-                                : ((ComboBox<Bank>) bankControl).getValue(),
-                        new File(filePathTextField.getText()));
+                return new Pair<>(new Bank( bankTextField.getText()), new File(filePathTextField.getText()));
             }
             return null;
         });
+    }
+
+    private void selectFile(TextField filePathTextField, Node importButton) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().addAll(new FileChooser.ExtensionFilter("Excel sheets", "*.xls"));
+        selectedFile = fileChooser.showOpenDialog(getOwner());
+        if (selectedFile != null) {
+            filePathTextField.setText(selectedFile.getAbsolutePath());
+        }
+        importButton.setDisable(selectedBank == null || selectedFile == null || !selectedFile.exists());
     }
 }

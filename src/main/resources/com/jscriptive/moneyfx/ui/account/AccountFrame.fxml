@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.jscriptive.moneyfx.ui.account.AccountFrame?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.*?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<AccountFrame xmlns:fx="http://javafx.com/fxml/1" id="accountFrame"
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" id="accountFrame"
               fx:controller="com.jscriptive.moneyfx.ui.account.AccountFrame">
     <padding>
         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
@@ -19,7 +19,7 @@
         </HBox>
     </top>
     <center>
-        <TableView fx:id="accountTable">
+        <TableView fx:id="dataTable">
             <columns>
                 <TableColumn fx:id="bankColumn" text="Bank">
                     <cellValueFactory>
@@ -41,17 +41,17 @@
                         <PropertyValueFactory property="type"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="balanceDateColumn" text="Balance">
+                <TableColumn fx:id="balanceDateColumn" text="Balance date">
                     <cellValueFactory>
-                        <PropertyValueFactory property="balance"/>
+                        <PropertyValueFactory property="balanceDate"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="balanceColumn" text="Balance">
+                <TableColumn fx:id="formattedBalanceColumn" text="Balance">
                     <cellValueFactory>
-                        <PropertyValueFactory property="balance"/>
+                        <PropertyValueFactory property="formattedBalance"/>
                     </cellValueFactory>
                 </TableColumn>
             </columns>
         </TableView>
     </center>
-</AccountFrame>
+</BorderPane>

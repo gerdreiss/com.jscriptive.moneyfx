@@ -4,14 +4,18 @@ import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.util.Locale;
 
 /**
  * Created by jscriptive.com on 13/11/2014.
  */
 public class AccountItem {
+
+    private static final NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
     private final StringProperty bank;
     private final StringProperty number;
@@ -19,6 +23,7 @@ public class AccountItem {
     private final StringProperty type;
     private final StringProperty balanceDate;
     private final DoubleProperty balance;
+    private final StringProperty formattedBalance;
 
     public AccountItem() {
         this("", "", "", "", LocalDate.now(), 0.0);
@@ -31,6 +36,7 @@ public class AccountItem {
         this.type = new SimpleStringProperty(type);
         this.balanceDate = new SimpleStringProperty(balanceDate.toString());
         this.balance = new SimpleDoubleProperty(balance);
+        this.formattedBalance = new SimpleStringProperty(formatter.format(balance));
     }
 
     public String getBank() {
@@ -103,5 +109,17 @@ public class AccountItem {
 
     public void setBalance(double balance) {
         this.balance.set(balance);
+    }
+
+    public String getFormattedBalance() {
+        return formattedBalance.get();
+    }
+
+    public StringProperty formattedBalanceProperty() {
+        return formattedBalance;
+    }
+
+    public void setFormattedBalance(String formattedBalance) {
+        this.formattedBalance.set(formattedBalance);
     }
 }

@@ -6,11 +6,14 @@ import com.jscriptive.moneyfx.model.Transaction;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 /**
  * Created by jscriptive.com on 16/11/14.
@@ -38,11 +41,16 @@ public class TransactionRepositoryMongo implements TransactionRepository {
 
     @Override
     public List<Transaction> findByAccount(Account account) {
-        return Collections.emptyList();
+        return mongoTemplate.find(new Query(where("account").is(account)), Transaction.class);
+    }
+
+    @Override
+    public List<Transaction> findByAccountAndYear(Account account, Integer year) {
+        return mongoTemplate.find(new Query(where("account").is(account).and("dtOp.year").is(year)), Transaction.class);
     }
 
     @Override
     public List<Transaction> findByCategory(Category category) {
-        return Collections.emptyList();
+        return mongoTemplate.find(new Query(where("category").is(category)), Transaction.class);
     }
 }

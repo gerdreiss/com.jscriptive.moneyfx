@@ -20,5 +20,7 @@ public interface TransactionRepository {
 
     List<Transaction> findByAccount(Account account);
 
+    List<Transaction> findByAccountAndYear(Account account, Integer year);
+
     List<Transaction> findByCategory(Category category);
 }

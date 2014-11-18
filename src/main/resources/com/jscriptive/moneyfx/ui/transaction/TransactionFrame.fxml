@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import com.jscriptive.moneyfx.ui.transaction.TransactionFrame?>
-<?import javafx.scene.control.*?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.control.cell.*?>
+<?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.control.cell.PropertyValueFactory?>
-<TransactionFrame xmlns:fx="http://javafx.com/fxml/1" id="transactionFrame"
-                  fx:controller="com.jscriptive.moneyfx.ui.transaction.TransactionFrame">
+<BorderPane xmlns:fx="http://javafx.com/fxml/1" id="transactionFrame"
+            fx:controller="com.jscriptive.moneyfx.ui.transaction.TransactionFrame">
     <padding>
         <Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
     </padding>
     <top>
         <HBox spacing="4">
             <padding>
-                <Insets bottom="10.0" />
+                <Insets bottom="10.0"/>
             </padding>
             <Button text="Import transactions" onAction="#importTransactionsFired"/>
         </HBox>
     </top>
     <center>
-        <TableView fx:id="transactionTable">
+        <TableView fx:id="dataTable">
             <columns>
                 <TableColumn fx:id="accountColumn" text="Account">
                     <cellValueFactory>
@@ -36,12 +36,12 @@
                         <PropertyValueFactory property="concept"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="dtOpColumn" text="Date operation">
+                <TableColumn fx:id="dtOpColumn" text="Operation date">
                     <cellValueFactory>
                         <PropertyValueFactory property="dtOp"/>
                     </cellValueFactory>
                 </TableColumn>
-                <TableColumn fx:id="dtValColumn" text="Date value">
+                <TableColumn fx:id="dtValColumn" text="Value date">
                     <cellValueFactory>
                         <PropertyValueFactory property="dtVal"/>
                     </cellValueFactory>
@@ -54,4 +54,4 @@
             </columns>
         </TableView>
     </center>
-</TransactionFrame>
+</BorderPane>
