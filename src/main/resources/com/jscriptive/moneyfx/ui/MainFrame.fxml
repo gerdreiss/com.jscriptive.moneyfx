@@ -16,12 +16,14 @@
 
     <center>
         <TabPane fx:id="tabPane">
-            <tabs>
-                <Tab text="Accounts" fx:id="accountsTab" content="$accountFrame" closable="false" onSelectionChanged="#tabSelectionChanged"/>
-                <Tab text="Transactions" fx:id="transactionsTab" content="$transactionFrame" closable="false" onSelectionChanged="#tabSelectionChanged"/>
-                <Tab text="Categories" fx:id="categoriesTab" content="$categoryFrame" closable="false" onSelectionChanged="#tabSelectionChanged"/>
-                <Tab text="Charts" fx:id="chartsTab" content="$chartFrame" closable="false" onSelectionChanged="#tabSelectionChanged"/>
-            </tabs>
+            <Tab text="Accounts" fx:id="accountsTab" content="$accountFrame" closable="false"
+                 onSelectionChanged="#tabSelectionChanged"/>
+            <Tab text="Transactions" fx:id="transactionsTab" content="$transactionFrame" closable="false"
+                 onSelectionChanged="#tabSelectionChanged"/>
+            <Tab text="Categories" fx:id="categoriesTab" content="$categoryFrame" closable="false"
+                 onSelectionChanged="#tabSelectionChanged"/>
+            <Tab text="Charts" fx:id="chartsTab" content="$chartFrame" closable="false"
+                 onSelectionChanged="#tabSelectionChanged"/>
         </TabPane>
     </center>
 
