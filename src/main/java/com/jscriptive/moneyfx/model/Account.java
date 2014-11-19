@@ -1,16 +1,10 @@
 package com.jscriptive.moneyfx.model;
 
-import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.Fraction;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.lang3.text.FormattableUtils;
-import org.apache.poi.ss.usermodel.FractionFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.List;
@@ -23,6 +17,8 @@ import static java.math.MathContext.DECIMAL64;
  */
 @Document
 public class Account {
+
+    public static final String FOUR_DIGIT_PREFIX = " ***";
 
     private static final NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
@@ -73,7 +69,7 @@ public class Account {
     }
 
     public String getLastFourDigits() {
-        return "***" + StringUtils.right(number, 4);
+        return FOUR_DIGIT_PREFIX + StringUtils.right(number, 4);
     }
 
     public void setNumber(String number) {
@@ -158,7 +154,7 @@ public class Account {
 
     @Override
     public String toString() {
-        return String.format("Account{bank=%s, number='%s', name='%s', type='%s', balance=%s, balanceDate=%s}", bank, number, name, type, balance, balanceDate);
+        return String.format("Account{bank=%s, number='%s', name='%s', type='%s', balance=%s, balanceDate=%s}", bank, number, name, type, getFormattedBalance(), balanceDate);
     }
 
     public void calculateStartingBalance(List<Transaction> read) {
@@ -181,5 +177,25 @@ public class Account {
             setBalance(getBalance().subtract(trx.getAmount(), DECIMAL64));
         }
         setBalanceDate(trx.getDtOp());
+    }
+
+    public boolean hasBank(String name) {
+        if (StringUtils.isBlank(name)) {
+            return false;
+        }
+        if (getBank() == null) {
+            return false;
+        }
+        return getBank().getName().equals(name);
+    }
+
+    public boolean hasLastFourDigits(String lastFourDigits) {
+        if (StringUtils.isBlank(lastFourDigits)) {
+            return false;
+        }
+        if (StringUtils.isBlank(getNumber())) {
+            return false;
+        }
+        return getNumber().endsWith(lastFourDigits);
     }
 }

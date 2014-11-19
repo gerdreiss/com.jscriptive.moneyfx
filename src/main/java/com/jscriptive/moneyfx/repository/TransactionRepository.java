@@ -23,4 +23,10 @@ public interface TransactionRepository {
     List<Transaction> findByAccountAndYear(Account account, Integer year);
 
     List<Transaction> findByCategory(Category category);
+
+    List<Transaction> findByAccountAndYearAndMonth(Account account, Integer year, Integer month);
+
+    List<Transaction> findIncomingByAccountAndYearAndMonth(Account value, Integer year, Integer month);
+
+    List<Transaction> findOutgoingByAccountAndYearAndMonth(Account value, Integer year, Integer month);
 }

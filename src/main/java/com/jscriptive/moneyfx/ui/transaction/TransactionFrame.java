@@ -49,7 +49,7 @@ public class TransactionFrame implements Initializable {
     @FXML
     private TableColumn<TransactionItem, String> dtValColumn;
     @FXML
-    private TableColumn<TransactionItem, Number> amountColumn;
+    private TableColumn<TransactionItem, String> amountColumn;
 
     private ObservableList<TransactionItem> transactionData = FXCollections.observableArrayList();
 
@@ -79,20 +79,18 @@ public class TransactionFrame implements Initializable {
         dtValColumn.setCellValueFactory(cellData -> cellData.getValue().dtValProperty());
         amountColumn.setCellValueFactory(cellData -> cellData.getValue().amountProperty());
         dataTable.setItems(transactionData);
-        dataTable.addEventHandler(TabSelectionEvent.TAB_SELECTION, event -> {
-            loadTransactionData();
-        });
+        dataTable.addEventHandler(TabSelectionEvent.TAB_SELECTION, event -> loadTransactionData());
     }
 
     private void loadTransactionData() {
         transactionData.clear();
         transactionRepository.findAll().forEach(trx -> transactionData.add(new TransactionItem(
-                trx.getAccount().getNumber(),
+                trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
                 trx.getCategory().getName(),
                 trx.getConcept(),
                 trx.getDtOp().toString(),
                 trx.getDtVal().toString(),
-                trx.getAmount().doubleValue()
+                trx.getFormattedAmount()
         )));
     }
 
@@ -155,7 +153,7 @@ public class TransactionFrame implements Initializable {
                 trx.getConcept(),
                 trx.getDtOp().toString(),
                 trx.getDtVal().toString(),
-                trx.getAmount().doubleValue()
+                trx.getFormattedAmount()
         )));
     }
 

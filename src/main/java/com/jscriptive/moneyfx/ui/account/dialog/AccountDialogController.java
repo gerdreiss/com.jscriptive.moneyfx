@@ -15,7 +15,7 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
- * Created by Igor on 18/11/2014.
+ * Created by jscriptive.com on 18/11/2014.
  */
 public class AccountDialogController implements Initializable {
 

@@ -1,7 +1,5 @@
 package com.jscriptive.moneyfx.ui.transaction.item;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -15,15 +13,15 @@ public class TransactionItem {
     private StringProperty concept;
     private StringProperty dtOp;
     private StringProperty dtVal;
-    private DoubleProperty amount;
+    private StringProperty amount;
 
-    public TransactionItem(String account, String category, String concept, String dtOp, String dtVal, double amount) {
+    public TransactionItem(String account, String category, String concept, String dtOp, String dtVal, String formattedAmount) {
         this.account = new SimpleStringProperty(account);
         this.category = new SimpleStringProperty(category);
         this.concept = new SimpleStringProperty(concept);
         this.dtOp = new SimpleStringProperty(dtOp);
         this.dtVal = new SimpleStringProperty(dtVal);
-        this.amount = new SimpleDoubleProperty(amount);
+        this.amount = new SimpleStringProperty(formattedAmount);
     }
 
     public String getAccount() {
@@ -74,15 +72,15 @@ public class TransactionItem {
         this.dtVal.set(dtVal);
     }
 
-    public double getAmount() {
+    public String getAmount() {
         return amount.get();
     }
 
-    public DoubleProperty amountProperty() {
+    public StringProperty amountProperty() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(String amount) {
         this.amount.set(amount);
     }
 

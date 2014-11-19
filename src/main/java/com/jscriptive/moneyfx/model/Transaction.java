@@ -4,13 +4,17 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.time.LocalDate;
+import java.util.Locale;
 
 /**
  * Created by jscriptive.com on 29/10/2014.
  */
 @Document
 public class Transaction {
+
+    private static final NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
     @Id
     private String id;
@@ -82,6 +86,10 @@ public class Transaction {
         return amount;
     }
 
+    public String getFormattedAmount() {
+        return formatter.format(getAmount().doubleValue());
+    }
+
     public void setAmount(BigDecimal amount) {
         this.amount = amount;
     }
@@ -125,6 +133,6 @@ public class Transaction {
 
     @Override
     public String toString() {
-        return String.format("Transaction{account=%s, concept='%s', dtOp=%s, dtVal=%s, amount=%s, category=%s}", account, concept, dtOp, dtVal, amount, category);
+        return String.format("Transaction{account=%s, concept='%s', dtOp=%s, dtVal=%s, amount=%s, category=%s}", account, concept, dtOp, dtVal, getFormattedAmount(), category);
     }
 }

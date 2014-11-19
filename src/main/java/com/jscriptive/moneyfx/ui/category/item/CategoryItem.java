@@ -6,7 +6,7 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
 /**
- * Created by Igor on 18/11/2014.
+ * Created by jscriptive.com on 18/11/2014.
  */
 public class CategoryItem {
 

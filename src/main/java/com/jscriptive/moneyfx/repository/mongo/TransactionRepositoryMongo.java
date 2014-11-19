@@ -10,9 +10,9 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
+import static java.math.BigDecimal.ZERO;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
 /**
@@ -40,17 +40,48 @@ public class TransactionRepositoryMongo implements TransactionRepository {
     }
 
     @Override
+    public List<Transaction> findByCategory(Category category) {
+        return mongoTemplate.find(new Query(where("category").is(category)), Transaction.class);
+    }
+
+    @Override
     public List<Transaction> findByAccount(Account account) {
-        return mongoTemplate.find(new Query(where("account").is(account)), Transaction.class);
+        return mongoTemplate.find(new Query(where("account.number").is(account.getNumber())), Transaction.class);
     }
 
     @Override
     public List<Transaction> findByAccountAndYear(Account account, Integer year) {
-        return mongoTemplate.find(new Query(where("account").is(account).and("dtOp.year").is(year)), Transaction.class);
+        if (account == null) {
+            return mongoTemplate.find(new Query(where("dtOp.year").is(year)), Transaction.class);
+        } else {
+            return mongoTemplate.find(new Query(where("account.number").is(account.getNumber()).and("dtOp.year").is(year)), Transaction.class);
+        }
     }
 
     @Override
-    public List<Transaction> findByCategory(Category category) {
-        return mongoTemplate.find(new Query(where("category").is(category)), Transaction.class);
+    public List<Transaction> findByAccountAndYearAndMonth(Account account, Integer year, Integer month) {
+        if (account == null) {
+            return mongoTemplate.find(new Query(where("dtOp.year").is(year).and("dtOp.month").is(month)), Transaction.class);
+        } else {
+            return mongoTemplate.find(new Query(where("account.number").is(account.getNumber()).and("dtOp.year").is(year).and("dtOp.month").is(month)), Transaction.class);
+        }
+    }
+
+    @Override
+    public List<Transaction> findIncomingByAccountAndYearAndMonth(Account account, Integer year, Integer month) {
+        if (account == null) {
+            return mongoTemplate.find(new Query(where("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").gte(ZERO)), Transaction.class);
+        } else {
+            return mongoTemplate.find(new Query(where("account.number").is(account.getNumber()).and("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").gte(ZERO)), Transaction.class);
+        }
+    }
+
+    @Override
+    public List<Transaction> findOutgoingByAccountAndYearAndMonth(Account account, Integer year, Integer month) {
+        if (account == null) {
+            return mongoTemplate.find(new Query(where("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").lt(ZERO)), Transaction.class);
+        } else {
+            return mongoTemplate.find(new Query(where("account.number").is(account.getNumber()).and("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").lt(ZERO)), Transaction.class);
+        }
     }
 }

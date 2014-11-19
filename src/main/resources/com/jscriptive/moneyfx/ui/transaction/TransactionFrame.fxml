@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import com.jscriptive.moneyfx.ui.common.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.Button?>
 <?import javafx.scene.control.cell.*?>
+<?import javafx.scene.control.TableView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" id="transactionFrame"
@@ -21,36 +23,45 @@
     <center>
         <TableView fx:id="dataTable">
             <columns>
-                <TableColumn fx:id="accountColumn" text="Account">
+                <PTableColumn fx:id="accountColumn" text="Account" percentageWidth="0.15">
                     <cellValueFactory>
                         <PropertyValueFactory property="account"/>
                     </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="categoryColumn" text="Category">
+                </PTableColumn>
+                <PTableColumn fx:id="categoryColumn" text="Category" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="category"/>
                     </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="conceptColumn" text="Concept">
+                </PTableColumn>
+                <PTableColumn fx:id="conceptColumn" text="Concept" percentageWidth="0.4">
                     <cellValueFactory>
                         <PropertyValueFactory property="concept"/>
                     </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="dtOpColumn" text="Operation date">
+                </PTableColumn>
+                <PTableColumn fx:id="dtOpColumn" text="Operation date" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="dtOp"/>
                     </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="dtValColumn" text="Value date">
+                    <cellFactory>
+                        <FormattedTableCellFactory alignment="right"/>
+                    </cellFactory>
+                </PTableColumn>
+                <PTableColumn fx:id="dtValColumn" text="Value date" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="dtVal"/>
                     </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="amountColumn" text="Amount">
+                    <cellFactory>
+                        <FormattedTableCellFactory alignment="right"/>
+                    </cellFactory>
+                </PTableColumn>
+                <PTableColumn fx:id="amountColumn" text="Amount" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="amount"/>
                     </cellValueFactory>
-                </TableColumn>
+                    <cellFactory>
+                        <FormattedTableCellFactory alignment="right"/>
+                    </cellFactory>
+                </PTableColumn>
             </columns>
         </TableView>
     </center>

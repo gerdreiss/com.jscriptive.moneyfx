@@ -28,6 +28,7 @@ public class MoneyFX extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("ui/MainFrame.fxml"));
         Scene scene = new Scene(root);
         stage.setScene(scene);
+        scene.getStylesheets().add("com/jscriptive/moneyfx/ui/css/MoneyFX.css");
         stage.show();
     }
 
