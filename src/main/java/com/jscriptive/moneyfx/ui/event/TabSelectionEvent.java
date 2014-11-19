@@ -13,7 +13,7 @@ public class TabSelectionEvent extends Event {
      * The only valid EventType for the TabSelectionEvent.
      */
     public static final EventType<TabSelectionEvent> TAB_SELECTION =
-            new EventType<TabSelectionEvent>(Event.ANY, "TAB_SELECTION");
+            new EventType<>(Event.ANY, "TAB_SELECTION");
 
     public TabSelectionEvent() {
         super(TAB_SELECTION);

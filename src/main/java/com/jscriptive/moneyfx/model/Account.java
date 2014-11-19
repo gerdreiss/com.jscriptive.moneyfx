@@ -157,9 +157,7 @@ public class Account {
         return String.format("Account{bank=%s, number='%s', name='%s', type='%s', balance=%s, balanceDate=%s}", bank, number, name, type, getFormattedBalance(), balanceDate);
     }
 
-    public void calculateStartingBalance(List<Transaction> read) {
-        // sort transactions by operation value descending
-        read.sort((t1, t2) -> t2.getDtOp().compareTo(t1.getDtOp()));
+    public BigDecimal calculateStartingBalance(List<Transaction> read) {
         // calculate the balance of the last transaction of the list "read"
         read.forEach(trx -> {
             // if the transaction date is before or the same as the account balance date - subtract the amount from the account balance
@@ -168,15 +166,17 @@ public class Account {
                 setBalanceDate(trx.getDtOp());
             }
         });
+        return getBalance();
     }
 
-    public void calculateCurrentBalance(Transaction trx) {
+    public BigDecimal calculateCurrentBalance(Transaction trx) {
         if (!trx.getDtOp().isBefore(getBalanceDate())) {
             setBalance(getBalance().add(trx.getAmount(), DECIMAL64));
         } else {
             setBalance(getBalance().subtract(trx.getAmount(), DECIMAL64));
         }
         setBalanceDate(trx.getDtOp());
+        return getBalance();
     }
 
     public boolean hasBank(String name) {

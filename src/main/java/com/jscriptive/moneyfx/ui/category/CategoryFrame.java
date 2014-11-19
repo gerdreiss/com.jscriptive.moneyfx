@@ -8,7 +8,6 @@ package com.jscriptive.moneyfx.ui.category;
 import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.repository.CategoryRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
-import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.category.item.CategoryItem;
 import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
 import javafx.collections.FXCollections;
@@ -36,17 +35,13 @@ public class CategoryFrame implements Initializable {
     @FXML
     private TableColumn<CategoryItem, Number> amountColumn;
 
-    /**
-     * The data as an observable list of Persons.
-     */
     private ObservableList<CategoryItem> categoryData = FXCollections.observableArrayList();
+
     private CategoryRepository categoryRepository;
-    private TransactionRepository transactionRepository;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         categoryRepository = RepositoryProvider.getInstance().getCategoryRepository();
-        transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
         setupCategoryTable();
         initializeColumns();
     }

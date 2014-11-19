@@ -35,15 +35,15 @@ import javafx.scene.chart.Axis;
 import javafx.util.Duration;
 import javafx.util.StringConverter;
 
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
+
+import static com.jscriptive.moneyfx.util.LocalDateUtil.toLocalDate;
+import static com.jscriptive.moneyfx.util.LocalDateUtil.toMillis;
 
 /**
  * An axis that displays date and time values.
@@ -60,8 +60,8 @@ import java.util.List;
  * <p>
  * Displaying date values, ranging only over a few hours:</p>
  * <img src="doc-files/DateAxisHours.png" alt="DateAxisHours" />
- * <p/>
- * <p/>
+ * <p>
+ * <p>
  * <h3>Sample Usage</h3>
  * <pre>
  * {@code
@@ -79,7 +79,7 @@ import java.util.List;
  * series.add(new XYChart.Series<>("Series2", series2Data));
  *
  * NumberAxis numberAxis = new NumberAxis();
- * DateAxis dateAxis = new DateAxis();
+ * LocalDateAxis dateAxis = new LocalDateAxis();
  * LineChart<LocalDate, Number> lineChart = new LineChart<>(dateAxis, numberAxis, series);
  * }
  * </pre>
@@ -266,21 +266,22 @@ public final class LocalDateAxis extends Axis<LocalDate> {
 //                    new KeyFrame(Duration.millis(3000), keyValue, keyValue2));
 //            timeline.play();
 
+
             animator.stop(currentAnimationID);
             currentAnimationID = animator.animate(
                     new KeyFrame(Duration.ZERO,
-                            new KeyValue(currentLowerBound, Instant.from(oldLowerBound).toEpochMilli()),
-                            new KeyValue(currentUpperBound, Instant.from(oldUpperBound).toEpochMilli())
+                            new KeyValue(currentLowerBound, toMillis(oldLowerBound)),
+                            new KeyValue(currentUpperBound, toMillis(oldUpperBound))
                     ),
                     new KeyFrame(Duration.millis(700),
-                            new KeyValue(currentLowerBound, Instant.from(lower).toEpochMilli()),
-                            new KeyValue(currentUpperBound, Instant.from(upper).toEpochMilli())
+                            new KeyValue(currentLowerBound, toMillis(lower)),
+                            new KeyValue(currentUpperBound, toMillis(upper))
                     )
             );
 
         } else {
-            currentLowerBound.set(Instant.from(getLowerBound()).toEpochMilli());
-            currentUpperBound.set(Instant.from(getUpperBound()).toEpochMilli());
+            currentLowerBound.set(toMillis(getLowerBound()));
+            currentUpperBound.set(toMillis(getUpperBound()));
         }
     }
 
@@ -307,7 +308,7 @@ public final class LocalDateAxis extends Axis<LocalDate> {
 
         // Then get the difference from the actual date to the min date and divide it by the total difference.
         // We get a value between 0 and 1, if the date is within the min and max date.
-        double d = (Instant.from(date).toEpochMilli() - currentLowerBound.get()) / diff;
+        double d = (toMillis(date) - currentLowerBound.get()) / diff;
 
         // Multiply this percent value with the range and add the zero offset.
         if (getSide().isVertical()) {
@@ -331,27 +332,27 @@ public final class LocalDateAxis extends Axis<LocalDate> {
         if (getSide().isVertical()) {
             // displayPosition = getHeight() - ((date - lowerBound) / diff) * range + getZero
             // date = displayPosition - getZero - getHeight())/range * diff + lowerBound
-            return Instant.ofEpochMilli((long) ((displayPosition - getZeroPosition() - getHeight()) / -range * diff + currentLowerBound.get())).atZone(ZoneId.systemDefault()).toLocalDate();
+            return toLocalDate((long) ((displayPosition - getZeroPosition() - getHeight()) / -range * diff + currentLowerBound.get()));
         } else {
             // displayPosition = ((date - lowerBound) / diff) * range + getZero
             // date = displayPosition - getZero)/range * diff + lowerBound
-            return Instant.ofEpochMilli((long) ((displayPosition - getZeroPosition()) / range * diff + currentLowerBound.get())).atZone(ZoneId.systemDefault()).toLocalDate();
+            return toLocalDate((long) ((displayPosition - getZeroPosition()) / range * diff + currentLowerBound.get()));
         }
     }
 
     @Override
     public boolean isValueOnAxis(LocalDate date) {
-        return Instant.from(date).toEpochMilli() > currentLowerBound.get() && Instant.from(date).toEpochMilli() < currentUpperBound.get();
+        return toMillis(date) > currentLowerBound.get() && toMillis(date) < currentUpperBound.get();
     }
 
     @Override
     public double toNumericValue(LocalDate date) {
-        return Instant.from(date).toEpochMilli();
+        return toMillis(date);
     }
 
     @Override
     public LocalDate toRealValue(double v) {
-        return Instant.ofEpochMilli((long) v).atZone(ZoneId.systemDefault()).toLocalDate();
+        return toLocalDate((long) v);
     }
 
     @Override
@@ -360,37 +361,37 @@ public final class LocalDateAxis extends Axis<LocalDate> {
         LocalDate lower = (LocalDate) r[0];
         LocalDate upper = (LocalDate) r[1];
 
-        List<LocalDate> dateList = new ArrayList<LocalDate>();
+        List<LocalDate> dateList = new ArrayList<>();
         Calendar calendar = Calendar.getInstance();
 
         // The preferred gap which should be between two tick marks.
         double averageTickGap = 100;
         double averageTicks = v / averageTickGap;
 
-        List<LocalDate> previousDateList = new ArrayList<LocalDate>();
+        List<LocalDate> previousDateList = new ArrayList<>();
 
         Interval previousInterval = Interval.values()[0];
 
         // Starting with the greatest interval, add one of each calendar unit.
         for (Interval interval : Interval.values()) {
             // Reset the calendar.
-            calendar.setTimeInMillis(Instant.from(lower).toEpochMilli());
+            calendar.setTimeInMillis(toMillis(lower));
             // Clear the list.
             dateList.clear();
             previousDateList.clear();
             actualInterval = interval;
 
             // Loop as long we exceeded the upper bound.
-            while (calendar.getTime().getTime() <= Instant.from(upper).toEpochMilli()) {
-                dateList.add(Instant.ofEpochMilli(calendar.getTimeInMillis()).atZone(ZoneId.systemDefault()).toLocalDate());
+            while (calendar.getTime().getTime() <= toMillis(upper)) {
+                dateList.add(toLocalDate(calendar.getTimeInMillis()));
                 calendar.add(interval.interval, interval.amount);
             }
             // Then check the size of the list. If it is greater than the amount of ticks, take that list.
             if (dateList.size() > averageTicks) {
-                calendar.setTimeInMillis(Instant.from(lower).toEpochMilli());
+                calendar.setTimeInMillis(toMillis(lower));
                 // Recheck if the previous interval is better suited.
-                while (calendar.getTime().getTime() <= Instant.from(upper).toEpochMilli()) {
-                    previousDateList.add(Instant.ofEpochMilli(calendar.getTimeInMillis()).atZone(ZoneId.systemDefault()).toLocalDate());
+                while (calendar.getTime().getTime() <= toMillis(upper)) {
+                    previousDateList.add(toLocalDate(calendar.getTimeInMillis()));
                     calendar.add(previousInterval.interval, previousInterval.amount);
                 }
                 break;
@@ -419,13 +420,13 @@ public final class LocalDateAxis extends Axis<LocalDate> {
             LocalDate previousLastDate = evenDateList.get(dateList.size() - 3);
 
             // If the second date is too near by the lower bound, remove it.
-            if (Instant.from(secondDate).toEpochMilli() - Instant.from(lower).toEpochMilli() < (Instant.from(thirdDate).toEpochMilli() - Instant.from(secondDate).toEpochMilli()) / 2) {
+            if (toMillis(secondDate) - toMillis(lower) < (toMillis(thirdDate) - toMillis(secondDate)) / 2) {
                 evenDateList.remove(secondDate);
             }
 
             // If difference from the upper bound to the last date is less than the half of the difference of the previous two dates,
             // we better remove the last date, as it comes to close to the upper bound.
-            if (Instant.from(upper).toEpochMilli() - Instant.from(lastDate).toEpochMilli() < (Instant.from(lastDate).toEpochMilli() - Instant.from(previousLastDate).toEpochMilli()) / 2) {
+            if (toMillis(upper) - toMillis(lastDate) < (toMillis(lastDate) - toMillis(previousLastDate)) / 2) {
                 evenDateList.remove(lastDate);
             }
         }
@@ -436,8 +437,8 @@ public final class LocalDateAxis extends Axis<LocalDate> {
     @Override
     protected void layoutChildren() {
         if (!isAutoRanging()) {
-            currentLowerBound.set(Instant.from(getLowerBound()).toEpochMilli());
-            currentUpperBound.set(Instant.from(getUpperBound()).toEpochMilli());
+            currentLowerBound.set(toMillis(getLowerBound()));
+            currentUpperBound.set(toMillis(getUpperBound()));
         }
         super.layoutChildren();
     }
@@ -450,34 +451,19 @@ public final class LocalDateAxis extends Axis<LocalDate> {
             return converter.toString(date);
         }
 
-        DateFormat dateFormat;
         Calendar calendar = Calendar.getInstance();
-        calendar.setTimeInMillis(Instant.from(date).toEpochMilli());
+        calendar.setTimeInMillis(toMillis(date));
+
+        DateTimeFormatter formatter;
 
         if (actualInterval.interval == Calendar.YEAR && calendar.get(Calendar.MONTH) == 0 && calendar.get(Calendar.DATE) == 1) {
-            dateFormat = new SimpleDateFormat("yyyy");
+            formatter = DateTimeFormatter.ofPattern("yyyy");
         } else if (actualInterval.interval == Calendar.MONTH && calendar.get(Calendar.DATE) == 1) {
-            dateFormat = new SimpleDateFormat("MMM yy");
+            formatter = DateTimeFormatter.ofPattern("MMM yy");
         } else {
-            switch (actualInterval.interval) {
-                case Calendar.DATE:
-                case Calendar.WEEK_OF_YEAR:
-                default:
-                    dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM);
-                    break;
-                case Calendar.HOUR:
-                case Calendar.MINUTE:
-                    dateFormat = DateFormat.getTimeInstance(DateFormat.SHORT);
-                    break;
-                case Calendar.SECOND:
-                    dateFormat = DateFormat.getTimeInstance(DateFormat.MEDIUM);
-                    break;
-                case Calendar.MILLISECOND:
-                    dateFormat = DateFormat.getTimeInstance(DateFormat.FULL);
-                    break;
-            }
+            formatter = DateTimeFormatter.ofPattern("dd MMM yyyy");
         }
-        return dateFormat.format(date);
+        return date.format(formatter);
     }
 
     /**
@@ -489,13 +475,13 @@ public final class LocalDateAxis extends Axis<LocalDate> {
     private List<LocalDate> makeDatesEven(List<LocalDate> dates, Calendar calendar) {
         // If the dates contain more dates than just the lower and upper bounds, make the dates in between even.
         if (dates.size() > 2) {
-            List<LocalDate> evenDates = new ArrayList<LocalDate>();
+            List<LocalDate> evenDates = new ArrayList<>();
 
             // For each interval, modify the date slightly by a few millis, to make sure they are different days.
             // This is because Axis stores each value and won't update the tick labels, if the value is already known.
             // This happens if you display days and then add a date many years in the future the tick label will still be displayed as day.
             for (int i = 0; i < dates.size(); i++) {
-                calendar.setTimeInMillis(Instant.from(dates.get(i)).toEpochMilli());
+                calendar.setTimeInMillis(toMillis(dates.get(i)));
                 switch (actualInterval.interval) {
                     case Calendar.YEAR:
                         // If its not the first or last date (lower and upper bound), make the year begin with first month and let the months begin with first day.
@@ -549,7 +535,7 @@ public final class LocalDateAxis extends Axis<LocalDate> {
                         break;
 
                 }
-                evenDates.add(Instant.ofEpochMilli(calendar.getTimeInMillis()).atZone(ZoneId.systemDefault()).toLocalDate());
+                evenDates.add(toLocalDate(calendar.getTimeInMillis()));
             }
 
             return evenDates;
@@ -680,4 +666,5 @@ public final class LocalDateAxis extends Axis<LocalDate> {
             this.amount = amount;
         }
     }
+
 }

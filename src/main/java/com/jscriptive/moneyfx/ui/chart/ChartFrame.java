@@ -10,6 +10,8 @@ import com.jscriptive.moneyfx.model.Transaction;
 import com.jscriptive.moneyfx.repository.AccountRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
+import com.jscriptive.moneyfx.util.LocalDateUtil;
+import extfx.scene.chart.LocalDateAxis;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -23,9 +25,10 @@ import javafx.util.StringConverter;
 
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.Month;
-import java.time.format.TextStyle;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.stream.DoubleStream;
 
 import static java.lang.Math.abs;
@@ -44,8 +47,6 @@ public class ChartFrame implements Initializable {
 
     @FXML
     private ComboBox<Account> accountCombo;
-    @FXML
-    private ComboBox<Integer> yearCombo;
 
     @FXML
     private ToggleGroup chartToggleGroup;
@@ -53,13 +54,11 @@ public class ChartFrame implements Initializable {
     private TransactionRepository transactionRepository;
     private AccountRepository accountRepository;
 
-
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
         accountRepository = RepositoryProvider.getInstance().getAccountRepository();
         setupAccountComboBox();
-        setupYearComboBox();
     }
 
     private void setupAccountComboBox() {
@@ -90,62 +89,59 @@ public class ChartFrame implements Initializable {
         });
     }
 
-    private void setupYearComboBox() {
-        List<Integer> years = new ArrayList<>();
-        int year = LocalDate.now().getYear();
-        for (int y = year; y >= EARLIEST_TRX_YEAR; y--) {
-            years.add(y);
+    public void accountChanged(ActionEvent actionEvent) {
+        ToggleButton selectedToggle = (ToggleButton) chartToggleGroup.getSelectedToggle();
+        if (selectedToggle == null) {
+            return;
         }
-        yearCombo.getItems().addAll(years);
-        yearCombo.getSelectionModel().selectFirst();
+        EventHandler<ActionEvent> onAction = selectedToggle.getOnAction();
+        onAction.handle(new ActionEvent(selectedToggle, selectedToggle));
     }
 
     public void dailyBalanceToggled(ActionEvent actionEvent) {
-        final NumberAxis xAxis = new NumberAxis();
-        final NumberAxis yAxis = new NumberAxis();
+        LocalDateAxis xAxis = new LocalDateAxis();
+        NumberAxis yAxis = new NumberAxis();
         yAxis.setLabel("Balance in Euro");
 
-        final LineChart<Number, Number> lineChart = new LineChart<>(xAxis, yAxis);
+        final LineChart<LocalDate, Number> lineChart = new LineChart<>(xAxis, yAxis);
         chartFrame.setCenter(lineChart);
 
         ToggleButton toggle = (ToggleButton) actionEvent.getTarget();
         if (toggle.isSelected()) {
-
             lineChart.setTitle("Balance development day by day");
             xAxis.setLabel("Day of year");
 
             Map<Account, List<Transaction>> transactionMap = new HashMap<>();
             if (accountCombo.getValue() == null) {
-                accountRepository.findAll().forEach(account -> transactionMap.put(account, transactionRepository.findByAccountAndYear(account, yearCombo.getValue())));
+                accountRepository.findAll().forEach(account -> transactionMap.put(account, transactionRepository.findByAccount(account)));
             } else {
-                transactionMap.put(accountCombo.getValue(), transactionRepository.findByAccountAndYear(accountCombo.getValue(), yearCombo.getValue()));
+                transactionMap.put(accountCombo.getValue(), transactionRepository.findByAccount(accountCombo.getValue()));
             }
 
             transactionMap.entrySet().forEach(entry -> {
                 Account account = entry.getKey();
                 List<Transaction> transactionList = entry.getValue();
 
-                XYChart.Series series = new XYChart.Series();
-                series.setName(String.format("%s %s[%s]", account.getBank().getName(), account.getLastFourDigits(), account.getFormattedBalance()));
+                XYChart.Series<LocalDate, Number> series = new XYChart.Series<>();
+                series.setName(String.format("%s %s [%s]", account.getBank().getName(), account.getLastFourDigits(), account.getFormattedBalance()));
 
+                // sort transactions by operation value descending
+                transactionList.sort((t1, t2) -> t2.getDtOp().compareTo(t1.getDtOp()));
                 account.calculateStartingBalance(transactionList);
-                series.getData().add(new XYChart.Data<Number, Number>(0, account.getBalance()));
+                series.getData().add(new XYChart.Data<>(account.getBalanceDate(), account.getBalance()));
 
+                // sort transactions by operation value ascending
                 transactionList.sort((t1, t2) -> t1.getDtOp().compareTo(t2.getDtOp()));
                 transactionList.forEach(trx -> {
-                            account.calculateCurrentBalance(trx);
-                            series.getData().add(new XYChart.Data<Number, Number>(
-                                    account.getBalanceDate().getDayOfYear(),
-                                    account.getBalance()));
-                        }
-                );
+                    account.calculateCurrentBalance(trx);
+                    series.getData().add(new XYChart.Data<>(account.getBalanceDate(), account.getBalance()));
+                });
 
                 lineChart.getData().add(series);
                 lineChart.setCreateSymbols(false);
             });
         }
     }
-
 
     public void monthlyInOutToggled(ActionEvent actionEvent) {
         final CategoryAxis xAxis = new CategoryAxis();
@@ -158,54 +154,43 @@ public class ChartFrame implements Initializable {
         ToggleButton toggle = (ToggleButton) actionEvent.getTarget();
         if (toggle.isSelected()) {
 
+            Account account = accountCombo.getValue();
+            String accountLabel = account == null
+                    ? String.format(" All accounts [%s]", accountRepository.findAll().stream().flatMapToDouble(a -> DoubleStream.of(a.getBalance().doubleValue())).sum())
+                    : String.format(" %s %s [%s]", account.getBank().getName(), account.getLastFourDigits(), account.getFormattedBalance());
+
             barChart.setTitle("Monthly in/out");
-            xAxis.setLabel("Month of year");
+            xAxis.setLabel("Month of Year");
 
-            int year = yearCombo.getValue();
+            XYChart.Series<String, Number> inSeries = new XYChart.Series<>();
+            inSeries.setName("In" + accountLabel);
+            XYChart.Series<String, Number> outSeries = new XYChart.Series<>();
+            outSeries.setName("Out" + accountLabel);
 
-            XYChart.Series inSeries = new XYChart.Series();
-            inSeries.setName("In");
-            XYChart.Series outSeries = new XYChart.Series();
-            outSeries.setName("Out");
+            int currentYear = LocalDate.now().getYear();
+            for (int year = EARLIEST_TRX_YEAR; year <= currentYear; year++) {
+                for (int month = 1; month <= 12; month++) {
 
-            for (int month = 1; month <= 12; month++) {
+                    String monthLabel = LocalDateUtil.getMonthLabel(year, month);
 
-                String monthLabel = Month.of(month).getDisplayName(TextStyle.SHORT, Locale.ENGLISH) + " " + year;
+                    List<Transaction> incoming = transactionRepository.findIncomingByAccountAndYearAndMonth(account, year, month);
+                    List<Transaction> outgoing = transactionRepository.findOutgoingByAccountAndYearAndMonth(account, year, month);
 
-                List<Transaction> incoming = transactionRepository.findIncomingByAccountAndYearAndMonth(accountCombo.getValue(), year, month);
-                XYChart.Data<String, Number> inData = new XYChart.Data<>(
-                        monthLabel,
-                        abs(incoming.stream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum()));
-                inSeries.getData().add(inData);
+                    XYChart.Data<String, Number> inData = new XYChart.Data<>(
+                            monthLabel,
+                            abs(incoming.stream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum()));
+                    XYChart.Data<String, Number> outData = new XYChart.Data(
+                            monthLabel,
+                            abs(outgoing.stream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum()));
 
-                List<Transaction> outgoing = transactionRepository.findOutgoingByAccountAndYearAndMonth(accountCombo.getValue(), year, month);
-                XYChart.Data<String, Number> outData = new XYChart.Data(
-                        monthLabel,
-                        abs(outgoing.stream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum()));
-                outSeries.getData().add(outData);
+                    inSeries.getData().add(inData);
+                    outSeries.getData().add(outData);
 
+                }
             }
 
             barChart.getData().add(inSeries);
             barChart.getData().add(outSeries);
         }
     }
-
-    public void accountChanged(ActionEvent actionEvent) {
-        comboSelectionChanged();
-    }
-
-    public void yearChanged(ActionEvent actionEvent) {
-        comboSelectionChanged();
-    }
-
-    private void comboSelectionChanged() {
-        ToggleButton selectedToggle = (ToggleButton) chartToggleGroup.getSelectedToggle();
-        if (selectedToggle == null) {
-            return;
-        }
-        EventHandler<ActionEvent> onAction = selectedToggle.getOnAction();
-        onAction.handle(new ActionEvent(selectedToggle, selectedToggle));
-    }
-
 }

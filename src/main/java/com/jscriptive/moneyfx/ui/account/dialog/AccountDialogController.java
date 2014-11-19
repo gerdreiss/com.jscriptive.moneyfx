@@ -1,6 +1,9 @@
 package com.jscriptive.moneyfx.ui.account.dialog;
 
 import com.jscriptive.moneyfx.model.Account;
+import com.jscriptive.moneyfx.model.Bank;
+import com.jscriptive.moneyfx.repository.BankRepository;
+import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -10,9 +13,11 @@ import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.controlsfx.control.textfield.TextFields;
 
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 /**
  * Created by jscriptive.com on 18/11/2014.
@@ -33,10 +38,12 @@ public class AccountDialogController implements Initializable {
     private DatePicker balanceDateField;
 
     private Node importButton;
-    private Account account;
+
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        BankRepository bankRepository = RepositoryProvider.getInstance().getBankRepository();
+        TextFields.bindAutoCompletion(bankField, bankRepository.findAll().stream().map(Bank::getName).collect(Collectors.toList()));
     }
 
     public void valueChanged(Event event) {
@@ -68,25 +75,24 @@ public class AccountDialogController implements Initializable {
     }
 
     public void setAccount(Account account) {
-        this.account = account;
-        if (this.account != null) {
-            if (this.account.getBank() != null) {
-                this.bankField.setText(this.account.getBank().getName());
+        if (account != null) {
+            if (account.getBank() != null) {
+                bankField.setText(account.getBank().getName());
             }
-            if (this.account.getNumber() != null) {
-                this.numberField.setText(this.account.getNumber());
+            if (account.getNumber() != null) {
+                numberField.setText(account.getNumber());
             }
-            if (this.account.getName() != null) {
-                this.nameField.setText(this.account.getName());
+            if (account.getName() != null) {
+                nameField.setText(account.getName());
             }
-            if (this.account.getType() != null) {
-                this.typeField.setText(this.account.getType());
+            if (account.getType() != null) {
+                typeField.setText(account.getType());
             }
-            if (this.account.getBalance() != null) {
-                this.balanceField.setText(this.account.getBalance().toString());
+            if (account.getBalance() != null) {
+                balanceField.setText(account.getBalance().toString());
             }
-            if (this.account.getBalanceDate() != null) {
-                this.balanceDateField.setValue(this.account.getBalanceDate());
+            if (account.getBalanceDate() != null) {
+                balanceDateField.setValue(account.getBalanceDate());
             }
         }
     }

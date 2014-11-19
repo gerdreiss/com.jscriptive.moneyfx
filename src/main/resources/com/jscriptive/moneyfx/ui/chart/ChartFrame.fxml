@@ -3,7 +3,9 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
-<?import javafx.scene.control.*?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:id="chartFrame"
@@ -22,7 +24,6 @@
             </fx:define>
 
             <ComboBox fx:id="accountCombo" promptText="All accounts" onAction="#accountChanged"/>
-            <ComboBox fx:id="yearCombo" promptText="Year" onAction="#yearChanged"/>
             <ToggleButton text="Daily balance" onAction="#dailyBalanceToggled" toggleGroup="$chartToggleGroup" />
             <ToggleButton text="Monthly in/out" onAction="#monthlyInOutToggled" toggleGroup="$chartToggleGroup"/>
 

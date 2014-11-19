@@ -1,10 +1,6 @@
 package com.jscriptive.moneyfx.ui.transaction.dialog;
 
 import com.jscriptive.moneyfx.model.Bank;
-import javafx.collections.FXCollections;
-import javafx.event.ActionEvent;
-import javafx.event.Event;
-import javafx.event.EventType;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -15,13 +11,11 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.FileChooser;
 import javafx.util.Pair;
-import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.textfield.TextFields;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -59,7 +53,7 @@ public class TransactionImportDialog extends Dialog<Pair<Bank, File>> {
             }
             importButton.setDisable(selectedBank == null || selectedFile == null || !selectedFile.exists());
         });
-        TextFields.bindAutoCompletion(bankTextField, banks.stream().map(bank -> bank.getName()).collect(Collectors.toList()));
+        TextFields.bindAutoCompletion(bankTextField, banks.stream().map(Bank::getName).collect(Collectors.toList()));
 
         TextField filePathTextField = new TextField();
         filePathTextField.setEditable(false);
