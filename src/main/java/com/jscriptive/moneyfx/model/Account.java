@@ -135,7 +135,9 @@ public class Account {
         if (bank != null ? !bank.equals(account.bank) : account.bank != null) return false;
         if (name != null ? !name.equals(account.name) : account.name != null) return false;
         if (number != null ? !number.equals(account.number) : account.number != null) return false;
-        return !(type != null ? !type.equals(account.type) : account.type != null);
+        if (type != null ? !type.equals(account.type) : account.type != null) return false;
+
+        return true;
     }
 
     @Override
