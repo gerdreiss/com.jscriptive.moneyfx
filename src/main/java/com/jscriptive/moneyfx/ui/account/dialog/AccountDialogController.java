@@ -16,6 +16,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.controlsfx.control.textfield.TextFields;
 
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -94,6 +95,8 @@ public class AccountDialogController implements Initializable {
             if (account.getBalanceDate() != null) {
                 balanceDateField.setValue(account.getBalanceDate());
             }
+        } else {
+            balanceDateField.setValue(LocalDate.now());
         }
     }
 }

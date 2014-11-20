@@ -125,11 +125,23 @@ public class AccountFrame implements Initializable {
     private void editAccount() {
         AccountItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
         int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
-        Account toUpdate = new Account(new Bank(selectedItem.getBank()), selectedItem.getNumber(), selectedItem.getName(), selectedItem.getType(), BigDecimal.valueOf(selectedItem.getBalance()));
+        Account toUpdate = new Account(
+                new Bank(selectedItem.getBank()),
+                selectedItem.getNumber(),
+                selectedItem.getName(),
+                selectedItem.getType(),
+                BigDecimal.valueOf(selectedItem.getBalance()),
+                LocalDate.parse(selectedItem.getBalanceDate()));
         AccountDialog dialog = new AccountDialog(toUpdate);
         Optional<AccountItem> updatedItem = dialog.showAndWait();
         if (updatedItem.isPresent()) {
-            Account account = new Account(new Bank(selectedItem.getBank()), selectedItem.getNumber(), selectedItem.getName(), selectedItem.getType(), BigDecimal.valueOf(selectedItem.getBalance()));
+            Account account = new Account(
+                    new Bank(selectedItem.getBank()),
+                    selectedItem.getNumber(),
+                    selectedItem.getName(),
+                    selectedItem.getType(),
+                    BigDecimal.valueOf(selectedItem.getBalance()),
+                    LocalDate.parse(selectedItem.getBalanceDate()));
             accountRepository.update(account);
             accountData.set(selectedIndex, updatedItem.get());
         }
@@ -141,7 +153,11 @@ public class AccountFrame implements Initializable {
     public void contextMenuItemDeleteSelected(ActionEvent actionEvent) {
         AccountItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
         int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
-        Account account = new Account(new Bank(selectedItem.getBank()), selectedItem.getNumber(), selectedItem.getName(), selectedItem.getType());
+        Account account = new Account(
+                new Bank(selectedItem.getBank()),
+                selectedItem.getNumber(),
+                selectedItem.getName(),
+                selectedItem.getType());
         transactionRepository.removeByAccount(account);
         accountRepository.remove(account);
         accountData.remove(selectedIndex);

@@ -48,6 +48,16 @@ public class Account {
         setBalanceDate(LocalDate.now());
     }
 
+    public Account(Bank bank, String number, String name, String type, BigDecimal balance, LocalDate balanceDate) {
+        this();
+        setBank(bank);
+        setNumber(number);
+        setName(name);
+        setType(type);
+        setBalance(balance);
+        setBalanceDate(balanceDate);
+    }
+
     public String getId() {
         return id;
     }

@@ -3,7 +3,6 @@ package com.jscriptive.moneyfx.importer.barclays;
 import com.jscriptive.moneyfx.exception.TechnicalException;
 import com.jscriptive.moneyfx.importer.TransactionExtractor;
 import com.jscriptive.moneyfx.model.Account;
-import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.model.Transaction;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -83,7 +82,7 @@ public class TransactionReaderBarclaysSearchResult implements TransactionExtract
     }
 
     private Transaction readTransaction(Row row) {
-        if (row.getRowNum() < 6) {
+        if (row.getRowNum() < 5) {
             return null;
         }
         String concept = row.getCell(0).getStringCellValue();
@@ -96,7 +95,6 @@ public class TransactionReaderBarclaysSearchResult implements TransactionExtract
 
         return new Transaction(
                 null,
-                Category.DEFAULT,
                 concept,
                 parse(dtOp.substring(dtOp.length() - 10), df),
                 parse(dtVal.substring(dtVal.length() - 10), df),

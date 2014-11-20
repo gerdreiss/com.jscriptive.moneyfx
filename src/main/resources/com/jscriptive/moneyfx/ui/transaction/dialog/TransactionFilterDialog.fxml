@@ -24,19 +24,21 @@
 
         <Label text="Operation date" GridPane.columnIndex="0" GridPane.rowIndex="2"/>
         <DatePicker fx:id="dtOpFieldFrom" promptText="From" editable="false" showWeekNumbers="true"
-                    GridPane.columnIndex="1" GridPane.rowIndex="2"/>
+                    GridPane.columnIndex="1" GridPane.rowIndex="2" prefWidth="232"/>
         <DatePicker fx:id="dtOpFieldTo" promptText="Until" editable="false" showWeekNumbers="true"
-                    GridPane.columnIndex="2" GridPane.rowIndex="2"/>
+                    GridPane.columnIndex="2" GridPane.rowIndex="2" prefWidth="232"/>
 
         <Label text="Value date" GridPane.columnIndex="0" GridPane.rowIndex="3"/>
         <DatePicker fx:id="dtValFieldFrom" promptText="From" editable="false" showWeekNumbers="true"
-                    GridPane.columnIndex="1" GridPane.rowIndex="3"/>
+                    GridPane.columnIndex="1" GridPane.rowIndex="3" prefWidth="232"/>
         <DatePicker fx:id="dtValFieldTo" promptText="Until" editable="false" showWeekNumbers="true"
-                    GridPane.columnIndex="2" GridPane.rowIndex="3"/>
+                    GridPane.columnIndex="2" GridPane.rowIndex="3" prefWidth="232"/>
 
         <Label text="Amount" GridPane.columnIndex="0" GridPane.rowIndex="4"/>
-        <TextField fx:id="amountFieldFrom" promptText="00000.00" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-        <TextField fx:id="amountFieldTo" promptText="00000.00" GridPane.columnIndex="2" GridPane.rowIndex="4"/>
+        <TextField fx:id="amountFieldFrom" promptText="00000.00" GridPane.columnIndex="1" GridPane.rowIndex="4"
+                   prefWidth="232"/>
+        <TextField fx:id="amountFieldTo" promptText="00000.00" GridPane.columnIndex="2" GridPane.rowIndex="4"
+                   prefWidth="232"/>
 
     </children>
 </GridPane>
