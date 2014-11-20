@@ -10,6 +10,7 @@ import com.jscriptive.moneyfx.model.Bank;
 import com.jscriptive.moneyfx.repository.AccountRepository;
 import com.jscriptive.moneyfx.repository.BankRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
+import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.account.dialog.AccountDialog;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
 import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
@@ -20,6 +21,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseEvent;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -47,19 +49,26 @@ public class AccountFrame implements Initializable {
     @FXML
     private TableColumn<AccountItem, String> balanceDateColumn;
 
+
     /**
      * The data as an observable list of Persons.
      */
     private ObservableList<AccountItem> accountData = FXCollections.observableArrayList();
     private BankRepository bankRepository;
     private AccountRepository accountRepository;
+    private TransactionRepository transactionRepository;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        bankRepository = RepositoryProvider.getInstance().getBankRepository();
-        accountRepository = RepositoryProvider.getInstance().getAccountRepository();
+        initializeRepositories();
         setupAccountTable();
         initializeColumns();
+    }
+
+    private void initializeRepositories() {
+        bankRepository = RepositoryProvider.getInstance().getBankRepository();
+        accountRepository = RepositoryProvider.getInstance().getAccountRepository();
+        transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
     }
 
     private void setupAccountTable() {
@@ -107,5 +116,41 @@ public class AccountFrame implements Initializable {
         Account account = new Account(bank, item.getNumber(), item.getName(), item.getType(), new BigDecimal(item.getBalance()));
         account.setBalanceDate(LocalDate.parse(item.getBalanceDate()));
         accountRepository.insert(account);
+    }
+
+    public void contextMenuItemEditSelected(ActionEvent actionEvent) {
+        editAccount();
+    }
+
+    private void editAccount() {
+        AccountItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
+        int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
+        Account toUpdate = new Account(new Bank(selectedItem.getBank()), selectedItem.getNumber(), selectedItem.getName(), selectedItem.getType(), BigDecimal.valueOf(selectedItem.getBalance()));
+        AccountDialog dialog = new AccountDialog(toUpdate);
+        Optional<AccountItem> updatedItem = dialog.showAndWait();
+        if (updatedItem.isPresent()) {
+            Account account = new Account(new Bank(selectedItem.getBank()), selectedItem.getNumber(), selectedItem.getName(), selectedItem.getType(), BigDecimal.valueOf(selectedItem.getBalance()));
+            accountRepository.update(account);
+            accountData.set(selectedIndex, updatedItem.get());
+        }
+    }
+
+    public void contextMenuItemCopySelected(ActionEvent actionEvent) {
+    }
+
+    public void contextMenuItemDeleteSelected(ActionEvent actionEvent) {
+        AccountItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
+        int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
+        Account account = new Account(new Bank(selectedItem.getBank()), selectedItem.getNumber(), selectedItem.getName(), selectedItem.getType());
+        transactionRepository.removeByAccount(account);
+        accountRepository.remove(account);
+        accountData.remove(selectedIndex);
+
+    }
+
+    public void mouseClicked(MouseEvent event) {
+        if (event.getClickCount() == 2) {
+            editAccount();
+        }
     }
 }

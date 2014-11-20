@@ -24,7 +24,7 @@ public class MainFrame extends BorderPane implements Initializable {
         if (t.isSelected()) {
             Node node = t.getContent().lookup("#dataTable");
             if (node == null) {
-                node = t.getContent().lookup("#lineChart");
+                node = t.getContent().lookup("#chartFrame");
             }
             if (node != null) {
                 node.fireEvent(new TabSelectionEvent());

@@ -44,9 +44,8 @@ public class Bank {
 
         Bank bank = (Bank) o;
 
-        if (name != null ? !name.equals(bank.name) : bank.name != null) return false;
+        return !(name != null ? !name.equals(bank.name) : bank.name != null);
 
-        return true;
     }
 
     @Override

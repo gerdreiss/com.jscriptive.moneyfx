@@ -17,4 +17,8 @@ public interface AccountRepository {
     Account findByNumber(String number);
 
     void insert(Account account);
+
+    void update(Account account);
+
+    boolean remove(Account account);
 }

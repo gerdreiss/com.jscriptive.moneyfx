@@ -11,6 +11,8 @@ import com.jscriptive.moneyfx.repository.*;
 import com.jscriptive.moneyfx.ui.account.dialog.AccountDialog;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
 import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
+import com.jscriptive.moneyfx.repository.filter.TransactionFilter;
+import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionFilterDialog;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionImportDialog;
 import com.jscriptive.moneyfx.ui.transaction.item.TransactionItem;
 import javafx.collections.FXCollections;
@@ -18,6 +20,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.util.Pair;
@@ -53,6 +56,8 @@ public class TransactionFrame implements Initializable {
 
     private ObservableList<TransactionItem> transactionData = FXCollections.observableArrayList();
 
+    private boolean filtered = false;
+
     private BankRepository bankRepository;
     private AccountRepository accountRepository;
     private CategoryRepository categoryRepository;
@@ -82,18 +87,6 @@ public class TransactionFrame implements Initializable {
         dataTable.addEventHandler(TabSelectionEvent.TAB_SELECTION, event -> loadTransactionData());
     }
 
-    private void loadTransactionData() {
-        transactionData.clear();
-        transactionRepository.findAll().forEach(trx -> transactionData.add(new TransactionItem(
-                trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
-                trx.getCategory().getName(),
-                trx.getConcept(),
-                trx.getDtOp().toString(),
-                trx.getDtVal().toString(),
-                trx.getFormattedAmount()
-        )));
-    }
-
     public void importTransactionsFired(ActionEvent actionEvent) {
         TransactionImportDialog dialog = new TransactionImportDialog(bankRepository.findAll());
         Optional<Pair<Bank, File>> result = dialog.showAndWait();
@@ -112,6 +105,49 @@ public class TransactionFrame implements Initializable {
             }
             extractTransactionData(result.get().getValue().toURI(), extractor, account);
         }
+    }
+
+    public void filterTransactionsFired(ActionEvent actionEvent) {
+        Button b = (Button) actionEvent.getTarget();
+        if (filtered) {
+            loadTransactionData();
+            b.setText("Filter transactions");
+            filtered = false;
+        } else {
+            TransactionFilterDialog dialog = new TransactionFilterDialog();
+            Optional<TransactionFilter> result = dialog.showAndWait();
+            if (result.isPresent()) {
+                filterTransactionData(result.get());
+                b.setText("Reload transactions");
+                filtered = true;
+            }
+        }
+    }
+
+    private void loadTransactionData() {
+        transactionData.clear();
+        transactionRepository.findAll().forEach(trx ->
+                transactionData.add(new TransactionItem(
+                        trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
+                        trx.getCategory().getName(),
+                        trx.getConcept(),
+                        trx.getDtOp().toString(),
+                        trx.getDtVal().toString(),
+                        trx.getFormattedAmount()
+                )));
+    }
+
+    private void filterTransactionData(TransactionFilter filter) {
+        transactionData.clear();
+        transactionRepository.filterAll(filter).forEach(trx ->
+                transactionData.add(new TransactionItem(
+                        trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
+                        trx.getCategory().getName(),
+                        trx.getConcept(),
+                        trx.getDtOp().toString(),
+                        trx.getDtVal().toString(),
+                        trx.getFormattedAmount()
+                )));
     }
 
     private Account extractAccountData(URI file, Bank bank, TransactionExtractor extractor) {

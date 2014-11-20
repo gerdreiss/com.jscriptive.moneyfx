@@ -37,7 +37,7 @@ public class AccountDialogController implements Initializable {
     @FXML
     private DatePicker balanceDateField;
 
-    private Node importButton;
+    private Node nodeToObserve;
 
 
     @Override
@@ -47,7 +47,7 @@ public class AccountDialogController implements Initializable {
     }
 
     public void valueChanged(Event event) {
-        importButton.setDisable(anyInvalidFieldValues());
+        nodeToObserve.setDisable(anyInvalidFieldValues());
     }
 
     private boolean anyInvalidFieldValues() {
@@ -70,8 +70,8 @@ public class AccountDialogController implements Initializable {
         );
     }
 
-    public void setDisabledNodeToObserve(Node importButton) {
-        this.importButton = importButton;
+    public void setDisabledNodeToObserve(Node nodeToObserve) {
+        this.nodeToObserve = nodeToObserve;
     }
 
     public void setAccount(Account account) {

@@ -135,9 +135,7 @@ public class Account {
         if (bank != null ? !bank.equals(account.bank) : account.bank != null) return false;
         if (name != null ? !name.equals(account.name) : account.name != null) return false;
         if (number != null ? !number.equals(account.number) : account.number != null) return false;
-        if (type != null ? !type.equals(account.type) : account.type != null) return false;
-
-        return true;
+        return !(type != null ? !type.equals(account.type) : account.type != null);
     }
 
     @Override
@@ -179,23 +177,17 @@ public class Account {
         return getBalance();
     }
 
-    public boolean hasBank(String name) {
+    public boolean isOfBank(String name) {
         if (StringUtils.isBlank(name)) {
             return false;
         }
-        if (getBank() == null) {
-            return false;
-        }
-        return getBank().getName().equals(name);
+        return getBank() != null && getBank().getName() != null && getBank().getName().equals(name);
     }
 
-    public boolean hasLastFourDigits(String lastFourDigits) {
+    public boolean numberEndsWith(String lastFourDigits) {
         if (StringUtils.isBlank(lastFourDigits)) {
             return false;
         }
-        if (StringUtils.isBlank(getNumber())) {
-            return false;
-        }
-        return getNumber().endsWith(lastFourDigits);
+        return !StringUtils.isBlank(getNumber()) && getNumber().endsWith(lastFourDigits);
     }
 }
