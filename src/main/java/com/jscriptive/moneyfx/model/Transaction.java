@@ -119,11 +119,10 @@ public class Transaction {
         Transaction that = (Transaction) o;
 
         if (account != null ? !account.equals(that.account) : that.account != null) return false;
-        if (amount != null ? !amount.equals(that.amount) : that.amount != null) return false;
-        if (category != null ? !category.equals(that.category) : that.category != null) return false;
         if (concept != null ? !concept.equals(that.concept) : that.concept != null) return false;
         if (dtOp != null ? !dtOp.equals(that.dtOp) : that.dtOp != null) return false;
         if (dtVal != null ? !dtVal.equals(that.dtVal) : that.dtVal != null) return false;
+        if (amount != null ? !amount.equals(that.amount) : that.amount != null) return false;
 
         return true;
     }
@@ -135,12 +134,11 @@ public class Transaction {
         result = 31 * result + (dtOp != null ? dtOp.hashCode() : 0);
         result = 31 * result + (dtVal != null ? dtVal.hashCode() : 0);
         result = 31 * result + (amount != null ? amount.hashCode() : 0);
-        result = 31 * result + (category != null ? category.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        return String.format("Transaction{account=%s, concept='%s', dtOp=%s, dtVal=%s, amount=%s, category=%s}", account, concept, dtOp, dtVal, getFormattedAmount(), category);
+        return String.format("Transaction{account=%s, concept='%s', dtOp=%s, dtVal=%s, amount=%s}", account, concept, dtOp, dtVal, getFormattedAmount());
     }
 }
