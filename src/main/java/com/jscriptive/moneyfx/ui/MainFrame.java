@@ -47,9 +47,9 @@ public class MainFrame extends BorderPane implements Initializable {
     public void optionsButtonHit(ActionEvent actionEvent) {
         Dialog<Boolean> dialog = new Dialog<>();
         dialog.setTitle("Options");
-        dialog.setGraphic(new ImageView(this.getClass().getResource("images/Options-32.png").toString()));
+        dialog.setGraphic(new ImageView(this.getClass().getResource("images/Settings-32.png").toString()));
         Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
-        stage.getIcons().add(new Image("com/jscriptive/moneyfx/ui/images/Options-48.png"));
+        stage.getIcons().add(new Image("com/jscriptive/moneyfx/ui/images/Settings-48.png"));
         dialog.setHeaderText("Here be options...");
         dialog.setContentText("We'll have some options in due time...");
         // Set the button types.
