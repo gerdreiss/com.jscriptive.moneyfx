@@ -4,12 +4,14 @@ import com.jscriptive.moneyfx.model.Bank;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.textfield.TextFields;
@@ -28,7 +30,9 @@ public class TransactionImportDialog extends Dialog<Pair<Bank, File>> {
 
     public TransactionImportDialog(Collection<Bank> banks) {
         setTitle("Import transaction");
-        setHeaderText("Select the bank and the respective transaction file");
+        setHeaderText("Select the bank and the transaction file");
+        Stage stage = (Stage) getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image("com/jscriptive/moneyfx/ui/images/Data-Import-48.png"));
 
         // Set the button types.
         ButtonType importButtonType = new ButtonType("Import", ButtonBar.ButtonData.OK_DONE);

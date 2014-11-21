@@ -3,8 +3,8 @@ package com.jscriptive.moneyfx.repository.mongo;
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.model.Transaction;
+import com.jscriptive.moneyfx.model.TransactionFilter;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
-import com.jscriptive.moneyfx.repository.filter.TransactionFilter;
 import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -107,5 +107,21 @@ public class TransactionRepositoryMongo implements TransactionRepository {
         Query query = new Query(Criteria.where("account.bank.name").is(account.getBank().getName()).and("account.number").is(account.getNumber()).and("account.name").is(account.getName()));
         WriteResult result = mongoTemplate.remove(query, Transaction.class);
         return result.getN();
+    }
+
+    @Override
+    public void update(Transaction trx) {
+        // TODO implement the method
+//        Query query = new Query(Criteria.where("bank.name").is(account.getBank().getName()).and("number").is(account.getNumber()).and("name").is(account.getName()));
+//        Update update = Update.update("number", account.getNumber()).addToSet("name", account.getName()).addToSet("type", account.getType());
+//        if (account.getBalance() != null) {
+//            update = update.addToSet("balance", account.getBalance());
+//            if (account.getBalanceDate() == null) {
+//                update = update.addToSet("balanceDate", LocalDate.now());
+//            } else {
+//                update = update.addToSet("balanceDate", account.getBalanceDate());
+//            }
+//        }
+//        mongoTemplate.updateFirst(query, update, Account.class);
     }
 }

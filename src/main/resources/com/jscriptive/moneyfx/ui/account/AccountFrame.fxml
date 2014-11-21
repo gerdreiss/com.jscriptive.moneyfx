@@ -17,32 +17,31 @@
             <padding>
                 <Insets bottom="10.0"/>
             </padding>
-            <Button text="Add account" onAction="#addAccountFired"/>
+            <Button text="Add account" onAction="#addAccountFired">
+                <graphic>
+                    <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true">
+                        <Image url="@../images/Add-New-32.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
         </HBox>
     </top>
     <center>
-        <TableView fx:id="dataTable" onMouseClicked="#mouseClicked">
+        <TableView fx:id="dataTable" onMouseClicked="#mouseClicked" onKeyTyped="#keyTyped">
             <contextMenu>
                 <ContextMenu fx:id="contextMenu">
                     <items>
                         <MenuItem fx:id="contextMenuItemEdit" text="Edit" onAction="#contextMenuItemEditSelected">
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true">
-                                    <Image url="@../images/edit.png"/>
-                                </ImageView>
-                            </graphic>
-                        </MenuItem>
-                        <MenuItem fx:id="contextMenuItemCopy" text="Copy" onAction="#contextMenuItemCopySelected">
-                            <graphic>
-                                <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true">
-                                    <Image url="@../images/copy.png"/>
+                                    <Image url="@../images/Document-Edit-24.png"/>
                                 </ImageView>
                             </graphic>
                         </MenuItem>
                         <MenuItem fx:id="contextMenuItemDelete" text="Delete" onAction="#contextMenuItemDeleteSelected">
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true">
-                                    <Image url="@../images/delete.png"/>
+                                    <Image url="@../images/Document-Delete-01-24.png"/>
                                 </ImageView>
                             </graphic>
                         </MenuItem>

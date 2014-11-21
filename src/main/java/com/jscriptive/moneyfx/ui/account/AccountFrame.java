@@ -19,8 +19,12 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 
 import java.math.BigDecimal;
@@ -122,6 +126,12 @@ public class AccountFrame implements Initializable {
         editAccount();
     }
 
+    public void mouseClicked(MouseEvent event) {
+        if (event.getClickCount() == 2) {
+            editAccount();
+        }
+    }
+
     private void editAccount() {
         AccountItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
         int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
@@ -147,26 +157,36 @@ public class AccountFrame implements Initializable {
         }
     }
 
-    public void contextMenuItemCopySelected(ActionEvent actionEvent) {
-    }
-
     public void contextMenuItemDeleteSelected(ActionEvent actionEvent) {
-        AccountItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
-        int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
-        Account account = new Account(
-                new Bank(selectedItem.getBank()),
-                selectedItem.getNumber(),
-                selectedItem.getName(),
-                selectedItem.getType());
-        transactionRepository.removeByAccount(account);
-        accountRepository.remove(account);
-        accountData.remove(selectedIndex);
-
+        deleteAccount();
     }
 
-    public void mouseClicked(MouseEvent event) {
-        if (event.getClickCount() == 2) {
-            editAccount();
+    public void keyTyped(KeyEvent event) {
+        KeyCode keyCode = event.getCode();
+        if (KeyCode.DELETE == keyCode) {
+            deleteAccount();
+        }
+    }
+
+    private void deleteAccount() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Delete account");
+        alert.setHeaderText("Confirm delete account");
+        AccountItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
+        alert.setContentText(
+                String.format("Are you sure you want to delete the selected account: %s %s?",
+                        selectedItem.getBank(), selectedItem.getNumber()));
+        Optional<ButtonType> result = alert.showAndWait();
+        if (result.get() == ButtonType.OK) {
+            int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
+            Account account = new Account(
+                    new Bank(selectedItem.getBank()),
+                    selectedItem.getNumber(),
+                    selectedItem.getName(),
+                    selectedItem.getType());
+            transactionRepository.removeByAccount(account);
+            accountRepository.remove(account);
+            accountData.remove(selectedIndex);
         }
     }
 }

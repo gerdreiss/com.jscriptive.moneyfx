@@ -5,6 +5,8 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.control.TableView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" id="transactionFrame"
@@ -17,8 +19,20 @@
             <padding>
                 <Insets bottom="10.0"/>
             </padding>
-            <Button fx:id="importButton" text="Import transactions" onAction="#importTransactionsFired"/>
-            <Button fx:id="filterButton" text="Filter transactions" onAction="#filterTransactionsFired"/>
+            <Button fx:id="importButton" text="Import transactions" onAction="#importTransactionsFired">
+                <graphic>
+                    <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true">
+                        <Image url="@../images/Data-Import-32.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button fx:id="filterButton" text="Filter transactions" onAction="#filterTransactionsFired">
+                <graphic>
+                    <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true">
+                        <Image url="@../images/Filter-Standard-32.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
         </HBox>
     </top>
     <center>

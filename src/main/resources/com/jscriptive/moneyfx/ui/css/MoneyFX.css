@@ -1,2 +1,30 @@
-.default-color0.chart-bar { -fx-background-color: darkseagreen; }
-.default-color1.chart-bar { -fx-background-color: coral; }
+.default-color0.chart-bar {
+    -fx-background-color: darkseagreen;
+}
+
+.default-color1.chart-bar {
+    -fx-background-color: coral;
+}
+
+#hbox-header {
+    -fx-background-image: url("../images/background-header.jpg");
+}
+
+#main-frame-top-button-options,
+#main-frame-top-button-close {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 2 2 2 2;
+}
+
+#main-frame-top-button-options:hover,
+#main-frame-top-button-close:hover {
+    -fx-effect: innershadow(gaussian, grey, 15, 0, 0, 0);
+    -fx-border-color: grey;
+}
+
+#main-frame-top-button-options:pressed,
+#main-frame-top-button-close:pressed {
+    -fx-effect: innershadow(gaussian, lightgrey, 15, 0, 0, 0);
+    -fx-background-color: lightgrey;
+}

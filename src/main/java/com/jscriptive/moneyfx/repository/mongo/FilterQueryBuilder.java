@@ -2,7 +2,7 @@ package com.jscriptive.moneyfx.repository.mongo;
 
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Category;
-import com.jscriptive.moneyfx.repository.filter.TransactionFilter;
+import com.jscriptive.moneyfx.model.TransactionFilter;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -18,6 +18,9 @@ public class FilterQueryBuilder {
 
     public static Query build(TransactionFilter filter) {
         Criteria criteria = new Criteria();
+        if (filter.filterByBank()) {
+            criteria = addBank(criteria, filter.getBank());
+        }
         if (filter.filterByAccount()) {
             criteria = addAccount(criteria, filter.getAccount());
         }
@@ -39,35 +42,24 @@ public class FilterQueryBuilder {
         return new Query(criteria);
     }
 
-    private static Criteria addAccount(Criteria criteria, Account account) {
-        if (account.getId() != null) {
-            criteria = criteria.and("account._id").is(new ObjectId(account.getId()));
-            return criteria;
+    private static Criteria addBank(Criteria criteria, String bank) {
+        if (StringUtils.isNotBlank(bank)) {
+            criteria = criteria.and("account.bank.name").is(bank);
         }
-        if (account.getBank() != null) {
-            if (account.getBank().getId() != null) {
-                criteria = criteria.and("account.bank._id").is(new ObjectId(account.getBank().getId()));
-            } else if (StringUtils.isNotBlank(account.getBank().getName())) {
-                criteria = criteria.and("account.bank.name").is(account.getBank().getName());
-            }
-        }
-        if (StringUtils.isNotBlank(account.getNumber())) {
-            criteria = criteria.and("account.number").is(account.getNumber());
-        }
-        if (StringUtils.isNotBlank(account.getName())) {
-            criteria = criteria.and("account.name").is(account.getName());
+        return criteria;
+    }
+
+    private static Criteria addAccount(Criteria criteria, String account) {
+        if (StringUtils.isNotBlank(account)) {
+            criteria = criteria.and("account.number").is(account);
         }
         return criteria;
     }
 
 
-    private static Criteria addCategory(Criteria criteria, Category category) {
-        if (category.getId() != null) {
-            criteria = criteria.and("category._id").is(new ObjectId(category.getId()));
-            return criteria;
-        }
-        if (StringUtils.isNotBlank(category.getName())) {
-            criteria = criteria.and("category.name").is(category.getName());
+    private static Criteria addCategory(Criteria criteria, String category) {
+        if (StringUtils.isNotBlank(category)) {
+            criteria = criteria.and("category.name").is(category);
         }
         return criteria;
     }

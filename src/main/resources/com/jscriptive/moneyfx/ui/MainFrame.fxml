@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" id="mainFrame"
             fx:controller="com.jscriptive.moneyfx.ui.MainFrame"
             prefHeight="768"
@@ -14,16 +17,64 @@
         <fx:include source="chart/ChartFrame.fxml" fx:id="chartFrame"/>
     </fx:define>
 
+    <top>
+        <HBox alignment="CENTER_RIGHT" HBox.hgrow="ALWAYS" spacing="4" id="hbox-header">
+            <padding>
+                <Insets bottom="10.0" top="10.0" left="10.0" right="10.0"/>
+            </padding>
+            <Button layoutX="48.0" layoutY="48.0" mnemonicParsing="false" onAction="#optionsButtonHit"
+                    id="main-frame-top-button-options">
+                <graphic>
+                    <ImageView fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@images/Options-48.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button layoutX="48.0" layoutY="48.0" mnemonicParsing="false" onAction="#closeButtonHit"
+                    id="main-frame-top-button-close">
+                <graphic>
+                    <ImageView fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@images/Close-48.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+        </HBox>
+    </top>
+
     <center>
         <TabPane fx:id="tabPane">
             <Tab text="Accounts" fx:id="accountsTab" content="$accountFrame" closable="false"
-                 onSelectionChanged="#tabSelectionChanged"/>
+                 onSelectionChanged="#tabSelectionChanged">
+                <graphic>
+                    <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@images/Bank-32.png"/>
+                    </ImageView>
+                </graphic>
+            </Tab>
             <Tab text="Transactions" fx:id="transactionsTab" content="$transactionFrame" closable="false"
-                 onSelectionChanged="#tabSelectionChanged"/>
+                 onSelectionChanged="#tabSelectionChanged">
+                <graphic>
+                    <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@images/Transaction-Fee-32.png"/>
+                    </ImageView>
+                </graphic>
+            </Tab>
             <Tab text="Categories" fx:id="categoriesTab" content="$categoryFrame" closable="false"
-                 onSelectionChanged="#tabSelectionChanged"/>
+                 onSelectionChanged="#tabSelectionChanged">
+                <graphic>
+                    <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@images/Category-32.png"/>
+                    </ImageView>
+                </graphic>
+            </Tab>
             <Tab text="Charts" fx:id="chartsTab" content="$chartFrame" closable="false"
-                 onSelectionChanged="#tabSelectionChanged"/>
+                 onSelectionChanged="#tabSelectionChanged">
+                <graphic>
+                    <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@images/Chart-Axes-32.png"/>
+                    </ImageView>
+                </graphic>
+            </Tab>
         </TabPane>
     </center>
 

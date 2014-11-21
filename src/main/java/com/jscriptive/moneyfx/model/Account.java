@@ -2,6 +2,7 @@ package com.jscriptive.moneyfx.model;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -24,11 +25,19 @@ public class Account {
 
     @Id
     private String id;
+
     private Bank bank;
+
+    @Indexed
     private String number;
+
+    @Indexed
     private String name;
+
     private String type;
+
     private BigDecimal balance;
+
     private LocalDate balanceDate;
 
     public Account() {

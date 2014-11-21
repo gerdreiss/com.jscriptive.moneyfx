@@ -2,10 +2,8 @@ package com.jscriptive.moneyfx.ui.transaction.dialog;
 
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Category;
-import com.jscriptive.moneyfx.repository.AccountRepository;
-import com.jscriptive.moneyfx.repository.CategoryRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
-import com.jscriptive.moneyfx.repository.filter.TransactionFilter;
+import com.jscriptive.moneyfx.model.TransactionFilter;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
 import com.jscriptive.moneyfx.ui.common.CategoryStringConverter;
 import javafx.fxml.FXML;
@@ -16,8 +14,6 @@ import javafx.scene.control.TextField;
 
 import java.math.BigDecimal;
 import java.net.URL;
-import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
@@ -71,8 +67,9 @@ public class TransactionFilterDialogController implements Initializable {
 
     public TransactionFilter getTransactionFilter() {
         return new TransactionFilter(
-                accountCombo.getValue(),
-                categoryCombo.getValue(),
+                accountCombo.getValue() == null ? null : accountCombo.getValue().getBank().getName(),
+                accountCombo.getValue() == null ? null : accountCombo.getValue().getNumber(),
+                categoryCombo.getValue() == null ? null : categoryCombo.getValue().getName(),
                 conceptField.getText(),
                 new TransactionFilter.ValueRange<>(
                         dtOpFieldFrom.getValue(),

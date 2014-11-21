@@ -1,12 +1,14 @@
 package com.jscriptive.moneyfx.ui.transaction.dialog;
 
 import com.jscriptive.moneyfx.exception.TechnicalException;
-import com.jscriptive.moneyfx.repository.filter.TransactionFilter;
+import com.jscriptive.moneyfx.model.TransactionFilter;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -21,6 +23,8 @@ public class TransactionFilterDialog extends Dialog<TransactionFilter> {
     public TransactionFilterDialog() {
         setTitle("Filter transactions");
         setHeaderText("Fill in the transaction data");
+        Stage stage = (Stage) getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image("com/jscriptive/moneyfx/ui/images/Filter-Standard-48.png"));
 
         // Set the button types.
         ButtonType importButtonType = new ButtonType("Filter", ButtonBar.ButtonData.OK_DONE);

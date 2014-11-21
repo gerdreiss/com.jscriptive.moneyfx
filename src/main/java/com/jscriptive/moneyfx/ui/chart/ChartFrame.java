@@ -23,6 +23,7 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 
+import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
@@ -135,6 +136,15 @@ public class ChartFrame implements Initializable {
         }
     }
 
+    /**
+     * This method is invoked when the "by category" button has been toggled
+     *
+     * @param actionEvent
+     */
+    public void byCategoryToggled(ActionEvent actionEvent) {
+
+    }
+
     private Map<Account, List<Transaction>> mapTransactionsToAccount() {
         Map<Account, List<Transaction>> transactionMap = new HashMap<>();
         if (accountCombo.getValue() == null) {
@@ -181,8 +191,9 @@ public class ChartFrame implements Initializable {
     private String getAccountLabel(Account account) {
         String accountLabel;
         if (account == null) {
-            accountLabel = String.format(" All accounts [%s]",
-                    allAccounts.stream().flatMapToDouble(a -> DoubleStream.of(a.getBalance().doubleValue())).sum());
+            Account formatter = new Account();
+            formatter.setBalance(BigDecimal.valueOf(allAccounts.stream().flatMapToDouble(a -> DoubleStream.of(a.getBalance().doubleValue())).sum()));
+            accountLabel = String.format(" All accounts [%s]", formatter.getFormattedBalance());
         } else {
             accountLabel = String.format(" %s %s [%s]",
                     account.getBank().getName(),
@@ -218,5 +229,4 @@ public class ChartFrame implements Initializable {
     private double getSum(List<Transaction> outgoing) {
         return abs(outgoing.stream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum());
     }
-
 }

@@ -23,13 +23,10 @@
 
     <mongo:db-factory id="mongoDbFactory" dbname="moneyfx"/>
 
-    <mongo:mapping-converter>
-        <mongo:custom-converters>
-            <mongo:converter ref="readConverter"/>
-        </mongo:custom-converters>
+    <mongo:mapping-converter id="mappingConverter">
+        <mongo:custom-converters base-package="com.jscriptive.moneyfx.repository.mongo.converter"/>
     </mongo:mapping-converter>
 
-    <bean id="readConverter" class="com.jscriptive.moneyfx.repository.mongo.converter.LocalDateReadConverter"/>
 
     <!-- Use this post processor to translate any MongoExceptions thrown in @Repository annotated classes -->
     <bean class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>

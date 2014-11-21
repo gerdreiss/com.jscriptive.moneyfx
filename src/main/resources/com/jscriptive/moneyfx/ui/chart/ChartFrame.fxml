@@ -3,9 +3,8 @@
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.chart.LineChart?>
 <?import javafx.scene.chart.NumberAxis?>
-<?import javafx.scene.control.ComboBox?>
-<?import javafx.scene.control.ToggleButton?>
-<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" fx:id="chartFrame"
@@ -23,10 +22,28 @@
                 <ToggleGroup fx:id="chartToggleGroup"/>
             </fx:define>
 
-            <ComboBox fx:id="accountCombo" promptText="All accounts" onAction="#accountChanged"/>
-            <ToggleButton text="Daily balance" onAction="#dailyBalanceToggled" toggleGroup="$chartToggleGroup" />
-            <ToggleButton text="Monthly in/out" onAction="#monthlyInOutToggled" toggleGroup="$chartToggleGroup"/>
-
+            <ComboBox fx:id="accountCombo" promptText="All accounts" onAction="#accountChanged" prefHeight="34"/>
+            <ToggleButton text="Daily balance" onAction="#dailyBalanceToggled" toggleGroup="$chartToggleGroup">
+                <graphic>
+                    <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@../images/Stock-Exchange-32.png"/>
+                    </ImageView>
+                </graphic>
+            </ToggleButton>
+            <ToggleButton text="Monthly in/out" onAction="#monthlyInOutToggled" toggleGroup="$chartToggleGroup">
+                <graphic>
+                    <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@../images/Chart-Type-32.png"/>
+                    </ImageView>
+                </graphic>
+            </ToggleButton>
+            <ToggleButton text="By category" onAction="#byCategoryToggled" toggleGroup="$chartToggleGroup">
+                <graphic>
+                    <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@../images/Pie-Chart-32.png"/>
+                    </ImageView>
+                </graphic>
+            </ToggleButton>
         </HBox>
     </top>
     <center>

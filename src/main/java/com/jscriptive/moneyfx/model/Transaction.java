@@ -1,6 +1,7 @@
 package com.jscriptive.moneyfx.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -18,18 +19,25 @@ public class Transaction {
 
     @Id
     private String id;
+
     private Account account;
-    private String concept;
-    private LocalDate dtOp;
-    private LocalDate dtVal;
-    private BigDecimal amount;
+
     private Category category;
+
+    @Indexed
+    private String concept;
+
+    private LocalDate dtOp;
+
+    private LocalDate dtVal;
+
+    private BigDecimal amount;
 
     public Transaction() {
     }
 
     public Transaction(Account account, String concept, LocalDate dtOp, LocalDate dtVal, BigDecimal amount) {
-        this(account, Category.DEFAULT, concept, dtOp, dtVal, amount);
+        this(account, Category.OTHER, concept, dtOp, dtVal, amount);
     }
 
     public Transaction(Account account, Category category, String concept, LocalDate dtOp, LocalDate dtVal, BigDecimal amount) {

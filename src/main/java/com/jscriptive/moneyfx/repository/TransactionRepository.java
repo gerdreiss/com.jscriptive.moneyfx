@@ -3,7 +3,7 @@ package com.jscriptive.moneyfx.repository;
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.model.Transaction;
-import com.jscriptive.moneyfx.repository.filter.TransactionFilter;
+import com.jscriptive.moneyfx.model.TransactionFilter;
 
 import java.util.Collection;
 import java.util.List;
@@ -36,4 +36,6 @@ public interface TransactionRepository {
     Transaction findEarliestTransaction(Account account);
 
     int removeByAccount(Account account);
+
+    void update(Transaction trx);
 }

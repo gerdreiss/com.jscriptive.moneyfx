@@ -2,6 +2,7 @@ package com.jscriptive.moneyfx.repository.mongo;
 
 import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.repository.CategoryRepository;
+import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -33,5 +34,11 @@ public class CategoryRepositoryMongo implements CategoryRepository {
     @Override
     public Category findByName(String name) {
         return mongoTemplate.findOne(new Query(where("name").is(name)), Category.class);
+    }
+
+    @Override
+    public boolean remove(Category category) {
+        WriteResult result = mongoTemplate.remove(new Query(where("name").is(category.getName())), Category.class);
+        return 0 < result.getN();
     }
 }

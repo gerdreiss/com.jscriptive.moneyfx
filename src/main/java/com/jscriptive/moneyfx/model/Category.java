@@ -1,6 +1,7 @@
 package com.jscriptive.moneyfx.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -9,11 +10,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class Category {
 
-    public static final Category DEFAULT = new Category("default");
+    public static final Category OTHER = new Category("Other");
 
     @Id
     private String id;
+
+    @Indexed
     private String name;
+
+    private TransactionFilter filter;
 
     public Category() {
     }
@@ -46,17 +51,21 @@ public class Category {
 
         Category category = (Category) o;
 
-        return !(name != null ? !name.equals(category.name) : category.name != null);
+        if (filter != null ? !filter.equals(category.filter) : category.filter != null) return false;
+        if (name != null ? !name.equals(category.name) : category.name != null) return false;
 
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return name != null ? name.hashCode() : 0;
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (filter != null ? filter.hashCode() : 0);
+        return result;
     }
 
     @Override
     public String toString() {
-        return String.format("Category{name='%s'}", name);
+        return String.format("Category{name='%s', filter=%s}", name, filter);
     }
 }

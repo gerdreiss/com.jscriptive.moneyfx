@@ -3,12 +3,15 @@ package com.jscriptive.moneyfx.ui.account.dialog;
 import com.jscriptive.moneyfx.exception.TechnicalException;
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.JavaFXBuilderFactory;
 import javafx.scene.Node;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Dialog;
+import javafx.scene.image.Image;
+import javafx.stage.Stage;
 import org.apache.commons.io.IOUtils;
 
 import java.io.IOException;
@@ -25,8 +28,10 @@ public class AccountDialog extends Dialog<AccountItem> {
     }
 
     public AccountDialog(Account account) {
-        setTitle("Edit account");
+        setTitle("Account");
         setHeaderText("Fill in the account data");
+        Stage stage = (Stage) getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image("com/jscriptive/moneyfx/ui/images/Bank-48.png"));
 
         // Set the button types.
         ButtonType importButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
@@ -51,6 +56,13 @@ public class AccountDialog extends Dialog<AccountItem> {
         AccountDialogController controller = loader.getController();
         controller.setDisabledNodeToObserve(importButton);
         controller.setAccount(account);
+
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                getDialogPane().lookup("#bankField").requestFocus();
+            }
+        });
 
         // Convert the result to a username-password-pair when the login button is clicked.
         setResultConverter(dialogButtonType -> {
