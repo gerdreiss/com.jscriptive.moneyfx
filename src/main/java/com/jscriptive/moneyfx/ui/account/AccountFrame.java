@@ -174,7 +174,7 @@ public class AccountFrame implements Initializable {
         alert.setHeaderText("Confirm delete account");
         AccountItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
         alert.setContentText(
-                String.format("Are you sure you want to delete the selected account: %s %s?",
+                String.format("Are you sure you want to delete the selected account: %s %s? All transactions of that account will also be deleted.",
                         selectedItem.getBank(), selectedItem.getNumber()));
         Optional<ButtonType> result = alert.showAndWait();
         if (result.get() == ButtonType.OK) {

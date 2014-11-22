@@ -7,21 +7,26 @@ package com.jscriptive.moneyfx.ui.chart;
 
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Transaction;
+import com.jscriptive.moneyfx.repository.CategoryRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
 import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
 import com.jscriptive.moneyfx.util.LocalDateUtil;
-import extfx.scene.chart.LocalDateAxis;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.*;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -45,12 +50,15 @@ public class ChartFrame implements Initializable {
     @FXML
     private ToggleGroup chartToggleGroup;
 
+    private CategoryRepository categoryRepository;
     private TransactionRepository transactionRepository;
+
 
     private List<Account> allAccounts;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        categoryRepository = RepositoryProvider.getInstance().getCategoryRepository();
         transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
         chartFrame.addEventHandler(TabSelectionEvent.TAB_SELECTION, event -> setupAccountComboBox());
     }
@@ -86,18 +94,17 @@ public class ChartFrame implements Initializable {
     public void dailyBalanceToggled(ActionEvent actionEvent) {
         LocalDateAxis xAxis = new LocalDateAxis();
         NumberAxis yAxis = new NumberAxis();
+        xAxis.setLabel("Day of year");
         yAxis.setLabel("Balance in Euro");
 
         final LineChart<LocalDate, Number> lineChart = new LineChart<>(xAxis, yAxis);
+        lineChart.setTitle("Balance development day by day");
+
         chartFrame.setCenter(lineChart);
 
         ToggleButton toggle = (ToggleButton) actionEvent.getTarget();
         if (toggle.isSelected()) {
-            lineChart.setTitle("Balance development day by day");
-            xAxis.setLabel("Day of year");
-
             Map<Account, List<Transaction>> transactionMap = mapTransactionsToAccount();
-
             transactionMap.entrySet().forEach(entry -> addDataSeries(lineChart, entry));
         }
     }
@@ -110,17 +117,16 @@ public class ChartFrame implements Initializable {
     public void monthlyInOutToggled(ActionEvent actionEvent) {
         final CategoryAxis xAxis = new CategoryAxis();
         final NumberAxis yAxis = new NumberAxis();
+        xAxis.setLabel("Month of Year");
         yAxis.setLabel("In/Out in Euro");
 
         final BarChart<String, Number> barChart = new BarChart<>(xAxis, yAxis);
+        barChart.setTitle("Monthly in/out");
+
         chartFrame.setCenter(barChart);
 
         ToggleButton toggle = (ToggleButton) actionEvent.getTarget();
         if (toggle.isSelected()) {
-
-            barChart.setTitle("Monthly in/out");
-            xAxis.setLabel("Month of Year");
-
             Account account = accountCombo.getValue();
             String accountLabel = getAccountLabel(account);
 
@@ -142,7 +148,35 @@ public class ChartFrame implements Initializable {
      * @param actionEvent
      */
     public void byCategoryToggled(ActionEvent actionEvent) {
+        final PieChart pieChart = new PieChart();
+        pieChart.setTitle("Categories");
 
+        final Label caption = new Label("");
+        caption.setTextFill(Color.DARKORANGE);
+        caption.setStyle("-fx-font: 24 arial;");
+
+        chartFrame.setCenter(pieChart);
+
+        ToggleButton toggle = (ToggleButton) actionEvent.getTarget();
+        if (toggle.isSelected()) {
+            ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
+            categoryRepository.findAll().forEach(category -> {
+                double sum = getSum(transactionRepository.findByAccountAndCategory(accountCombo.getValue(), category));
+                pieChartData.add(new PieChart.Data(category.getName(), sum));
+            });
+            pieChart.getData().addAll(pieChartData);
+            for (final PieChart.Data data : pieChart.getData()) {
+                data.getNode().addEventHandler(MouseEvent.MOUSE_PRESSED,
+                        new EventHandler<MouseEvent>() {
+                            @Override
+                            public void handle(MouseEvent e) {
+                                caption.setTranslateX(e.getSceneX());
+                                caption.setTranslateY(e.getSceneY());
+                                caption.setText(String.valueOf(data.getPieValue()) + "%");
+                            }
+                        });
+            }
+        }
     }
 
     private Map<Account, List<Transaction>> mapTransactionsToAccount() {

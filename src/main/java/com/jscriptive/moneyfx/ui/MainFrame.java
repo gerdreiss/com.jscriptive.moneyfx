@@ -56,9 +56,7 @@ public class MainFrame extends BorderPane implements Initializable {
         ButtonType loginButtonType = new ButtonType("OK", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(loginButtonType);
         // Convert the result to a username-password-pair when the login button is clicked.
-        dialog.setResultConverter(dialogButton -> {
-            return dialogButton == loginButtonType;
-        });
+        dialog.setResultConverter(buttonType -> buttonType == loginButtonType);
         dialog.showAndWait();
     }
 }

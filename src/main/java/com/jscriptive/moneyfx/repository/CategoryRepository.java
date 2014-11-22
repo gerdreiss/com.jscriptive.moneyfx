@@ -16,4 +16,6 @@ public interface CategoryRepository {
     Category findByName(String name);
 
     boolean remove(Category category);
+
+    void update(Category category);
 }

@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package extfx.scene.chart;
+package com.jscriptive.moneyfx.ui.chart;
 
 import com.sun.javafx.charts.ChartLayoutAnimator;
 import javafx.animation.KeyFrame;

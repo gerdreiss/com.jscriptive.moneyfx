@@ -57,12 +57,7 @@ public class AccountDialog extends Dialog<AccountItem> {
         controller.setDisabledNodeToObserve(importButton);
         controller.setAccount(account);
 
-        Platform.runLater(new Runnable() {
-            @Override
-            public void run() {
-                getDialogPane().lookup("#bankField").requestFocus();
-            }
-        });
+        Platform.runLater(() -> getDialogPane().lookup("#bankField").requestFocus());
 
         // Convert the result to a username-password-pair when the login button is clicked.
         setResultConverter(dialogButtonType -> {

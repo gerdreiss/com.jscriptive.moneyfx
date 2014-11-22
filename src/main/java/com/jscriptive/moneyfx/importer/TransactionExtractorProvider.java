@@ -1,7 +1,6 @@
 package com.jscriptive.moneyfx.importer;
 
 import com.jscriptive.moneyfx.importer.barclays.TransactionReaderBarclaysSearchResult;
-import com.jscriptive.moneyfx.model.Bank;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,7 +27,7 @@ public class TransactionExtractorProvider {
     }};
 
 
-    public TransactionExtractor getTransactionExtractor(Bank bank) {
-        return extractors.get(bank.getName());
+    public TransactionExtractor getTransactionExtractor(String bank) {
+        return extractors.get(bank);
     }
 }

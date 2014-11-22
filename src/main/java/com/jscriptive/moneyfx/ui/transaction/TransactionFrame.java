@@ -85,21 +85,16 @@ public class TransactionFrame implements Initializable {
 
     public void importTransactionsFired(ActionEvent actionEvent) {
         TransactionImportDialog dialog = new TransactionImportDialog(bankRepository.findAll());
-        Optional<Pair<Bank, File>> result = dialog.showAndWait();
+        Optional<Pair<String, File>> result = dialog.showAndWait();
         if (result.isPresent()) {
-            Bank bank = result.get().getKey();
-            if (bank.getId() == null) {
-                bankRepository.insert(bank);
-            }
+            String bank = result.get().getKey();
+            File file = result.get().getValue();
             TransactionExtractor extractor = TransactionExtractorProvider.getInstance().getTransactionExtractor(bank);
-            Account account = extractAccountData(result.get().getValue().toURI(), bank, extractor);
+            Account account = extractAccountData(result.get().getValue().toURI(), extractor);
             if (account == null) {
                 throw new BusinessException("No account created!");
             }
-            if (!bank.equals(account.getBank())) {
-                throw new BusinessException("Bank changed when creating the account");
-            }
-            extractTransactionData(result.get().getValue().toURI(), extractor, account);
+            extractTransactionData(file.toURI(), extractor, account);
         }
     }
 
@@ -146,11 +141,10 @@ public class TransactionFrame implements Initializable {
                 )));
     }
 
-    private Account extractAccountData(URI file, Bank bank, TransactionExtractor extractor) {
+    private Account extractAccountData(URI file, TransactionExtractor extractor) {
         Account extracted = extractor.extractAccountData(file);
         Account found = accountRepository.findByNumber(extracted.getNumber());
         if (found == null) {
-            extracted.setBank(bank);
             AccountDialog dialog = new AccountDialog(extracted);
             Optional<AccountItem> accountItem = dialog.showAndWait();
             if (accountItem.isPresent()) {
@@ -166,8 +160,7 @@ public class TransactionFrame implements Initializable {
             bank = new Bank(item.getBank());
             bankRepository.insert(bank);
         }
-        Account account = new Account(bank, item.getNumber(), item.getName(), item.getType(), new BigDecimal(item.getBalance()));
-        account.setBalanceDate(LocalDate.parse(item.getBalanceDate()));
+        Account account = new Account(bank, item.getNumber(), item.getName(), item.getType(), new BigDecimal(item.getBalance()), LocalDate.parse(item.getBalanceDate()));
         accountRepository.insert(account);
         return account;
     }

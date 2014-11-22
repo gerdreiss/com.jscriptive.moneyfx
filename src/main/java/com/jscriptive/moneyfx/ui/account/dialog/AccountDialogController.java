@@ -79,9 +79,11 @@ public class AccountDialogController implements Initializable {
         if (account != null) {
             if (account.getBank() != null) {
                 bankField.setText(account.getBank().getName());
+                bankField.setEditable(false);
             }
             if (account.getNumber() != null) {
                 numberField.setText(account.getNumber());
+                numberField.setEditable(false);
             }
             if (account.getName() != null) {
                 nameField.setText(account.getName());

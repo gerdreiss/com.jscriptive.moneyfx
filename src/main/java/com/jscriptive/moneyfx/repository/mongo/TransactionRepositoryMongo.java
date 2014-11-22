@@ -1,24 +1,27 @@
 package com.jscriptive.moneyfx.repository.mongo;
 
+import com.jscriptive.moneyfx.exception.BusinessException;
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.model.Transaction;
 import com.jscriptive.moneyfx.model.TransactionFilter;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
-import com.mongodb.WriteResult;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 import java.util.List;
 
+import static com.jscriptive.moneyfx.repository.mongo.util.NullSafeCriteriaBuilder.by;
 import static java.math.BigDecimal.ZERO;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
 /**
  * Created by jscriptive.com on 16/11/14.
@@ -46,82 +49,71 @@ public class TransactionRepositoryMongo implements TransactionRepository {
 
     @Override
     public List<Transaction> filterAll(TransactionFilter filter) {
-        return mongoTemplate.find(FilterQueryBuilder.build(filter), Transaction.class);
+        return mongoTemplate.find(query(by(filter)), Transaction.class);
     }
 
     @Override
     public List<Transaction> findByAccount(Account account) {
-        return mongoTemplate.find(new Query(where("account.number").is(account.getNumber())), Transaction.class);
+        return mongoTemplate.find(query(by(account)), Transaction.class);
     }
 
     @Override
     public List<Transaction> findByAccountAndYear(Account account, Integer year) {
-        if (account == null) {
-            return mongoTemplate.find(new Query(where("dtOp.year").is(year)), Transaction.class);
-        }
-        return mongoTemplate.find(new Query(where("account.number").is(account.getNumber()).and("dtOp.year").is(year)), Transaction.class);
+        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year)), Transaction.class);
     }
 
     @Override
     public List<Transaction> findByAccountAndYearAndMonth(Account account, Integer year, Integer month) {
-        if (account == null) {
-            return mongoTemplate.find(new Query(where("dtOp.year").is(year).and("dtOp.month").is(month)), Transaction.class);
-        }
-        return mongoTemplate.find(new Query(where("account.number").is(account.getNumber()).and("dtOp.year").is(year).and("dtOp.month").is(month)), Transaction.class);
+        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year).and("dtOp.month").is(month)), Transaction.class);
     }
 
     @Override
     public List<Transaction> findIncomingByAccountAndYearAndMonth(Account account, Integer year, Integer month) {
-        if (account == null) {
-            return mongoTemplate.find(new Query(where("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").gte(ZERO)), Transaction.class);
-        }
-        return mongoTemplate.find(new Query(where("account.number").is(account.getNumber()).and("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").gte(ZERO)), Transaction.class);
+        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").gte(ZERO)), Transaction.class);
     }
 
     @Override
     public List<Transaction> findOutgoingByAccountAndYearAndMonth(Account account, Integer year, Integer month) {
-        if (account == null) {
-            return mongoTemplate.find(new Query(where("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").lt(ZERO)), Transaction.class);
-        }
-        return mongoTemplate.find(new Query(where("account.number").is(account.getNumber()).and("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").lt(ZERO)), Transaction.class);
+        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").lt(ZERO)), Transaction.class);
     }
 
     @Override
     public List<Transaction> findByAccountAndCategory(Account account, Category category) {
-        if (account == null) {
-            return mongoTemplate.find(new Query(where("category.name").is(category.getName())), Transaction.class);
-        }
-        return mongoTemplate.find(new Query(where("account.number").is(account.getNumber()).and("category.name").is(category.getName())), Transaction.class);
+        return mongoTemplate.find(query(by(account).and("category.name").is(category.getName())), Transaction.class);
     }
 
     @Override
     public Transaction findEarliestTransaction(Account account) {
-        if (account == null) {
-            return mongoTemplate.findOne(new Query().with(new Sort(ASC, "dtOp")), Transaction.class);
-        }
-        return mongoTemplate.findOne(new Query(where("account.number").is(account.getNumber())).with(new Sort(ASC, "dtOp")), Transaction.class);
+        return mongoTemplate.findOne(query(by(account)).with(new Sort(ASC, "dtOp")), Transaction.class);
     }
 
     @Override
     public int removeByAccount(Account account) {
-        Query query = new Query(Criteria.where("account.bank.name").is(account.getBank().getName()).and("account.number").is(account.getNumber()).and("account.name").is(account.getName()));
-        WriteResult result = mongoTemplate.remove(query, Transaction.class);
-        return result.getN();
+        return mongoTemplate.remove(query(by(account)), Transaction.class).getN();
     }
 
     @Override
     public void update(Transaction trx) {
-        // TODO implement the method
-//        Query query = new Query(Criteria.where("bank.name").is(account.getBank().getName()).and("number").is(account.getNumber()).and("name").is(account.getName()));
-//        Update update = Update.update("number", account.getNumber()).addToSet("name", account.getName()).addToSet("type", account.getType());
-//        if (account.getBalance() != null) {
-//            update = update.addToSet("balance", account.getBalance());
-//            if (account.getBalanceDate() == null) {
-//                update = update.addToSet("balanceDate", LocalDate.now());
-//            } else {
-//                update = update.addToSet("balanceDate", account.getBalanceDate());
-//            }
-//        }
-//        mongoTemplate.updateFirst(query, update, Account.class);
+        check(trx);
+        Query query = query(where("_id").is(new ObjectId(trx.getId())));
+        Update update = Update.update("concept", trx.getConcept())
+                .addToSet("dtOp", trx.getDtOp())
+                .addToSet("dtVal", trx.getDtVal())
+                .addToSet("amount", trx.getAmount())
+                .addToSet("category._id", new ObjectId(trx.getCategory().getId()));
+
+        mongoTemplate.updateFirst(query, update, Transaction.class);
+    }
+
+    private void check(Transaction trx) {
+        if (trx.getId() == null) {
+            throw new BusinessException("Only persisted transactions can be updated: ID must be present");
+        }
+        if (trx.getCategory() == null) {
+            throw new BusinessException("Transactions must always be assigned to a category");
+        }
+        if (trx.getCategory().getId() == null) {
+            throw new BusinessException("Only persisted transactions with persisted categories can be updated: category ID must be present");
+        }
     }
 }

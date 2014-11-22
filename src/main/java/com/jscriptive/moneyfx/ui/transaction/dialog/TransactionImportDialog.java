@@ -6,7 +6,6 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
@@ -23,9 +22,9 @@ import java.util.stream.Collectors;
 /**
  * Created by jscriptive.com on 17/11/2014.
  */
-public class TransactionImportDialog extends Dialog<Pair<Bank, File>> {
+public class TransactionImportDialog extends Dialog<Pair<String, File>> {
 
-    private Bank selectedBank;
+    private String selectedBank;
     private File selectedFile;
 
     public TransactionImportDialog(Collection<Bank> banks) {
@@ -41,7 +40,6 @@ public class TransactionImportDialog extends Dialog<Pair<Bank, File>> {
         Node importButton = getDialogPane().lookupButton(importButtonType);
         importButton.setDisable(true);
 
-
         // Create the username and password labels and fields.
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -50,43 +48,30 @@ public class TransactionImportDialog extends Dialog<Pair<Bank, File>> {
 
         TextField bankTextField = new TextField();
         bankTextField.textProperty().addListener((observable, oldValue, newValue) -> {
-            if (StringUtils.isBlank(newValue)) {
-                selectedBank = null;
-            } else {
-                selectedBank = new Bank(newValue);
-            }
-            importButton.setDisable(selectedBank == null || selectedFile == null || !selectedFile.exists());
+            selectedBank = newValue;
+            importButton.setDisable(StringUtils.isBlank(selectedBank) || selectedFile == null || !selectedFile.exists());
         });
         TextFields.bindAutoCompletion(bankTextField, banks.stream().map(Bank::getName).collect(Collectors.toList()));
 
         TextField filePathTextField = new TextField();
         filePathTextField.setEditable(false);
-        filePathTextField.addEventHandler(KeyEvent.ANY, event -> {
-            String character = event.getCharacter();
-            selectFile(filePathTextField, importButton);
-        });
-        filePathTextField.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> {
-            MouseButton mouseButton = event.getButton();
-            selectFile(filePathTextField, importButton);
-        });
-
+        filePathTextField.addEventHandler(KeyEvent.ANY, event -> selectFile(filePathTextField, importButton));
+        filePathTextField.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> selectFile(filePathTextField, importButton));
 
         grid.add(new Label("Bank:"), 0, 0);
         grid.add(bankTextField, 1, 0);
         grid.add(new Label("File:"), 0, 1);
         grid.add(filePathTextField, 1, 1);
 
-
         GridPane.setHgrow(bankTextField, Priority.ALWAYS);
         GridPane.setHgrow(filePathTextField, Priority.ALWAYS);
-
 
         getDialogPane().setContent(grid);
 
         // Convert the result to a username-password-pair when the login button is clicked.
         setResultConverter(dialogButtonType -> {
             if (dialogButtonType == importButtonType) {
-                return new Pair<>(new Bank( bankTextField.getText()), new File(filePathTextField.getText()));
+                return new Pair<>(bankTextField.getText(), new File(filePathTextField.getText()));
             }
             return null;
         });
@@ -99,6 +84,6 @@ public class TransactionImportDialog extends Dialog<Pair<Bank, File>> {
         if (selectedFile != null) {
             filePathTextField.setText(selectedFile.getAbsolutePath());
         }
-        importButton.setDisable(selectedBank == null || selectedFile == null || !selectedFile.exists());
+        importButton.setDisable(StringUtils.isBlank(selectedBank) || selectedFile == null || !selectedFile.exists());
     }
 }

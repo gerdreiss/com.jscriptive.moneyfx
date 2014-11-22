@@ -18,14 +18,19 @@ public class Category {
     @Indexed
     private String name;
 
-    private TransactionFilter filter;
+    private TransactionFilter filterRule;
 
     public Category() {
     }
 
     public Category(String name) {
+        this(name, null);
+    }
+
+    public Category(String name, TransactionFilter filter) {
         this();
         setName(name);
+        setFilterRule(filter);
     }
 
     public String getId() {
@@ -44,6 +49,14 @@ public class Category {
         this.name = name;
     }
 
+    public TransactionFilter getFilterRule() {
+        return filterRule;
+    }
+
+    public void setFilterRule(TransactionFilter filterRule) {
+        this.filterRule = filterRule;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -51,7 +64,7 @@ public class Category {
 
         Category category = (Category) o;
 
-        if (filter != null ? !filter.equals(category.filter) : category.filter != null) return false;
+        if (filterRule != null ? !filterRule.equals(category.filterRule) : category.filterRule != null) return false;
         if (name != null ? !name.equals(category.name) : category.name != null) return false;
 
         return true;
@@ -60,12 +73,12 @@ public class Category {
     @Override
     public int hashCode() {
         int result = name != null ? name.hashCode() : 0;
-        result = 31 * result + (filter != null ? filter.hashCode() : 0);
+        result = 31 * result + (filterRule != null ? filterRule.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
-        return String.format("Category{name='%s', filter=%s}", name, filter);
+        return String.format("Category{name='%s', filterRule=%s}", name, filterRule);
     }
 }

@@ -49,42 +49,42 @@
                 </ContextMenu>
             </contextMenu>
             <columns>
-                <PTableColumn fx:id="bankColumn" text="Bank" percentageWidth="0.13">
+                <PercentageWidthTableColumn fx:id="bankColumn" text="Bank" percentageWidth="0.13">
                     <cellValueFactory>
                         <PropertyValueFactory property="bank"/>
                     </cellValueFactory>
-                </PTableColumn>
-                <PTableColumn fx:id="numberColumn" text="Number" percentageWidth="0.2">
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="numberColumn" text="Number" percentageWidth="0.2">
                     <cellValueFactory>
                         <PropertyValueFactory property="number"/>
                     </cellValueFactory>
-                </PTableColumn>
-                <PTableColumn fx:id="nameColumn" text="Name" percentageWidth="0.30">
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="nameColumn" text="Name" percentageWidth="0.30">
                     <cellValueFactory>
                         <PropertyValueFactory property="name"/>
                     </cellValueFactory>
-                </PTableColumn>
-                <PTableColumn fx:id="typeColumn" text="Type" percentageWidth="0.1">
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="typeColumn" text="Type" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="type"/>
                     </cellValueFactory>
-                </PTableColumn>
-                <PTableColumn fx:id="balanceDateColumn" text="Balance date" percentageWidth="0.1">
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="balanceDateColumn" text="Balance date" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="balanceDate"/>
                     </cellValueFactory>
                     <cellFactory>
                         <FormattedTableCellFactory alignment="right"/>
                     </cellFactory>
-                </PTableColumn>
-                <PTableColumn fx:id="formattedBalanceColumn" text="Balance" percentageWidth="0.12">
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="formattedBalanceColumn" text="Balance" percentageWidth="0.12">
                     <cellValueFactory>
                         <PropertyValueFactory property="formattedBalance"/>
                     </cellValueFactory>
                     <cellFactory>
                         <FormattedTableCellFactory alignment="right"/>
                     </cellFactory>
-                </PTableColumn>
+                </PercentageWidthTableColumn>
             </columns>
         </TableView>
     </center>

@@ -3,6 +3,7 @@ package com.jscriptive.moneyfx.importer.barclays;
 import com.jscriptive.moneyfx.exception.TechnicalException;
 import com.jscriptive.moneyfx.importer.TransactionExtractor;
 import com.jscriptive.moneyfx.model.Account;
+import com.jscriptive.moneyfx.model.Bank;
 import com.jscriptive.moneyfx.model.Transaction;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -29,6 +30,7 @@ import static java.time.format.DateTimeFormatter.ofPattern;
  */
 public class TransactionReaderBarclaysSearchResult implements TransactionExtractor {
 
+    private static final Bank BARCLAYS = new Bank("Barclays");
     private final DateTimeFormatter df = ofPattern("dd-MM-yyyy");
 
     @Override
@@ -46,7 +48,7 @@ public class TransactionReaderBarclaysSearchResult implements TransactionExtract
                 return null;
             }
 
-            return new Account(null, strings[0], strings[1], null);
+            return new Account(BARCLAYS, strings[0], strings[1], null);
 
         } catch (IOException e) {
             throw new TechnicalException(e);

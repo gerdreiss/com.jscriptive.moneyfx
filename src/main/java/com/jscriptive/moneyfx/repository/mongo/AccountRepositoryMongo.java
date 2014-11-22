@@ -3,18 +3,18 @@ package com.jscriptive.moneyfx.repository.mongo;
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Bank;
 import com.jscriptive.moneyfx.repository.AccountRepository;
-import com.mongodb.WriteResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.jscriptive.moneyfx.repository.mongo.util.NullSafeCriteriaBuilder.by;
+import static com.jscriptive.moneyfx.repository.mongo.util.NullSafeCriteriaBuilder.is;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
+import static org.springframework.data.mongodb.core.query.Query.query;
 
 
 /**
@@ -33,12 +33,12 @@ public class AccountRepositoryMongo implements AccountRepository {
 
     @Override
     public List<Account> findByBank(Bank bank) {
-        return mongoTemplate.find(new Query(where("bank.name").is(bank.getName())), Account.class);
+        return mongoTemplate.find(query(by(bank)), Account.class);
     }
 
     @Override
     public Account findByNumber(String number) {
-        return mongoTemplate.findOne(new Query(where("number").is(number)), Account.class);
+        return mongoTemplate.findOne(query(where("number").is(number)), Account.class);
     }
 
     @Override
@@ -48,23 +48,17 @@ public class AccountRepositoryMongo implements AccountRepository {
 
     @Override
     public void update(Account account) {
-        Query query = new Query(Criteria.where("bank.name").is(account.getBank().getName()).and("number").is(account.getNumber()).and("name").is(account.getName()));
-        Update update = Update.update("number", account.getNumber()).addToSet("name", account.getName()).addToSet("type", account.getType());
-        if (account.getBalance() != null) {
-            update = update.addToSet("balance", account.getBalance());
-            if (account.getBalanceDate() == null) {
-                update = update.addToSet("balanceDate", LocalDate.now());
-            } else {
-                update = update.addToSet("balanceDate", account.getBalanceDate());
-            }
+        Update update = Update.update("name", account.getName()).addToSet("type", account.getType()).addToSet("balance", account.getBalance());
+        if (account.getBalanceDate() == null) {
+            update = update.addToSet("balanceDate", LocalDate.now());
+        } else {
+            update = update.addToSet("balanceDate", account.getBalanceDate());
         }
-        mongoTemplate.updateFirst(query, update, Account.class);
+        mongoTemplate.updateFirst(query(is(account)), update, Account.class);
     }
 
     @Override
     public boolean remove(Account account) {
-        Query query = new Query(Criteria.where("bank.name").is(account.getBank().getName()).and("number").is(account.getNumber()).and("name").is(account.getName()));
-        WriteResult result = mongoTemplate.remove(query, Account.class);
-        return 0 < result.getN();
+        return mongoTemplate.remove(query(is(account)), Account.class).getN() > 0;
     }
 }

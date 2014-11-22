@@ -199,16 +199,10 @@ public class Account {
     }
 
     public boolean isOfBank(String name) {
-        if (StringUtils.isBlank(name)) {
-            return false;
-        }
-        return getBank() != null && getBank().getName() != null && getBank().getName().equals(name);
+        return getBank() != null && StringUtils.isNotBlank(name) && name.equals(getBank().getName());
     }
 
     public boolean numberEndsWith(String lastFourDigits) {
-        if (StringUtils.isBlank(lastFourDigits)) {
-            return false;
-        }
-        return !StringUtils.isBlank(getNumber()) && getNumber().endsWith(lastFourDigits);
+        return StringUtils.isNotBlank(lastFourDigits) && StringUtils.isNotBlank(getNumber()) && getNumber().endsWith(lastFourDigits);
     }
 }

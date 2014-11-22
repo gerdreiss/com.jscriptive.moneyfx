@@ -44,4 +44,7 @@ public class RepositoryProvider {
         return getApplicationContext().getBean(TransactionRepository.class);
     }
 
+    public TransactionFilterRepository getTransactionFilterRepository() {
+        return getApplicationContext().getBean(TransactionFilterRepository.class);
+    }
 }

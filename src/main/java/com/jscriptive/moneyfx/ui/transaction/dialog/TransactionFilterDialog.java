@@ -21,6 +21,10 @@ import java.net.URL;
 public class TransactionFilterDialog extends Dialog<TransactionFilter> {
 
     public TransactionFilterDialog() {
+        this(null);
+    }
+
+    public TransactionFilterDialog(TransactionFilter filter) {
         setTitle("Filter transactions");
         setHeaderText("Fill in the transaction data");
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
@@ -44,6 +48,7 @@ public class TransactionFilterDialog extends Dialog<TransactionFilter> {
         }
 
         TransactionFilterDialogController controller = loader.getController();
+        controller.setFilter(filter);
 
         // Convert the result to a username-password-pair when the login button is clicked.
         setResultConverter(dialogButtonType -> {

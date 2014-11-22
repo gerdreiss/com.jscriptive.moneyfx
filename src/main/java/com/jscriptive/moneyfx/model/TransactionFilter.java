@@ -18,13 +18,13 @@ public class TransactionFilter {
     private String id;
 
     @Indexed
-    private String bank;
+    private String bankName;
 
     @Indexed
-    private final String account;
+    private final String accountNumber;
 
     @Indexed
-    private final String category;
+    private final String categoryName;
 
     @Indexed
     private final String concept;
@@ -35,10 +35,10 @@ public class TransactionFilter {
 
     private final ValueRange<BigDecimal> amountRange;
 
-    public TransactionFilter(String bank, String account, String category, String concept, ValueRange<LocalDate> dtOpRange, ValueRange<LocalDate> dtValRange, ValueRange<BigDecimal> amountRange) {
-        this.bank = bank;
-        this.account = account;
-        this.category = category;
+    public TransactionFilter(String bankName, String accountNumber, String categoryName, String concept, ValueRange<LocalDate> dtOpRange, ValueRange<LocalDate> dtValRange, ValueRange<BigDecimal> amountRange) {
+        this.bankName = bankName;
+        this.accountNumber = accountNumber;
+        this.categoryName = categoryName;
         this.concept = concept;
         this.dtOpRange = dtOpRange;
         this.dtValRange = dtValRange;
@@ -53,28 +53,28 @@ public class TransactionFilter {
         this.id = id;
     }
 
-    public String getBank() {
-        return bank;
+    public String getBankName() {
+        return bankName;
     }
 
     public boolean filterByBank() {
-        return getBank() != null;
+        return getBankName() != null;
     }
 
-    public String getAccount() {
-        return account;
+    public String getAccountNumber() {
+        return accountNumber;
     }
 
     public boolean filterByAccount() {
-        return getAccount() != null;
+        return getAccountNumber() != null;
     }
 
-    public String getCategory() {
-        return category;
+    public String getCategoryName() {
+        return categoryName;
     }
 
     public boolean filterByCategory() {
-        return getCategory() != null;
+        return getCategoryName() != null;
     }
 
     public String getConcept() {
@@ -116,10 +116,11 @@ public class TransactionFilter {
 
         TransactionFilter that = (TransactionFilter) o;
 
-        if (bank != null ? !bank.equals(that.bank) : that.bank != null) return false;
-        if (account != null ? !account.equals(that.account) : that.account != null) return false;
+        if (bankName != null ? !bankName.equals(that.bankName) : that.bankName != null) return false;
+        if (accountNumber != null ? !accountNumber.equals(that.accountNumber) : that.accountNumber != null)
+            return false;
         if (amountRange != null ? !amountRange.equals(that.amountRange) : that.amountRange != null) return false;
-        if (category != null ? !category.equals(that.category) : that.category != null) return false;
+        if (categoryName != null ? !categoryName.equals(that.categoryName) : that.categoryName != null) return false;
         if (concept != null ? !concept.equals(that.concept) : that.concept != null) return false;
         if (dtOpRange != null ? !dtOpRange.equals(that.dtOpRange) : that.dtOpRange != null) return false;
         if (dtValRange != null ? !dtValRange.equals(that.dtValRange) : that.dtValRange != null) return false;
@@ -129,9 +130,9 @@ public class TransactionFilter {
 
     @Override
     public int hashCode() {
-        int result = bank != null ? bank.hashCode() : 0;
-        result = 31 * result + (account != null ? account.hashCode() : 0);
-        result = 31 * result + (category != null ? category.hashCode() : 0);
+        int result = bankName != null ? bankName.hashCode() : 0;
+        result = 31 * result + (accountNumber != null ? accountNumber.hashCode() : 0);
+        result = 31 * result + (categoryName != null ? categoryName.hashCode() : 0);
         result = 31 * result + (concept != null ? concept.hashCode() : 0);
         result = 31 * result + (dtOpRange != null ? dtOpRange.hashCode() : 0);
         result = 31 * result + (dtValRange != null ? dtValRange.hashCode() : 0);
@@ -141,8 +142,8 @@ public class TransactionFilter {
 
     @Override
     public String toString() {
-        return String.format("TransactionFilter{bank=%s, account=%s, category=%s, concept='%s', dtOpRange=%s, dtValRange=%s, amountRange=%s}",
-                bank, account, category, concept, dtOpRange, dtValRange, amountRange);
+        return String.format("TransactionFilter {bankName=%s, accountNumber=%s, categoryName=%s, concept='%s', dtOpRange=%s, dtValRange=%s, amountRange=%s}",
+                bankName, accountNumber, categoryName, concept, dtOpRange, dtValRange, amountRange);
     }
 
     public static class ValueRange<T> {

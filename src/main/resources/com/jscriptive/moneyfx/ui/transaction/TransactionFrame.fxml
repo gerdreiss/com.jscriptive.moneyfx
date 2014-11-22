@@ -38,45 +38,45 @@
     <center>
         <TableView fx:id="dataTable">
             <columns>
-                <PTableColumn fx:id="accountColumn" text="Account" percentageWidth="0.15">
+                <PercentageWidthTableColumn fx:id="accountColumn" text="Account" percentageWidth="0.15">
                     <cellValueFactory>
                         <PropertyValueFactory property="account"/>
                     </cellValueFactory>
-                </PTableColumn>
-                <PTableColumn fx:id="categoryColumn" text="Category" percentageWidth="0.1">
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="categoryColumn" text="Category" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="category"/>
                     </cellValueFactory>
-                </PTableColumn>
-                <PTableColumn fx:id="conceptColumn" text="Concept" percentageWidth="0.4">
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="conceptColumn" text="Concept" percentageWidth="0.4">
                     <cellValueFactory>
                         <PropertyValueFactory property="concept"/>
                     </cellValueFactory>
-                </PTableColumn>
-                <PTableColumn fx:id="dtOpColumn" text="Operation date" percentageWidth="0.1">
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="dtOpColumn" text="Operation date" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="dtOp"/>
                     </cellValueFactory>
                     <cellFactory>
                         <FormattedTableCellFactory alignment="right"/>
                     </cellFactory>
-                </PTableColumn>
-                <PTableColumn fx:id="dtValColumn" text="Value date" percentageWidth="0.1">
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="dtValColumn" text="Value date" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="dtVal"/>
                     </cellValueFactory>
                     <cellFactory>
                         <FormattedTableCellFactory alignment="right"/>
                     </cellFactory>
-                </PTableColumn>
-                <PTableColumn fx:id="amountColumn" text="Amount" percentageWidth="0.1">
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="amountColumn" text="Amount" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="amount"/>
                     </cellValueFactory>
                     <cellFactory>
                         <FormattedTableCellFactory alignment="right"/>
                     </cellFactory>
-                </PTableColumn>
+                </PercentageWidthTableColumn>
             </columns>
         </TableView>
     </center>

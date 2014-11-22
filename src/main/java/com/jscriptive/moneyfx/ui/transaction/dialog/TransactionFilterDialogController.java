@@ -2,8 +2,8 @@ package com.jscriptive.moneyfx.ui.transaction.dialog;
 
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Category;
-import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.model.TransactionFilter;
+import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
 import com.jscriptive.moneyfx.ui.common.CategoryStringConverter;
 import javafx.fxml.FXML;
@@ -43,6 +43,8 @@ public class TransactionFilterDialogController implements Initializable {
     @FXML
     private TextField amountFieldTo;
 
+    private TransactionFilter filter;
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         setupAccountComboBox();
@@ -66,7 +68,7 @@ public class TransactionFilterDialogController implements Initializable {
     }
 
     public TransactionFilter getTransactionFilter() {
-        return new TransactionFilter(
+        TransactionFilter newFilter = new TransactionFilter(
                 accountCombo.getValue() == null ? null : accountCombo.getValue().getBank().getName(),
                 accountCombo.getValue() == null ? null : accountCombo.getValue().getNumber(),
                 categoryCombo.getValue() == null ? null : categoryCombo.getValue().getName(),
@@ -81,5 +83,57 @@ public class TransactionFilterDialogController implements Initializable {
                         isBlank(amountFieldFrom.getText()) ? null : new BigDecimal(amountFieldFrom.getText()),
                         isBlank(amountFieldTo.getText()) ? null : new BigDecimal(amountFieldTo.getText()))
         );
+        if (this.filter != null) {
+            newFilter.setId(this.filter.getId());
+            this.filter = newFilter;
+        }
+        return newFilter;
+    }
+
+    public void setFilter(TransactionFilter filter) {
+        this.filter = filter;
+        if (this.filter != null) {
+            if (this.filter.filterByBank() && this.filter.filterByAccount()) {
+                this.accountCombo.getSelectionModel().select(
+                        this.accountCombo.getItems().stream().filter(
+                                account -> account.isOfBank(this.filter.getBankName()) && account.getNumber().equals(this.filter.getAccountNumber())
+                        ).findFirst().get()
+                );
+            }
+            if (this.filter.filterByCategory()) {
+                this.categoryCombo.getSelectionModel().select(
+                        this.categoryCombo.getItems().stream().filter(
+                                category -> category.getName().equals(this.filter.getCategoryName())
+                        ).findFirst().get()
+                );
+            }
+            if (this.filter.filterByConcept()) {
+                this.conceptField.setText(this.filter.getConcept());
+            }
+            if (this.filter.filterByDtOp()) {
+                if (this.filter.getDtOpRange().hasFrom()) {
+                    this.dtOpFieldFrom.setValue(this.filter.getDtOpRange().from());
+                }
+                if (this.filter.getDtOpRange().hasTo()) {
+                    this.dtOpFieldTo.setValue(this.filter.getDtOpRange().to());
+                }
+            }
+            if (this.filter.filterByDtVal()) {
+                if (this.filter.getDtValRange().hasFrom()) {
+                    this.dtValFieldFrom.setValue(this.filter.getDtValRange().from());
+                }
+                if (this.filter.getDtValRange().hasTo()) {
+                    this.dtValFieldTo.setValue(this.filter.getDtValRange().to());
+                }
+            }
+            if (this.filter.filterByAmount()) {
+                if (this.filter.getAmountRange().hasFrom()) {
+                    this.amountFieldFrom.setText(this.filter.getAmountRange().from().toString());
+                }
+                if (this.filter.getAmountRange().hasTo()) {
+                    this.amountFieldTo.setText(this.filter.getAmountRange().to().toString());
+                }
+            }
+        }
     }
 }

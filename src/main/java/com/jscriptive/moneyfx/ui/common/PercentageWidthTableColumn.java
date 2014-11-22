@@ -9,20 +9,20 @@ import javafx.scene.control.TableView;
 /**
  * Created by jscriptive.com on 19/11/14.
  */
-public class PTableColumn<S, T> extends javafx.scene.control.TableColumn<S, T> {
+public class PercentageWidthTableColumn<S, T> extends javafx.scene.control.TableColumn<S, T> {
 
     private final DoubleProperty percentageWidth = new SimpleDoubleProperty(1);
 
-    public PTableColumn() {
+    public PercentageWidthTableColumn() {
         tableViewProperty().addListener(new ChangeListener<TableView<S>>() {
 
             @Override
             public void changed(ObservableValue<? extends TableView<S>> ov, TableView<S> t, TableView<S> t1) {
-                if (PTableColumn.this.prefWidthProperty().isBound()) {
-                    PTableColumn.this.prefWidthProperty().unbind();
+                if (PercentageWidthTableColumn.this.prefWidthProperty().isBound()) {
+                    PercentageWidthTableColumn.this.prefWidthProperty().unbind();
                 }
 
-                PTableColumn.this.prefWidthProperty().bind(t1.widthProperty().multiply(percentageWidth));
+                PercentageWidthTableColumn.this.prefWidthProperty().bind(t1.widthProperty().multiply(percentageWidth));
             }
         });
     }
