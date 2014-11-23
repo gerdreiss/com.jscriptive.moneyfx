@@ -123,6 +123,7 @@ public class TransactionFilter {
         if (categoryName != null ? !categoryName.equals(that.categoryName) : that.categoryName != null) return false;
         if (concept != null ? !concept.equals(that.concept) : that.concept != null) return false;
         if (dtOpRange != null ? !dtOpRange.equals(that.dtOpRange) : that.dtOpRange != null) return false;
+        //noinspection RedundantIfStatement
         if (dtValRange != null ? !dtValRange.equals(that.dtValRange) : that.dtValRange != null) return false;
 
         return true;
@@ -179,6 +180,7 @@ public class TransactionFilter {
             ValueRange that = (ValueRange) o;
 
             if (from != null ? !from.equals(that.from) : that.from != null) return false;
+            //noinspection RedundantIfStatement
             if (to != null ? !to.equals(that.to) : that.to != null) return false;
 
             return true;

@@ -14,4 +14,6 @@ public interface BankRepository {
     Collection<Bank> findAll();
 
     Bank findByName(String name);
+
+    boolean remove(Bank bank);
 }

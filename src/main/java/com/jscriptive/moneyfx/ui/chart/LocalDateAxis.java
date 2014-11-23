@@ -123,7 +123,7 @@ public final class LocalDateAxis extends Axis<LocalDate> {
      */
     private LocalDate minDate, maxDate;
 
-    private ObjectProperty<LocalDate> lowerBound = new ObjectPropertyBase<LocalDate>() {
+    private final ObjectProperty<LocalDate> lowerBound = new ObjectPropertyBase<LocalDate>() {
         @Override
         protected void invalidated() {
             if (!isAutoRanging()) {
@@ -143,7 +143,7 @@ public final class LocalDateAxis extends Axis<LocalDate> {
         }
     };
 
-    private ObjectProperty<LocalDate> upperBound = new ObjectPropertyBase<LocalDate>() {
+    private final ObjectProperty<LocalDate> upperBound = new ObjectPropertyBase<LocalDate>() {
         @Override
         protected void invalidated() {
             if (!isAutoRanging()) {
@@ -163,7 +163,7 @@ public final class LocalDateAxis extends Axis<LocalDate> {
         }
     };
 
-    private ChartLayoutAnimator animator = new ChartLayoutAnimator(this);
+    private final ChartLayoutAnimator animator = new ChartLayoutAnimator(this);
 
     private Object currentAnimationID;
 

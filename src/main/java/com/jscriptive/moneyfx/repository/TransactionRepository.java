@@ -33,9 +33,22 @@ public interface TransactionRepository {
 
     List<Transaction> findByAccountAndCategory(Account account, Category category);
 
-    Transaction findEarliestTransaction(Account account);
+    List<Transaction> findByYear(Integer year);
+
+    List<Transaction> findByYearAndMonth(Integer year, Integer month);
+
+    List<Transaction> findIncomingByYearAndMonth(Integer year, Integer month);
+
+    List<Transaction> findOutgoingByYearAndMonth(Integer year, Integer month);
+
+    List<Transaction> findByCategory(Category category);
+
+    Transaction findEarliestTransaction();
+
+    Transaction findEarliestTransactionOfAccount(Account account);
 
     int removeByAccount(Account account);
 
-    void update(Transaction trx);
+    void updateCategory(Transaction trx, Category category);
+
 }

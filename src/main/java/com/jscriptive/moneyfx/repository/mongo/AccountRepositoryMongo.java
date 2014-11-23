@@ -11,8 +11,8 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.jscriptive.moneyfx.repository.mongo.util.NullSafeCriteriaBuilder.by;
-import static com.jscriptive.moneyfx.repository.mongo.util.NullSafeCriteriaBuilder.is;
+import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.by;
+import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.is;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -48,11 +48,14 @@ public class AccountRepositoryMongo implements AccountRepository {
 
     @Override
     public void update(Account account) {
-        Update update = Update.update("name", account.getName()).addToSet("type", account.getType()).addToSet("balance", account.getBalance());
+        Update update = new Update();
+        update.set("name", account.getName());
+        update.set("type", account.getType());
+        update.set("balance", account.getBalance());
         if (account.getBalanceDate() == null) {
-            update = update.addToSet("balanceDate", LocalDate.now());
+            update.set("balanceDate", LocalDate.now());
         } else {
-            update = update.addToSet("balanceDate", account.getBalanceDate());
+            update.set("balanceDate", account.getBalanceDate());
         }
         mongoTemplate.updateFirst(query(is(account)), update, Account.class);
     }

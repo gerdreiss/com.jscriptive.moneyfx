@@ -1,6 +1,8 @@
 package com.jscriptive.moneyfx.repository.mongo;
 
+import com.jscriptive.moneyfx.exception.BusinessException;
 import com.jscriptive.moneyfx.model.Account;
+import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.model.TransactionFilter;
 import com.jscriptive.moneyfx.repository.TransactionFilterRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +12,8 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 
-import static com.jscriptive.moneyfx.repository.mongo.util.NullSafeCriteriaBuilder.is;
+import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.isId;
+import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
 /**
@@ -34,13 +37,22 @@ public class TransactionFilterRepositoryMongo implements TransactionFilterReposi
 
     @Override
     public void update(TransactionFilter filter) {
-        Update update = Update.update("bankName", filter.getBankName())
-                .addToSet("accountNumber", filter.getAccountNumber())
-                .addToSet("categoryName", filter.getCategoryName())
-                .addToSet("concept", filter.getConcept())
-                .addToSet("dtOpRange", filter.getDtOpRange())
-                .addToSet("dtValRange", filter.getDtValRange())
-                .addToSet("amountRange", filter.getAmountRange());
-        mongoTemplate.updateFirst(query(is(filter)), update, Account.class);
+        if (filter.getId() == null) {
+            throw new BusinessException("Only persisted filter can be updated: ID must be present");
+        }
+        Update update = new Update();
+        update.set("bankName", filter.getBankName());
+        update.set("accountNumber", filter.getAccountNumber());
+        update.set("categoryName", filter.getCategoryName());
+        update.set("concept", filter.getConcept());
+        update.set("dtOpRange", filter.getDtOpRange());
+        update.set("dtValRange", filter.getDtValRange());
+        update.set("amountRange", filter.getAmountRange());
+        mongoTemplate.updateFirst(query(isId(filter.getId())), update, Account.class);
+    }
+
+    @Override
+    public int removeByCategory(Category category) {
+        return mongoTemplate.remove(query(where("category.name").is(category.getName())), TransactionFilter.class).getN();
     }
 }

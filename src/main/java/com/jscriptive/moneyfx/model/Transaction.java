@@ -33,23 +33,6 @@ public class Transaction {
 
     private BigDecimal amount;
 
-    public Transaction() {
-    }
-
-    public Transaction(Account account, String concept, LocalDate dtOp, LocalDate dtVal, BigDecimal amount) {
-        this(account, Category.OTHER, concept, dtOp, dtVal, amount);
-    }
-
-    public Transaction(Account account, Category category, String concept, LocalDate dtOp, LocalDate dtVal, BigDecimal amount) {
-        this();
-        setAccount(account);
-        setCategory(category);
-        setConcept(concept);
-        setDtOp(dtOp);
-        setDtVal(dtVal);
-        setAmount(amount);
-    }
-
     public String getId() {
         return id;
     }
@@ -122,6 +105,7 @@ public class Transaction {
         if (concept != null ? !concept.equals(that.concept) : that.concept != null) return false;
         if (dtOp != null ? !dtOp.equals(that.dtOp) : that.dtOp != null) return false;
         if (dtVal != null ? !dtVal.equals(that.dtVal) : that.dtVal != null) return false;
+        //noinspection RedundantIfStatement
         if (amount != null ? !amount.equals(that.amount) : that.amount != null) return false;
 
         return true;

@@ -48,6 +48,7 @@ public class TransactionReaderBarclaysSearchResult implements TransactionExtract
                 return null;
             }
 
+            //noinspection ConstantConditions
             return new Account(BARCLAYS, strings[0], strings[1], null);
 
         } catch (IOException e) {
@@ -95,12 +96,12 @@ public class TransactionReaderBarclaysSearchResult implements TransactionExtract
         String dtVal = row.getCell(2).getStringCellValue();
         double amount = row.getCell(3).getNumericCellValue();
 
-        return new Transaction(
-                null,
-                concept,
-                parse(dtOp.substring(dtOp.length() - 10), df),
-                parse(dtVal.substring(dtVal.length() - 10), df),
-                new BigDecimal(amount, DECIMAL64));
+        Transaction trx = new Transaction();
+        trx.setConcept(concept);
+        trx.setDtOp(parse(dtOp.substring(dtOp.length() - 10), df));
+        trx.setDtVal(parse(dtVal.substring(dtVal.length() - 10), df));
+        trx.setAmount(new BigDecimal(amount, DECIMAL64));
+        return trx;
     }
 
 }

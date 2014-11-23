@@ -1,6 +1,5 @@
 package com.jscriptive.moneyfx.ui.transaction;
 
-import com.jscriptive.moneyfx.exception.BusinessException;
 import com.jscriptive.moneyfx.importer.TransactionExtractor;
 import com.jscriptive.moneyfx.importer.TransactionExtractorProvider;
 import com.jscriptive.moneyfx.model.*;
@@ -50,7 +49,7 @@ public class TransactionFrame implements Initializable {
     @FXML
     private TableColumn<TransactionItem, String> amountColumn;
 
-    private ObservableList<TransactionItem> transactionData = FXCollections.observableArrayList();
+    private final ObservableList<TransactionItem> transactionData = FXCollections.observableArrayList();
 
     private boolean filtered = false;
 
@@ -63,24 +62,7 @@ public class TransactionFrame implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         setupRepositories();
         setupTransactionTable();
-    }
-
-    private void setupRepositories() {
-        bankRepository = RepositoryProvider.getInstance().getBankRepository();
-        accountRepository = RepositoryProvider.getInstance().getAccountRepository();
-        categoryRepository = RepositoryProvider.getInstance().getCategoryRepository();
-        transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
-    }
-
-    private void setupTransactionTable() {
-        accountColumn.setCellValueFactory(cellData -> cellData.getValue().accountProperty());
-        categoryColumn.setCellValueFactory(cellData -> cellData.getValue().categoryProperty());
-        conceptColumn.setCellValueFactory(cellData -> cellData.getValue().conceptProperty());
-        dtOpColumn.setCellValueFactory(cellData -> cellData.getValue().dtOpProperty());
-        dtValColumn.setCellValueFactory(cellData -> cellData.getValue().dtValProperty());
-        amountColumn.setCellValueFactory(cellData -> cellData.getValue().amountProperty());
-        dataTable.setItems(transactionData);
-        dataTable.addEventHandler(TabSelectionEvent.TAB_SELECTION, event -> loadTransactionData());
+        setupTableColumns();
     }
 
     public void importTransactionsFired(ActionEvent actionEvent) {
@@ -90,11 +72,10 @@ public class TransactionFrame implements Initializable {
             String bank = result.get().getKey();
             File file = result.get().getValue();
             TransactionExtractor extractor = TransactionExtractorProvider.getInstance().getTransactionExtractor(bank);
-            Account account = extractAccountData(result.get().getValue().toURI(), extractor);
-            if (account == null) {
-                throw new BusinessException("No account created!");
+            Account account = extractAccountData(file.toURI(), extractor);
+            if (account != null) {
+                extractTransactionData(file.toURI(), extractor, account);
             }
-            extractTransactionData(file.toURI(), extractor, account);
         }
     }
 
@@ -115,6 +96,18 @@ public class TransactionFrame implements Initializable {
         }
     }
 
+    private void setupRepositories() {
+        bankRepository = RepositoryProvider.getInstance().getBankRepository();
+        accountRepository = RepositoryProvider.getInstance().getAccountRepository();
+        categoryRepository = RepositoryProvider.getInstance().getCategoryRepository();
+        transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
+    }
+
+    private void setupTransactionTable() {
+        dataTable.setItems(transactionData);
+        dataTable.addEventHandler(TabSelectionEvent.TAB_SELECTION, event -> loadTransactionData());
+    }
+
     private void loadTransactionData() {
         transactionData.clear();
         transactionRepository.findAll().forEach(trx ->
@@ -128,17 +121,13 @@ public class TransactionFrame implements Initializable {
                 )));
     }
 
-    private void filterTransactionData(TransactionFilter filter) {
-        transactionData.clear();
-        transactionRepository.filterAll(filter).forEach(trx ->
-                transactionData.add(new TransactionItem(
-                        trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
-                        trx.getCategory().getName(),
-                        trx.getConcept(),
-                        trx.getDtOp().toString(),
-                        trx.getDtVal().toString(),
-                        trx.getFormattedAmount()
-                )));
+    private void setupTableColumns() {
+        accountColumn.setCellValueFactory(cellData -> cellData.getValue().accountProperty());
+        categoryColumn.setCellValueFactory(cellData -> cellData.getValue().categoryProperty());
+        conceptColumn.setCellValueFactory(cellData -> cellData.getValue().conceptProperty());
+        dtOpColumn.setCellValueFactory(cellData -> cellData.getValue().dtOpProperty());
+        dtValColumn.setCellValueFactory(cellData -> cellData.getValue().dtValProperty());
+        amountColumn.setCellValueFactory(cellData -> cellData.getValue().amountProperty());
     }
 
     private Account extractAccountData(URI file, TransactionExtractor extractor) {
@@ -168,8 +157,10 @@ public class TransactionFrame implements Initializable {
     private void extractTransactionData(URI file, TransactionExtractor extractor, Account account) {
         List<Transaction> transactions = extractor.extractTransactionData(file);
         account.updateBalance(transactions);
+        Category other = getDefaultCategory();
         transactions.forEach(trx -> {
             trx.setAccount(account);
+            trx.setCategory(other);
             persistTransaction(trx);
         });
         transactions.forEach(trx -> transactionData.add(new TransactionItem(
@@ -182,6 +173,15 @@ public class TransactionFrame implements Initializable {
         )));
     }
 
+    private Category getDefaultCategory() {
+        Category other = categoryRepository.findByName(Category.OTHER.getName());
+        if (other == null) {
+            other = Category.OTHER;
+            categoryRepository.insert(other);
+        }
+        return other;
+    }
+
     private void persistTransaction(Transaction trx) {
         Category category = categoryRepository.findByName(trx.getCategory().getName());
         if (category == null) {
@@ -189,6 +189,19 @@ public class TransactionFrame implements Initializable {
             categoryRepository.insert(category);
         }
         transactionRepository.insert(trx);
+    }
+
+    private void filterTransactionData(TransactionFilter filter) {
+        transactionData.clear();
+        transactionRepository.filterAll(filter).forEach(trx ->
+                transactionData.add(new TransactionItem(
+                        trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
+                        trx.getCategory().getName(),
+                        trx.getConcept(),
+                        trx.getDtOp().toString(),
+                        trx.getDtVal().toString(),
+                        trx.getFormattedAmount()
+                )));
     }
 
 }

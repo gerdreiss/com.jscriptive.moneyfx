@@ -57,7 +57,7 @@ public class AccountFrame implements Initializable {
     /**
      * The data as an observable list of Persons.
      */
-    private ObservableList<AccountItem> accountData = FXCollections.observableArrayList();
+    private final ObservableList<AccountItem> accountData = FXCollections.observableArrayList();
     private BankRepository bankRepository;
     private AccountRepository accountRepository;
     private TransactionRepository transactionRepository;
@@ -143,17 +143,17 @@ public class AccountFrame implements Initializable {
                 BigDecimal.valueOf(selectedItem.getBalance()),
                 LocalDate.parse(selectedItem.getBalanceDate()));
         AccountDialog dialog = new AccountDialog(toUpdate);
-        Optional<AccountItem> updatedItem = dialog.showAndWait();
-        if (updatedItem.isPresent()) {
+        Optional<AccountItem> result = dialog.showAndWait();
+        if (result.isPresent()) {
             Account account = new Account(
-                    new Bank(selectedItem.getBank()),
-                    selectedItem.getNumber(),
-                    selectedItem.getName(),
-                    selectedItem.getType(),
-                    BigDecimal.valueOf(selectedItem.getBalance()),
-                    LocalDate.parse(selectedItem.getBalanceDate()));
+                    new Bank(result.get().getBank()),
+                    result.get().getNumber(),
+                    result.get().getName(),
+                    result.get().getType(),
+                    BigDecimal.valueOf(result.get().getBalance()),
+                    LocalDate.parse(result.get().getBalanceDate()));
             accountRepository.update(account);
-            accountData.set(selectedIndex, updatedItem.get());
+            accountData.set(selectedIndex, result.get());
         }
     }
 
@@ -186,6 +186,7 @@ public class AccountFrame implements Initializable {
                     selectedItem.getType());
             transactionRepository.removeByAccount(account);
             accountRepository.remove(account);
+            bankRepository.remove(account.getBank());
             accountData.remove(selectedIndex);
         }
     }

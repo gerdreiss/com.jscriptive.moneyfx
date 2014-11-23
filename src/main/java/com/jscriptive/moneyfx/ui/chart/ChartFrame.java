@@ -21,15 +21,13 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.*;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.paint.Color;
 
 import java.math.BigDecimal;
 import java.net.URL;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.DoubleStream;
@@ -149,33 +147,28 @@ public class ChartFrame implements Initializable {
      */
     public void byCategoryToggled(ActionEvent actionEvent) {
         final PieChart pieChart = new PieChart();
-        pieChart.setTitle("Categories");
-
-        final Label caption = new Label("");
-        caption.setTextFill(Color.DARKORANGE);
-        caption.setStyle("-fx-font: 24 arial;");
+        pieChart.setTitle("Transaction balance by categories");
 
         chartFrame.setCenter(pieChart);
 
         ToggleButton toggle = (ToggleButton) actionEvent.getTarget();
         if (toggle.isSelected()) {
+            Transaction earliest = accountCombo.getValue() == null
+                    ? transactionRepository.findEarliestTransaction()
+                    : transactionRepository.findEarliestTransactionOfAccount(accountCombo.getValue());
+            pieChart.setTitle(String.format("%s for transactions from %s until %s", pieChart.getTitle(), earliest.getDtOp(), LocalDate.now()));
+
+            NumberFormat format = NumberFormat.getCurrencyInstance(Locale.GERMANY);
             ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
             categoryRepository.findAll().forEach(category -> {
-                double sum = getSum(transactionRepository.findByAccountAndCategory(accountCombo.getValue(), category));
-                pieChartData.add(new PieChart.Data(category.getName(), sum));
+                double sum = getSum(
+                        accountCombo.getValue() == null
+                                ? transactionRepository.findByCategory(category)
+                                : transactionRepository.findByAccountAndCategory(accountCombo.getValue(), category)
+                );
+                pieChartData.add(new PieChart.Data(String.format("%s %s", category.getName(), format.format(sum)), sum));
             });
             pieChart.getData().addAll(pieChartData);
-            for (final PieChart.Data data : pieChart.getData()) {
-                data.getNode().addEventHandler(MouseEvent.MOUSE_PRESSED,
-                        new EventHandler<MouseEvent>() {
-                            @Override
-                            public void handle(MouseEvent e) {
-                                caption.setTranslateX(e.getSceneX());
-                                caption.setTranslateY(e.getSceneY());
-                                caption.setText(String.valueOf(data.getPieValue()) + "%");
-                            }
-                        });
-            }
         }
     }
 
@@ -238,7 +231,10 @@ public class ChartFrame implements Initializable {
     }
 
     private void addData(Account account, XYChart.Series<String, Number> inSeries, XYChart.Series<String, Number> outSeries) {
-        Transaction earliest = transactionRepository.findEarliestTransaction(account);
+        Transaction earliest =
+                account == null
+                        ? transactionRepository.findEarliestTransaction()
+                        : transactionRepository.findEarliestTransactionOfAccount(account);
         if (earliest != null) {
             LocalDate earliestTransactionDate = earliest.getDtOp();
             int currentYear = LocalDate.now().getYear();
@@ -247,8 +243,14 @@ public class ChartFrame implements Initializable {
 
                     String monthLabel = LocalDateUtil.getMonthLabel(year, month);
 
-                    List<Transaction> incoming = transactionRepository.findIncomingByAccountAndYearAndMonth(account, year, month);
-                    List<Transaction> outgoing = transactionRepository.findOutgoingByAccountAndYearAndMonth(account, year, month);
+                    List<Transaction> incoming =
+                            account == null
+                                    ? transactionRepository.findIncomingByYearAndMonth(year, month)
+                                    : transactionRepository.findIncomingByAccountAndYearAndMonth(account, year, month);
+                    List<Transaction> outgoing =
+                            account == null
+                                    ? transactionRepository.findOutgoingByYearAndMonth(year, month)
+                                    : transactionRepository.findOutgoingByAccountAndYearAndMonth(account, year, month);
 
                     XYChart.Data<String, Number> inData = new XYChart.Data<>(monthLabel, getSum(incoming));
                     XYChart.Data<String, Number> outData = new XYChart.Data<>(monthLabel, getSum(outgoing));
@@ -260,7 +262,7 @@ public class ChartFrame implements Initializable {
         }
     }
 
-    private double getSum(List<Transaction> outgoing) {
-        return abs(outgoing.stream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum());
+    private double getSum(List<Transaction> transactions) {
+        return abs(transactions.stream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum());
     }
 }

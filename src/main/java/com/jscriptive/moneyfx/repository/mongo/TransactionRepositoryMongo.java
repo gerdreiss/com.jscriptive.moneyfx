@@ -6,7 +6,6 @@ import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.model.Transaction;
 import com.jscriptive.moneyfx.model.TransactionFilter;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -17,7 +16,8 @@ import org.springframework.stereotype.Repository;
 import java.util.Collection;
 import java.util.List;
 
-import static com.jscriptive.moneyfx.repository.mongo.util.NullSafeCriteriaBuilder.by;
+import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.by;
+import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.isId;
 import static java.math.BigDecimal.ZERO;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
@@ -79,11 +79,41 @@ public class TransactionRepositoryMongo implements TransactionRepository {
 
     @Override
     public List<Transaction> findByAccountAndCategory(Account account, Category category) {
-        return mongoTemplate.find(query(by(account).and("category.name").is(category.getName())), Transaction.class);
+        return mongoTemplate.find(query(by(account).andOperator(by(category))), Transaction.class);
     }
 
     @Override
-    public Transaction findEarliestTransaction(Account account) {
+    public List<Transaction> findByYear(Integer year) {
+        return mongoTemplate.find(query(where("dtOp.year").is(year)), Transaction.class);
+    }
+
+    @Override
+    public List<Transaction> findByYearAndMonth(Integer year, Integer month) {
+        return mongoTemplate.find(query(where("dtOp.year").is(year).and("dtOp.month").is(month)), Transaction.class);
+    }
+
+    @Override
+    public List<Transaction> findIncomingByYearAndMonth(Integer year, Integer month) {
+        return mongoTemplate.find(query(where("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").gte(ZERO)), Transaction.class);
+    }
+
+    @Override
+    public List<Transaction> findOutgoingByYearAndMonth(Integer year, Integer month) {
+        return mongoTemplate.find(query(where("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").lt(ZERO)), Transaction.class);
+    }
+
+    @Override
+    public List<Transaction> findByCategory(Category category) {
+        return mongoTemplate.find(query(by(category)), Transaction.class);
+    }
+
+    @Override
+    public Transaction findEarliestTransaction() {
+        return mongoTemplate.findOne(new Query().with(new Sort(ASC, "dtOp")), Transaction.class);
+    }
+
+    @Override
+    public Transaction findEarliestTransactionOfAccount(Account account) {
         return mongoTemplate.findOne(query(by(account)).with(new Sort(ASC, "dtOp")), Transaction.class);
     }
 
@@ -93,16 +123,9 @@ public class TransactionRepositoryMongo implements TransactionRepository {
     }
 
     @Override
-    public void update(Transaction trx) {
+    public void updateCategory(Transaction trx, Category category) {
         check(trx);
-        Query query = query(where("_id").is(new ObjectId(trx.getId())));
-        Update update = Update.update("concept", trx.getConcept())
-                .addToSet("dtOp", trx.getDtOp())
-                .addToSet("dtVal", trx.getDtVal())
-                .addToSet("amount", trx.getAmount())
-                .addToSet("category._id", new ObjectId(trx.getCategory().getId()));
-
-        mongoTemplate.updateFirst(query, update, Transaction.class);
+        mongoTemplate.updateFirst(query(isId(trx.getId())), new Update().set("category", category), Transaction.class);
     }
 
     private void check(Transaction trx) {

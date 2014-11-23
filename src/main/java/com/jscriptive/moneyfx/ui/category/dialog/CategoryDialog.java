@@ -15,7 +15,12 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class CategoryDialog extends Dialog<Pair<String, Boolean>> {
 
+    public CategoryDialog() {
+        this(null);
+    }
+
     public CategoryDialog(String category) {
+        super();
         setTitle("Category");
         setHeaderText("Enter the category name");
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
@@ -42,7 +47,9 @@ public class CategoryDialog extends Dialog<Pair<String, Boolean>> {
 
         grid.add(new Label("Category:"), 0, 0);
         grid.add(categoryTextField, 1, 0);
-        grid.add(filterRuleCheckBox, 1, 1);
+        if (StringUtils.isBlank(category)) {
+            grid.add(filterRuleCheckBox, 1, 1);
+        }
 
         GridPane.setHgrow(categoryTextField, Priority.ALWAYS);
 

@@ -65,6 +65,7 @@ public class Category {
         Category category = (Category) o;
 
         if (filterRule != null ? !filterRule.equals(category.filterRule) : category.filterRule != null) return false;
+        //noinspection RedundantIfStatement
         if (name != null ? !name.equals(category.name) : category.name != null) return false;
 
         return true;

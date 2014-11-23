@@ -1,6 +1,5 @@
 package com.jscriptive.moneyfx.repository.mongo.util;
 
-import com.jscriptive.moneyfx.exception.BusinessException;
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Bank;
 import com.jscriptive.moneyfx.model.Category;
@@ -15,106 +14,118 @@ import java.time.LocalDate;
 /**
  * Created by jscriptive.com on 22/11/2014.
  */
-public class NullSafeCriteriaBuilder {
+public class CriteriaBuilder {
+
+    /**
+     * This method creates criteria for the given ID
+     *
+     * @param id The ID
+     * @return The ID criteria
+     */
+    public static Criteria isId(String id) {
+        Criteria c = new Criteria();
+        c.and("_id").is(new ObjectId(id));
+        return c;
+    }
 
     /**
      * This method creates criteria for the given account for queries of objects that have a relation to max one account.
-     * If account is null, the method returns an empty Criteria that then can be extended using and(), or() or similar methods.
      *
      * @param account The account by which to query
      * @return The Criteria object
      */
     public static Criteria by(Account account) {
         Criteria c = new Criteria();
-        if (account != null) {
-            if (account.getId() == null) {
-                c = c.and("account.bank.name").is(account.getBank().getName()).and("account.number").is(account.getNumber());
-            } else {
-                c = c.and("account._id").is(new ObjectId(account.getId()));
-            }
+        if (StringUtils.isBlank(account.getId())) {
+            c = c.and("account.bank.name").is(account.getBank().getName()).and("account.number").is(account.getNumber());
+        } else {
+            c = c.and("account._id").is(new ObjectId(account.getId()));
         }
         return c;
     }
 
     /**
      * This method creates criteria for the given account for queries of accounts.
-     * If account is null, the method returns an empty Criteria that then can be extended using and(), or() or similar methods.
      *
      * @param account The account for which to query
      * @return The Criteria object
      */
     public static Criteria is(Account account) {
         Criteria c = new Criteria();
-        if (account != null) {
-            if (account.getId() == null) {
-                c = c.and("bank.name").is(account.getBank().getName()).and("number").is(account.getNumber());
-            } else {
-                c = c.and("_id").is(new ObjectId(account.getId()));
-            }
+        if (StringUtils.isBlank(account.getId())) {
+            c = c.and("bank.name").is(account.getBank().getName()).and("number").is(account.getNumber());
+        } else {
+            c = c.and("_id").is(new ObjectId(account.getId()));
         }
         return c;
     }
 
     /**
      * This method creates criteria for the given bank for queries of objects that have a relation to max one bank.
-     * If bank is null, the method returns an empty Criteria that then can be extended using and(), or() or similar methods.
      *
      * @param bank The bank by which to query
      * @return The Criteria object
      */
     public static Criteria by(Bank bank) {
         Criteria c = new Criteria();
-        if (bank != null) {
-            if (bank.getId() == null) {
-                c = c.and("bank.name").is(bank.getName());
-            } else {
-                c = c.and("bank._id").is(new ObjectId(bank.getId()));
-            }
+        if (StringUtils.isBlank(bank.getId())) {
+            c = c.and("bank.name").is(bank.getName());
+        } else {
+            c = c.and("bank._id").is(new ObjectId(bank.getId()));
+        }
+        return c;
+    }
+
+    /**
+     * This method creates criteria for the given bank for queries of banks.
+     *
+     * @param bank The bank for which to query
+     * @return The Criteria object
+     */
+    public static Criteria is(Bank bank) {
+        Criteria c = new Criteria();
+        if (StringUtils.isBlank(bank.getId())) {
+            c = c.and("name").is(bank.getName());
+        } else {
+            c = c.and("_id").is(new ObjectId(bank.getId()));
         }
         return c;
     }
 
     /**
      * This method creates criteria for the given category for queries of categories.
-     * If category is null, the method returns an empty Criteria that then can be extended using and(), or() or similar methods.
      *
      * @param category The category for which to query
      * @return The Criteria object
      */
     public static Criteria is(Category category) {
         Criteria c = new Criteria();
-        if (category != null) {
-            if (category.getId() == null) {
-                c = c.and("name").is(category.getName());
-            } else {
-                c = c.and("_id").is(new ObjectId(category.getId()));
-            }
+        if (StringUtils.isBlank(category.getId())) {
+            c = c.and("name").is(category.getName());
+        } else {
+            c = c.and("_id").is(new ObjectId(category.getId()));
         }
         return c;
     }
 
     /**
-     * This method creates criteria for the given transaction filter for queries of transaction filters.
-     * If the transaction filter is null, the method returns an empty Criteria that then can be extended using and(), or() or similar methods.
+     * This method creates criteria for the given category for queries of objects that have a relation to max one category.
      *
-     * @param filter The filter for which to query
+     * @param category The category by which to query
      * @return The Criteria object
      */
-    public static Criteria is(TransactionFilter filter) {
+    public static Criteria by(Category category) {
         Criteria c = new Criteria();
-        if (filter != null) {
-            if (filter.getId() == null) {
-                throw new BusinessException("Transaction filter can only be queried by ID");
-            } else {
-                c = c.and("_id").is(new ObjectId(filter.getId()));
-            }
+        if (StringUtils.isBlank(category.getId())) {
+            c = c.and("category.name").is(category.getName());
+        } else {
+            c = c.and("category._id").is(new ObjectId(category.getId()));
         }
         return c;
     }
 
     /**
      * This method creates criteria for the given bank for queries of objects that have a relation to max one bank.
-     * If bank is null, the method returns an empty Criteria that then can be extended using and(), or() or similar methods.
      *
      * @param filter The filter by which to query
      * @return The Criteria object

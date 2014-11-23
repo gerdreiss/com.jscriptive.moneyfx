@@ -11,7 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
-import static com.jscriptive.moneyfx.repository.mongo.util.NullSafeCriteriaBuilder.is;
+import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.is;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -52,9 +52,10 @@ public class CategoryRepositoryMongo implements CategoryRepository {
         if (category.getFilterRule() != null && category.getFilterRule().getId() == null) {
             throw new BusinessException("Only persisted filter rules of the category can be updated: transaction filter ID must be present");
         }
-        Update update = Update.update("name", category.getName());
+        Update update = new Update();
+        update.set("name", category.getName());
         if (category.getFilterRule() != null) {
-            update = update.addToSet("filterRule._id", category.getFilterRule().getId());
+            update.set("filterRule.", category.getFilterRule());
         }
         mongoTemplate.updateFirst(query(is(category)), update, Account.class);
     }
