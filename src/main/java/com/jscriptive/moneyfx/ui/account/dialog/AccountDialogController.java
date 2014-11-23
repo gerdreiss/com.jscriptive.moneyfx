@@ -5,6 +5,7 @@ import com.jscriptive.moneyfx.model.Bank;
 import com.jscriptive.moneyfx.repository.BankRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
+import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -12,7 +13,6 @@ import javafx.scene.Node;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.controlsfx.control.textfield.TextFields;
 
 import java.net.URL;
@@ -57,7 +57,7 @@ public class AccountDialogController implements Initializable {
                 numberField.getText(),
                 nameField.getText(),
                 typeField.getText(),
-                balanceField.getText()) || !NumberUtils.isNumber(balanceField.getText());
+                balanceField.getText()) || !CurrencyFormat.getInstance().isValid(balanceField.getText());
     }
 
     public AccountItem getAccount() {
@@ -67,7 +67,7 @@ public class AccountDialogController implements Initializable {
                 nameField.getText(),
                 typeField.getText(),
                 balanceDateField.getValue(),
-                Double.parseDouble(balanceField.getText())
+                CurrencyFormat.getInstance().parse(balanceField.getText())
         );
     }
 
@@ -92,7 +92,7 @@ public class AccountDialogController implements Initializable {
                 typeField.setText(account.getType());
             }
             if (account.getBalance() != null) {
-                balanceField.setText(account.getBalance().toString());
+                balanceField.setText(account.getFormattedBalance());
             }
             if (account.getBalanceDate() != null) {
                 balanceDateField.setValue(account.getBalanceDate());

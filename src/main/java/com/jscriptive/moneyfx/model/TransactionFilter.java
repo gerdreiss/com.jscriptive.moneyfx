@@ -8,6 +8,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static com.jscriptive.moneyfx.model.Account.NUMBER_LAST_DIGITS;
+import static com.jscriptive.moneyfx.model.Account.PREFIX_LAST_DIGITS;
+import static org.apache.commons.lang3.StringUtils.right;
+
 /**
  * Created by jscriptive.com on 20/11/2014.
  */
@@ -150,25 +154,25 @@ public class TransactionFilter {
     public String toPresentableString() {
         StringBuilder sb = new StringBuilder();
         if (filterByBank()) {
-            sb.append("bank: \"").append(bankName).append("\"; ");
+            sb.append("bank: \"").append(getBankName()).append("\"; ");
         }
         if (filterByAccount()) {
-            sb.append("account: \"").append(accountNumber).append("\"; ");
+            sb.append("account: \"").append(PREFIX_LAST_DIGITS).append(right(getAccountNumber(), NUMBER_LAST_DIGITS)).append("\"; ");
         }
         if (filterByCategory()) {
-            sb.append("category: \"").append(categoryName).append("\"; ");
+            sb.append("category: \"").append(getCategoryName()).append("\"; ");
         }
         if (filterByConcept()) {
-            sb.append("concept: \"").append(concept).append("\"; ");
+            sb.append("concept: \"").append(getConcept()).append("\"; ");
         }
         if (filterByDtOp()) {
-            sb.append("op date: ").append(dtOpRange.toPresentableString()).append("; ");
+            sb.append("op date: ").append(getDtOpRange().toPresentableString()).append("; ");
         }
         if (filterByDtVal()) {
-            sb.append("val date: ").append(dtValRange.toPresentableString()).append("; ");
+            sb.append("val date: ").append(getDtValRange().toPresentableString()).append("; ");
         }
         if (filterByAmount()) {
-            sb.append("amount: ").append(amountRange.toPresentableString()).append("; ");
+            sb.append("amount: ").append(getAmountRange().toPresentableString()).append("; ");
         }
         return sb.toString();
     }

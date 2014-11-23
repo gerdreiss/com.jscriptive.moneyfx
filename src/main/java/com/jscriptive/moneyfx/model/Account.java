@@ -12,6 +12,7 @@ import java.util.List;
 
 import static java.math.BigDecimal.ZERO;
 import static java.math.MathContext.DECIMAL32;
+import static org.apache.commons.lang3.StringUtils.right;
 
 /**
  * Created by jscriptive.com on 29/10/2014.
@@ -19,7 +20,8 @@ import static java.math.MathContext.DECIMAL32;
 @Document
 public class Account {
 
-    public static final String FOUR_DIGIT_PREFIX = " ***";
+    public static final String PREFIX_LAST_DIGITS = " ***";
+    public static final int NUMBER_LAST_DIGITS = 4;
 
     @Id
     private String id;
@@ -86,7 +88,7 @@ public class Account {
     }
 
     public String getLastFourDigits() {
-        return FOUR_DIGIT_PREFIX + StringUtils.right(number, 4);
+        return PREFIX_LAST_DIGITS + right(number, NUMBER_LAST_DIGITS);
     }
 
     public void setNumber(String number) {

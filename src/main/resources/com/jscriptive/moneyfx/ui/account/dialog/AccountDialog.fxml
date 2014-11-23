@@ -28,7 +28,7 @@
         <DatePicker fx:id="balanceDateField" onAction="#valueChanged" promptText="Balance date" editable="false"
                     prefWidth="300"
                     showWeekNumbers="true" GridPane.columnIndex="1" GridPane.rowIndex="4"/>
-        <TextField fx:id="balanceField" onKeyReleased="#valueChanged" promptText="0000.00" prefWidth="300"
+        <TextField fx:id="balanceField" onKeyReleased="#valueChanged" promptText="0000.00 €" prefWidth="300"
                    GridPane.columnIndex="1" GridPane.rowIndex="5"/>
     </children>
 </GridPane>

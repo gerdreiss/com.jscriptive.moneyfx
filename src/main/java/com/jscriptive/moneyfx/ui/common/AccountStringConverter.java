@@ -5,7 +5,7 @@ import javafx.util.StringConverter;
 
 import java.util.List;
 
-import static com.jscriptive.moneyfx.model.Account.FOUR_DIGIT_PREFIX;
+import static com.jscriptive.moneyfx.model.Account.PREFIX_LAST_DIGITS;
 import static org.apache.commons.lang3.StringUtils.substringAfter;
 import static org.apache.commons.lang3.StringUtils.substringBefore;
 
@@ -37,8 +37,8 @@ public class AccountStringConverter extends StringConverter<Account> {
     }
 
     private boolean isAccountWithBankAndFourDigits(String string, Account account) {
-        String bankName = substringBefore(string, FOUR_DIGIT_PREFIX);
-        String lastFourDigits = substringAfter(string, FOUR_DIGIT_PREFIX);
+        String bankName = substringBefore(string, PREFIX_LAST_DIGITS);
+        String lastFourDigits = substringAfter(string, PREFIX_LAST_DIGITS);
         return account.isOfBank(bankName) && account.numberEndsWith(lastFourDigits);
     }
 }
