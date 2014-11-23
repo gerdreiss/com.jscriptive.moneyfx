@@ -1,3 +1,7 @@
+.tab-pane {
+    -fx-tab-min-width: 120;
+}
+
 .table-cell {
     -fx-padding: 0.33em;
 }
