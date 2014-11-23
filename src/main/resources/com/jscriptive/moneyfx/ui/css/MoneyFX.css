@@ -1,5 +1,5 @@
 .tab-pane {
-    -fx-tab-min-width: 120;
+    -fx-tab-min-width: 120px;
 }
 
 .table-cell {
