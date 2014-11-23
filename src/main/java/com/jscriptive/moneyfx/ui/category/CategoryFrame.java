@@ -204,21 +204,23 @@ public class CategoryFrame implements Initializable {
 
     private void editCategory() {
         CategoryItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
-        if (selectedItem != null && Category.OTHER.getName().equals(selectedItem.getName())) {
-            Alert a = new Alert(ERROR);
-            a.setTitle("Error");
-            a.setHeaderText("Edit error");
-            a.setContentText("Category \"Other\" cannot be edited");
-            a.showAndWait();
-        } else {
-            CategoryDialog categoryDialog = new CategoryDialog(selectedItem.getName());
-            Optional<Pair<String, Boolean>> categoryResult = categoryDialog.showAndWait();
-            if (categoryResult.isPresent()) {
-                int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
-                Category category = categoryRepository.findByName(selectedItem.getName());
-                category.setName(categoryResult.get().getKey());
-                persistCategory(category);
-                categoryData.set(selectedIndex, new CategoryItem(category.getName(), selectedItem.getAmount(), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
+        if (selectedItem != null) {
+            if (Category.OTHER.getName().equals(selectedItem.getName())) {
+                Alert a = new Alert(ERROR);
+                a.setTitle("Error");
+                a.setHeaderText("Edit error");
+                a.setContentText("Category \"Other\" cannot be edited");
+                a.showAndWait();
+            } else {
+                CategoryDialog categoryDialog = new CategoryDialog(selectedItem.getName());
+                Optional<Pair<String, Boolean>> categoryResult = categoryDialog.showAndWait();
+                if (categoryResult.isPresent()) {
+                    int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
+                    Category category = categoryRepository.findByName(selectedItem.getName());
+                    category.setName(categoryResult.get().getKey());
+                    persistCategory(category);
+                    categoryData.set(selectedIndex, new CategoryItem(category.getName(), selectedItem.getAmount(), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
+                }
             }
         }
     }

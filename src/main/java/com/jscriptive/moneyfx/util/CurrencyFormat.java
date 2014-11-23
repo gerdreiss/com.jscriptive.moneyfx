@@ -1,16 +1,12 @@
 package com.jscriptive.moneyfx.util;
 
-import com.jscriptive.moneyfx.exception.TechnicalException;
 import org.apache.commons.validator.routines.BigDecimalValidator;
 import org.apache.commons.validator.routines.CurrencyValidator;
-
-import java.text.NumberFormat;
-import java.text.ParseException;
 
 import static java.util.Locale.GERMANY;
 
 /**
- * Created by igorreiss on 23/11/14.
+ * Created by jscriptive.com on 23/11/14.
  */
 public class CurrencyFormat {
     private static CurrencyFormat instance;

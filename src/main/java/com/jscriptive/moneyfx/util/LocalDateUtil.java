@@ -1,8 +1,6 @@
 package com.jscriptive.moneyfx.util;
 
 import java.time.*;
-import java.time.format.TextStyle;
-import java.util.Locale;
 
 import static java.time.LocalTime.MIDNIGHT;
 import static java.time.format.TextStyle.SHORT;
