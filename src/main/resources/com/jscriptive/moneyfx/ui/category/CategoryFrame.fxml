@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jscriptive.moneyfx.ui.common.FormattedTableCellFactory?>
+<?import com.jscriptive.moneyfx.ui.common.PercentageWidthTableColumn?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.PropertyValueFactory?>
@@ -49,19 +50,24 @@
                 </ContextMenu>
             </contextMenu>
             <columns>
-                <TableColumn fx:id="nameColumn" text="Name">
+                <PercentageWidthTableColumn fx:id="nameColumn" text="Name" percentageWidth="0.10">
                     <cellValueFactory>
                         <PropertyValueFactory property="name"/>
                     </cellValueFactory>
-                </TableColumn>
-                <TableColumn fx:id="amountColumn" text="Amount">
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="amountColumn" text="Amount" percentageWidth="0.10">
                     <cellValueFactory>
                         <PropertyValueFactory property="amount"/>
                     </cellValueFactory>
                     <cellFactory>
                         <FormattedTableCellFactory alignment="right"/>
                     </cellFactory>
-                </TableColumn>
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="ruleColumn" text="Name" percentageWidth="0.75">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="rule"/>
+                    </cellValueFactory>
+                </PercentageWidthTableColumn>
             </columns>
         </TableView>
     </center>

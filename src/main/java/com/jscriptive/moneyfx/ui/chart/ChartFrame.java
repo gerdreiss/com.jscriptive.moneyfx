@@ -11,7 +11,7 @@ import com.jscriptive.moneyfx.repository.CategoryRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
-import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
+import com.jscriptive.moneyfx.util.CurrencyFormat;
 import com.jscriptive.moneyfx.util.LocalDateUtil;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -27,11 +27,11 @@ import javafx.scene.layout.BorderPane;
 
 import java.math.BigDecimal;
 import java.net.URL;
-import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.DoubleStream;
 
+import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
 import static java.lang.Math.abs;
 
 /**
@@ -58,7 +58,7 @@ public class ChartFrame implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         categoryRepository = RepositoryProvider.getInstance().getCategoryRepository();
         transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
-        chartFrame.addEventHandler(TabSelectionEvent.TAB_SELECTION, event -> setupAccountComboBox());
+        chartFrame.addEventHandler(TAB_SELECTION, event -> setupAccountComboBox());
     }
 
     private void setupAccountComboBox() {
@@ -158,7 +158,6 @@ public class ChartFrame implements Initializable {
                     : transactionRepository.findEarliestTransactionOfAccount(accountCombo.getValue());
             pieChart.setTitle(String.format("%s for transactions from %s until %s", pieChart.getTitle(), earliest.getDtOp(), LocalDate.now()));
 
-            NumberFormat format = NumberFormat.getCurrencyInstance(Locale.GERMANY);
             ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
             categoryRepository.findAll().forEach(category -> {
                 double sum = getSum(
@@ -166,7 +165,7 @@ public class ChartFrame implements Initializable {
                                 ? transactionRepository.findByCategory(category)
                                 : transactionRepository.findByAccountAndCategory(accountCombo.getValue(), category)
                 );
-                pieChartData.add(new PieChart.Data(String.format("%s %s", category.getName(), format.format(sum)), sum));
+                pieChartData.add(new PieChart.Data(String.format("%s %s", category.getName(), CurrencyFormat.getInstance().format(sum)), sum));
             });
             pieChart.getData().addAll(pieChartData);
         }
@@ -263,6 +262,6 @@ public class ChartFrame implements Initializable {
     }
 
     private double getSum(List<Transaction> transactions) {
-        return abs(transactions.stream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum());
+        return abs(transactions.parallelStream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum());
     }
 }

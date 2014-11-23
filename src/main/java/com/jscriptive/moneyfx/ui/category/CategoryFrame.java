@@ -14,8 +14,8 @@ import com.jscriptive.moneyfx.repository.TransactionFilterRepository;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.category.dialog.CategoryDialog;
 import com.jscriptive.moneyfx.ui.category.item.CategoryItem;
-import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionFilterDialog;
+import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -34,6 +34,14 @@ import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.DoubleStream;
+
+import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
+import static java.lang.Boolean.TRUE;
+import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
+import static javafx.scene.control.Alert.AlertType.ERROR;
+import static javafx.scene.control.ButtonType.OK;
+import static javafx.scene.input.KeyCode.DELETE;
 
 /**
  * @author jscriptive.com
@@ -45,7 +53,9 @@ public class CategoryFrame implements Initializable {
     @FXML
     private TableColumn<CategoryItem, String> nameColumn;
     @FXML
-    private TableColumn<CategoryItem, Number> amountColumn;
+    private TableColumn<CategoryItem, String> amountColumn;
+    @FXML
+    private TableColumn<CategoryItem, String> ruleColumn;
 
     private final ObservableList<CategoryItem> categoryData = FXCollections.observableArrayList();
 
@@ -111,7 +121,7 @@ public class CategoryFrame implements Initializable {
      */
     public void keyTyped(KeyEvent event) {
         KeyCode keyCode = event.getCode();
-        if (KeyCode.DELETE == keyCode) {
+        if (DELETE == keyCode) {
             deleteCategory();
         }
     }
@@ -129,15 +139,19 @@ public class CategoryFrame implements Initializable {
 
     private void setupCategoryTable() {
         dataTable.setItems(categoryData);
-        dataTable.addEventHandler(TabSelectionEvent.TAB_SELECTION, event -> {
+        dataTable.addEventHandler(TAB_SELECTION, event -> {
             categoryData.clear();
-            categoryRepository.findAll().forEach(category -> categoryData.add(new CategoryItem(category.getName(), 0.0)));
+            categoryRepository.findAll().forEach(category -> {
+                double sum = transactionRepository.findByCategory(category).parallelStream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum();
+                categoryData.add(new CategoryItem(category.getName(), CurrencyFormat.getInstance().format(sum), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
+            });
         });
     }
 
     private void initializeColumns() {
         nameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
         amountColumn.setCellValueFactory(cellData -> cellData.getValue().amountProperty());
+        ruleColumn.setCellValueFactory(cellData -> cellData.getValue().ruleProperty());
     }
 
     private void addNewCategory(ActionEvent actionEvent) {
@@ -146,17 +160,17 @@ public class CategoryFrame implements Initializable {
         if (categoryResult.isPresent()) {
             Category found = categoryRepository.findByName(categoryResult.get().getKey());
             if (found != null) {
-                Alert alert = new Alert(Alert.AlertType.ERROR);
+                Alert alert = new Alert(ERROR);
                 alert.setTitle("Error");
                 alert.setHeaderText("Category exists");
                 alert.setContentText("Category with name " + found.getName() + " already exists. Please choose another name for the new category.");
                 Optional<ButtonType> result = alert.showAndWait();
-                if (result.isPresent() && result.get() == ButtonType.OK) {
+                if (result.isPresent() && result.get() == OK) {
                     addCategoryFired(actionEvent);
                 }
             } else {
                 Category category = new Category(categoryResult.get().getKey());
-                if (Boolean.TRUE.equals(categoryResult.get().getValue())) {
+                if (TRUE.equals(categoryResult.get().getValue())) {
                     TransactionFilterDialog filterDialog = new TransactionFilterDialog();
                     Optional<TransactionFilter> filterResult = filterDialog.showAndWait();
                     if (filterResult.isPresent()) {
@@ -166,30 +180,32 @@ public class CategoryFrame implements Initializable {
                     }
                 }
                 persistCategory(category);
-                categoryData.add(new CategoryItem(category.getName(), 0.0));
+                double sum = 0.0;
                 if (category.getFilterRule() != null) {
-                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    Alert alert = new Alert(CONFIRMATION);
                     alert.setTitle("Apply new rule");
                     alert.setHeaderText("Apply new category rule?");
                     alert.setContentText("Should the newly created category filter rule be applied on existing transactions?");
                     Optional<ButtonType> result = alert.showAndWait();
-                    if (result.isPresent() && result.get() == ButtonType.OK) {
-                        applyCategoryRule(category);
+                    if (result.isPresent() && result.get() == OK) {
+                        sum = applyCategoryRule(category);
                     }
                 }
+                categoryData.add(new CategoryItem(category.getName(), CurrencyFormat.getInstance().format(sum), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
             }
         }
     }
 
-    private void applyCategoryRule(Category category) {
+    private double applyCategoryRule(Category category) {
         List<Transaction> transactions = transactionRepository.filterAll(category.getFilterRule());
         transactions.forEach(trx -> transactionRepository.updateCategory(trx, category));
+        return transactions.parallelStream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum();
     }
 
     private void editCategory() {
         CategoryItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
-        if (Category.OTHER.getName().equals(selectedItem.getName())) {
-            Alert a = new Alert(Alert.AlertType.ERROR);
+        if (selectedItem != null && Category.OTHER.getName().equals(selectedItem.getName())) {
+            Alert a = new Alert(ERROR);
             a.setTitle("Error");
             a.setHeaderText("Edit error");
             a.setContentText("Category \"Other\" cannot be edited");
@@ -202,7 +218,7 @@ public class CategoryFrame implements Initializable {
                 Category category = categoryRepository.findByName(selectedItem.getName());
                 category.setName(categoryResult.get().getKey());
                 persistCategory(category);
-                categoryData.set(selectedIndex, new CategoryItem(category.getName(), 0.0));
+                categoryData.set(selectedIndex, new CategoryItem(category.getName(), selectedItem.getAmount(), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
             }
         }
     }
@@ -222,20 +238,21 @@ public class CategoryFrame implements Initializable {
             categoryRepository.update(category);
         }
     }
+
     private void deleteCategory() {
         CategoryItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
         if (Category.OTHER.getName().equals(selectedItem.getName())) {
-            Alert a = new Alert(Alert.AlertType.ERROR);
+            Alert a = new Alert(ERROR);
             a.setHeaderText("Delete error");
             a.setContentText("Category \"Other\" cannot be deleted");
             a.showAndWait();
         } else {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            Alert alert = new Alert(CONFIRMATION);
             alert.setTitle("Delete category");
             alert.setHeaderText("Confirm delete category");
             alert.setContentText(String.format("Are you sure you want to delete the selected category: %s? The transactions in this category will be moved to category \"Other\"", selectedItem.getName()));
             Optional<ButtonType> result = alert.showAndWait();
-            if (result.isPresent() && result.get() == ButtonType.OK) {
+            if (result.isPresent() && result.get() == OK) {
                 int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
                 Category category = new Category(selectedItem.getName());
                 List<Transaction> transactions = transactionRepository.findByCategory(category);

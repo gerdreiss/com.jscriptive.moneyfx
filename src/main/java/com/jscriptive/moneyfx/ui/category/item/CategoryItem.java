@@ -1,7 +1,5 @@
 package com.jscriptive.moneyfx.ui.category.item;
 
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
@@ -11,15 +9,13 @@ import javafx.beans.property.StringProperty;
 public class CategoryItem {
 
     private final StringProperty name;
-    private final DoubleProperty amount;
+    private final StringProperty amount;
+    private final StringProperty rule;
 
-    public CategoryItem() {
-        this("", 0.0);
-    }
-
-    public CategoryItem(String name, double amount) {
+    public CategoryItem(String name, String amount, String rule) {
         this.name = new SimpleStringProperty(name);
-        this.amount = new SimpleDoubleProperty(amount);
+        this.amount = new SimpleStringProperty(amount);
+        this.rule = new SimpleStringProperty(rule);
     }
 
     public String getName() {
@@ -34,15 +30,27 @@ public class CategoryItem {
         this.name.set(name);
     }
 
-    public double getAmount() {
+    public String getAmount() {
         return amount.get();
     }
 
-    public DoubleProperty amountProperty() {
+    public StringProperty amountProperty() {
         return amount;
     }
 
-    public void setAmount(double amount) {
+    public void setAmount(String amount) {
         this.amount.set(amount);
+    }
+
+    public String getRule() {
+        return rule.get();
+    }
+
+    public StringProperty ruleProperty() {
+        return rule;
+    }
+
+    public void setRule(String rule) {
+        this.rule.set(rule);
     }
 }

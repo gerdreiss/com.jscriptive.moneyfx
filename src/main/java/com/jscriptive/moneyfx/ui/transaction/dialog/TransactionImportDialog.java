@@ -3,12 +3,12 @@ package com.jscriptive.moneyfx.ui.transaction.dialog;
 import com.jscriptive.moneyfx.model.Bank;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
-import javafx.scene.control.*;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -18,6 +18,12 @@ import org.controlsfx.control.textfield.TextFields;
 import java.io.File;
 import java.util.Collection;
 import java.util.stream.Collectors;
+
+import static javafx.scene.control.ButtonBar.ButtonData.OK_DONE;
+import static javafx.scene.control.ButtonType.CANCEL;
+import static javafx.scene.input.KeyEvent.KEY_TYPED;
+import static javafx.scene.input.MouseEvent.MOUSE_CLICKED;
+import static javafx.scene.layout.Priority.ALWAYS;
 
 /**
  * Created by jscriptive.com on 17/11/2014.
@@ -34,8 +40,8 @@ public class TransactionImportDialog extends Dialog<Pair<String, File>> {
         stage.getIcons().add(new Image("com/jscriptive/moneyfx/ui/images/Data-Import-48.png"));
 
         // Set the button types.
-        ButtonType importButtonType = new ButtonType("Import", ButtonBar.ButtonData.OK_DONE);
-        getDialogPane().getButtonTypes().addAll(importButtonType, ButtonType.CANCEL);
+        ButtonType importButtonType = new ButtonType("Import", OK_DONE);
+        getDialogPane().getButtonTypes().addAll(importButtonType, CANCEL);
         // Enable/Disable login button depending on whether a username was entered.
         Node importButton = getDialogPane().lookupButton(importButtonType);
         importButton.setDisable(true);
@@ -55,16 +61,16 @@ public class TransactionImportDialog extends Dialog<Pair<String, File>> {
 
         TextField filePathTextField = new TextField();
         filePathTextField.setEditable(false);
-        filePathTextField.addEventHandler(KeyEvent.ANY, event -> selectFile(filePathTextField, importButton));
-        filePathTextField.addEventHandler(MouseEvent.MOUSE_CLICKED, event -> selectFile(filePathTextField, importButton));
+        filePathTextField.addEventHandler(KEY_TYPED, event -> selectFile(filePathTextField, importButton));
+        filePathTextField.addEventHandler(MOUSE_CLICKED, event -> selectFile(filePathTextField, importButton));
 
         grid.add(new Label("Bank:"), 0, 0);
         grid.add(bankTextField, 1, 0);
         grid.add(new Label("File:"), 0, 1);
         grid.add(filePathTextField, 1, 1);
 
-        GridPane.setHgrow(bankTextField, Priority.ALWAYS);
-        GridPane.setHgrow(filePathTextField, Priority.ALWAYS);
+        GridPane.setHgrow(bankTextField, ALWAYS);
+        GridPane.setHgrow(filePathTextField, ALWAYS);
 
         getDialogPane().setContent(grid);
 

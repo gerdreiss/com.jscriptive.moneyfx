@@ -4,13 +4,17 @@ import java.time.*;
 import java.time.format.TextStyle;
 import java.util.Locale;
 
+import static java.time.LocalTime.MIDNIGHT;
+import static java.time.format.TextStyle.SHORT;
+import static java.util.Locale.ENGLISH;
+
 /**
  * Created by jscriptive.com on 19/11/14.
  */
 public class LocalDateUtil {
 
     public static long toMillis(LocalDate ld) {
-        return LocalDateTime.of(ld, LocalTime.MIDNIGHT).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
+        return LocalDateTime.of(ld, MIDNIGHT).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli();
     }
 
     public static LocalDate toLocalDate(long millis) {
@@ -18,6 +22,7 @@ public class LocalDateUtil {
     }
 
     public static String getMonthLabel(int year, int month) {
-        return Month.of(month).getDisplayName(TextStyle.SHORT, Locale.ENGLISH) + " " + year;
+        return Month.of(month).getDisplayName(SHORT, ENGLISH) + " " + year;
     }
+
 }

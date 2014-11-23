@@ -147,6 +147,32 @@ public class TransactionFilter {
                 bankName, accountNumber, categoryName, concept, dtOpRange, dtValRange, amountRange);
     }
 
+    public String toPresentableString() {
+        StringBuilder sb = new StringBuilder();
+        if (filterByBank()) {
+            sb.append("bank: \"").append(bankName).append("\"; ");
+        }
+        if (filterByAccount()) {
+            sb.append("account: \"").append(accountNumber).append("\"; ");
+        }
+        if (filterByCategory()) {
+            sb.append("category: \"").append(categoryName).append("\"; ");
+        }
+        if (filterByConcept()) {
+            sb.append("concept: \"").append(concept).append("\"; ");
+        }
+        if (filterByDtOp()) {
+            sb.append("op date: ").append(dtOpRange.toPresentableString()).append("; ");
+        }
+        if (filterByDtVal()) {
+            sb.append("val date: ").append(dtValRange.toPresentableString()).append("; ");
+        }
+        if (filterByAmount()) {
+            sb.append("amount: ").append(amountRange.toPresentableString()).append("; ");
+        }
+        return sb.toString();
+    }
+
     public static class ValueRange<T> {
         private final T from;
         private final T to;
@@ -196,6 +222,19 @@ public class TransactionFilter {
         @Override
         public String toString() {
             return String.format("ValueRange{from=%s, to=%s}", from, to);
+        }
+
+        public String toPresentableString() {
+            StringBuilder sb = new StringBuilder();
+            if (hasFrom() && hasTo()) {
+                sb.append("between ").append(from()).append(" and ").append(to());
+            } else if (hasFrom()) {
+                sb.append(" > ").append(from());
+            } else if (hasTo()) {
+                sb.append(" < ").append(to());
+            }
+
+            return sb.toString();
         }
     }
 }

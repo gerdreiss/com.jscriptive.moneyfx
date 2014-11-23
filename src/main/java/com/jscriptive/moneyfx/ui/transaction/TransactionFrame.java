@@ -6,7 +6,6 @@ import com.jscriptive.moneyfx.model.*;
 import com.jscriptive.moneyfx.repository.*;
 import com.jscriptive.moneyfx.ui.account.dialog.AccountDialog;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
-import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionFilterDialog;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionImportDialog;
 import com.jscriptive.moneyfx.ui.transaction.item.TransactionItem;
@@ -28,6 +27,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+
+import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
+import static javafx.scene.control.SelectionMode.MULTIPLE;
 
 /**
  * @author jscriptive.com
@@ -104,8 +106,9 @@ public class TransactionFrame implements Initializable {
     }
 
     private void setupTransactionTable() {
+        dataTable.getSelectionModel().setSelectionMode(MULTIPLE);
         dataTable.setItems(transactionData);
-        dataTable.addEventHandler(TabSelectionEvent.TAB_SELECTION, event -> loadTransactionData());
+        dataTable.addEventHandler(TAB_SELECTION, event -> loadTransactionData());
     }
 
     private void loadTransactionData() {

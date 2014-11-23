@@ -1,21 +1,18 @@
 package com.jscriptive.moneyfx.model;
 
+import com.jscriptive.moneyfx.util.CurrencyFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.time.LocalDate;
-import java.util.Locale;
 
 /**
  * Created by jscriptive.com on 29/10/2014.
  */
 @Document
 public class Transaction {
-
-    private static final NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
     @Id
     private String id;
@@ -78,7 +75,7 @@ public class Transaction {
     }
 
     public String getFormattedAmount() {
-        return formatter.format(getAmount().doubleValue());
+        return CurrencyFormat.getInstance().format(getAmount().doubleValue());
     }
 
     public void setAmount(BigDecimal amount) {

@@ -5,10 +5,13 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.Priority;
 import javafx.stage.Stage;
 import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+
+import static javafx.scene.control.ButtonBar.ButtonData.OK_DONE;
+import static javafx.scene.control.ButtonType.CANCEL;
+import static javafx.scene.layout.Priority.ALWAYS;
 
 /**
  * Created by jscriptive.com on 17/11/2014.
@@ -27,8 +30,8 @@ public class CategoryDialog extends Dialog<Pair<String, Boolean>> {
         stage.getIcons().add(new Image("com/jscriptive/moneyfx/ui/images/Category-48.png"));
 
         // Set the button types.
-        ButtonType saveButtonType = new ButtonType("Save", ButtonBar.ButtonData.OK_DONE);
-        getDialogPane().getButtonTypes().addAll(saveButtonType, ButtonType.CANCEL);
+        ButtonType saveButtonType = new ButtonType("Save", OK_DONE);
+        getDialogPane().getButtonTypes().addAll(saveButtonType, CANCEL);
         // Enable/Disable login button depending on whether a username was entered.
         Node importButton = getDialogPane().lookupButton(saveButtonType);
         importButton.setDisable(true);
@@ -51,7 +54,7 @@ public class CategoryDialog extends Dialog<Pair<String, Boolean>> {
             grid.add(filterRuleCheckBox, 1, 1);
         }
 
-        GridPane.setHgrow(categoryTextField, Priority.ALWAYS);
+        GridPane.setHgrow(categoryTextField, ALWAYS);
 
         getDialogPane().setContent(grid);
 

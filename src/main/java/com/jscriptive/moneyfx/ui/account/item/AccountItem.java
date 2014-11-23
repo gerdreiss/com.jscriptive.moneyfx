@@ -1,20 +1,17 @@
 package com.jscriptive.moneyfx.ui.account.item;
 
+import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-import java.text.NumberFormat;
 import java.time.LocalDate;
-import java.util.Locale;
 
 /**
  * Created by jscriptive.com on 13/11/2014.
  */
 public class AccountItem {
-
-    private static final NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
     private final StringProperty bank;
     private final StringProperty number;
@@ -35,7 +32,7 @@ public class AccountItem {
         this.type = new SimpleStringProperty(type);
         this.balanceDate = new SimpleStringProperty(balanceDate.toString());
         this.balance = new SimpleDoubleProperty(balance);
-        this.formattedBalance = new SimpleStringProperty(formatter.format(balance));
+        this.formattedBalance = new SimpleStringProperty(CurrencyFormat.getInstance().format(balance));
     }
 
     public String getBank() {

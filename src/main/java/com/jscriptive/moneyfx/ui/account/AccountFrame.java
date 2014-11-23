@@ -13,7 +13,6 @@ import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.account.dialog.AccountDialog;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
-import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -32,6 +31,11 @@ import java.net.URL;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.ResourceBundle;
+
+import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
+import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
+import static javafx.scene.control.ButtonType.OK;
+import static javafx.scene.input.KeyCode.DELETE;
 
 /**
  * @author jscriptive.com
@@ -77,7 +81,7 @@ public class AccountFrame implements Initializable {
 
     private void setupAccountTable() {
         dataTable.setItems(accountData);
-        dataTable.addEventHandler(TabSelectionEvent.TAB_SELECTION, event -> loadAccountData());
+        dataTable.addEventHandler(TAB_SELECTION, event -> loadAccountData());
     }
 
     private void loadAccountData() {
@@ -163,13 +167,13 @@ public class AccountFrame implements Initializable {
 
     public void keyTyped(KeyEvent event) {
         KeyCode keyCode = event.getCode();
-        if (KeyCode.DELETE == keyCode) {
+        if (DELETE == keyCode) {
             deleteAccount();
         }
     }
 
     private void deleteAccount() {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        Alert alert = new Alert(CONFIRMATION);
         alert.setTitle("Delete account");
         alert.setHeaderText("Confirm delete account");
         AccountItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
@@ -177,7 +181,7 @@ public class AccountFrame implements Initializable {
                 String.format("Are you sure you want to delete the selected account: %s %s? All transactions of that account will also be deleted.",
                         selectedItem.getBank(), selectedItem.getNumber()));
         Optional<ButtonType> result = alert.showAndWait();
-        if (result.get() == ButtonType.OK) {
+        if (result.get() == OK) {
             int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
             Account account = new Account(
                     new Bank(selectedItem.getBank()),

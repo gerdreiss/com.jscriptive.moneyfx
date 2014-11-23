@@ -1,17 +1,17 @@
 package com.jscriptive.moneyfx.model;
 
+import com.jscriptive.moneyfx.util.CurrencyFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Locale;
 
-import static java.math.MathContext.DECIMAL64;
+import static java.math.BigDecimal.ZERO;
+import static java.math.MathContext.DECIMAL32;
 
 /**
  * Created by jscriptive.com on 29/10/2014.
@@ -20,8 +20,6 @@ import static java.math.MathContext.DECIMAL64;
 public class Account {
 
     public static final String FOUR_DIGIT_PREFIX = " ***";
-
-    private static final NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.GERMANY);
 
     @Id
     private String id;
@@ -44,7 +42,7 @@ public class Account {
     }
 
     public Account(Bank bank, String number, String name, String type) {
-        this(bank, number, name, type, BigDecimal.ZERO);
+        this(bank, number, name, type, ZERO);
     }
 
     public Account(Bank bank, String number, String name, String type, BigDecimal balance) {
@@ -124,7 +122,7 @@ public class Account {
     }
 
     public String getFormattedBalance() {
-        return formatter.format(getBalance().doubleValue());
+        return CurrencyFormat.getInstance().format(getBalance().doubleValue());
     }
 
     public void setBalance(BigDecimal balance) {
@@ -182,7 +180,7 @@ public class Account {
         read.forEach(trx -> {
             // if the transaction date is before or the same as the account balance date - subtract the amount from the account balance
             if (!trx.getDtOp().isAfter(getBalanceDate())) {
-                setBalance(getBalance().subtract(trx.getAmount(), DECIMAL64));
+                setBalance(getBalance().subtract(trx.getAmount(), DECIMAL32));
                 setBalanceDate(trx.getDtOp());
             }
         });
@@ -191,9 +189,9 @@ public class Account {
 
     public BigDecimal calculateCurrentBalance(Transaction trx) {
         if (!trx.getDtOp().isBefore(getBalanceDate())) {
-            setBalance(getBalance().add(trx.getAmount(), DECIMAL64));
+            setBalance(getBalance().add(trx.getAmount(), DECIMAL32));
         } else {
-            setBalance(getBalance().subtract(trx.getAmount(), DECIMAL64));
+            setBalance(getBalance().subtract(trx.getAmount(), DECIMAL32));
         }
         setBalanceDate(trx.getDtOp());
         return getBalance();
