@@ -36,11 +36,7 @@ public class CriteriaBuilder {
      */
     public static Criteria by(Account account) {
         Criteria c = new Criteria();
-        if (StringUtils.isBlank(account.getId())) {
-            c = c.and("account.bank.name").is(account.getBank().getName()).and("account.number").is(account.getNumber());
-        } else {
-            c = c.and("account._id").is(new ObjectId(account.getId()));
-        }
+        c = c.and("account.$id").is(new ObjectId(account.getId()));
         return c;
     }
 
@@ -68,11 +64,7 @@ public class CriteriaBuilder {
      */
     public static Criteria by(Bank bank) {
         Criteria c = new Criteria();
-        if (StringUtils.isBlank(bank.getId())) {
-            c = c.and("bank.name").is(bank.getName());
-        } else {
-            c = c.and("bank._id").is(new ObjectId(bank.getId()));
-        }
+        c = c.and("bank.$id").is(new ObjectId(bank.getId()));
         return c;
     }
 
@@ -93,6 +85,18 @@ public class CriteriaBuilder {
     }
 
     /**
+     * This method creates criteria for the given category for queries of objects that have a relation to max one category.
+     *
+     * @param category The category by which to query
+     * @return The Criteria object
+     */
+    public static Criteria by(Category category) {
+        Criteria c = new Criteria();
+        c = c.and("category.$id").is(new ObjectId(category.getId()));
+        return c;
+    }
+
+    /**
      * This method creates criteria for the given category for queries of categories.
      *
      * @param category The category for which to query
@@ -109,22 +113,6 @@ public class CriteriaBuilder {
     }
 
     /**
-     * This method creates criteria for the given category for queries of objects that have a relation to max one category.
-     *
-     * @param category The category by which to query
-     * @return The Criteria object
-     */
-    public static Criteria by(Category category) {
-        Criteria c = new Criteria();
-        if (StringUtils.isBlank(category.getId())) {
-            c = c.and("category.name").is(category.getName());
-        } else {
-            c = c.and("category._id").is(new ObjectId(category.getId()));
-        }
-        return c;
-    }
-
-    /**
      * This method creates criteria for the given bank for queries of objects that have a relation to max one bank.
      *
      * @param filter The filter by which to query
@@ -135,14 +123,11 @@ public class CriteriaBuilder {
         if (filter == null) {
             return criteria;
         }
-        if (filter.filterByBank()) {
-            criteria = addBank(criteria, filter.getBankName());
-        }
         if (filter.filterByAccount()) {
-            criteria = addAccount(criteria, filter.getAccountNumber());
+            criteria = addAccount(criteria, filter.getAccount());
         }
         if (filter.filterByCategory()) {
-            criteria = addCategory(criteria, filter.getCategoryName());
+            criteria = addCategory(criteria, filter.getCategory());
         }
         if (filter.filterByConcept()) {
             criteria = addConcept(criteria, filter.getConcept());
@@ -159,25 +144,12 @@ public class CriteriaBuilder {
         return criteria;
     }
 
-    private static Criteria addBank(Criteria criteria, String bank) {
-        if (StringUtils.isNotBlank(bank)) {
-            criteria = criteria.and("account.bank.name").is(bank);
-        }
-        return criteria;
+    private static Criteria addAccount(Criteria criteria, Account account) {
+        return criteria.and("account.$id").is(new ObjectId(account.getId()));
     }
 
-    private static Criteria addAccount(Criteria criteria, String account) {
-        if (StringUtils.isNotBlank(account)) {
-            criteria = criteria.and("account.number").is(account);
-        }
-        return criteria;
-    }
-
-    private static Criteria addCategory(Criteria criteria, String category) {
-        if (StringUtils.isNotBlank(category)) {
-            criteria = criteria.and("category.name").is(category);
-        }
-        return criteria;
+    private static Criteria addCategory(Criteria criteria, Category category) {
+        return criteria.and("category.$id").is(new ObjectId(category.getId()));
     }
 
     private static Criteria addConcept(Criteria criteria, String concept) {

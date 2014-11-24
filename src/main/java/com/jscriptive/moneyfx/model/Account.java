@@ -1,9 +1,11 @@
 package com.jscriptive.moneyfx.model;
 
 import com.jscriptive.moneyfx.util.CurrencyFormat;
+import com.jscriptive.moneyfx.util.LocalDateUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -25,19 +27,14 @@ public class Account {
 
     @Id
     private String id;
-
+    @DBRef
     private Bank bank;
-
     @Indexed
     private String number;
-
     @Indexed
     private String name;
-
     private String type;
-
     private BigDecimal balance;
-
     private LocalDate balanceDate;
 
     public Account() {
@@ -48,17 +45,10 @@ public class Account {
     }
 
     public Account(Bank bank, String number, String name, String type, BigDecimal balance) {
-        this();
-        setBank(bank);
-        setNumber(number);
-        setName(name);
-        setType(type);
-        setBalance(balance);
-        setBalanceDate(LocalDate.now());
+        this(bank, number, name, type, balance, LocalDate.now());
     }
 
     public Account(Bank bank, String number, String name, String type, BigDecimal balance, LocalDate balanceDate) {
-        this();
         setBank(bank);
         setNumber(number);
         setName(name);
@@ -79,7 +69,7 @@ public class Account {
         return bank;
     }
 
-    public void setBank(Bank bank) {
+    private void setBank(Bank bank) {
         this.bank = bank;
     }
 
@@ -91,7 +81,7 @@ public class Account {
         return PREFIX_LAST_DIGITS + right(number, NUMBER_LAST_DIGITS);
     }
 
-    public void setNumber(String number) {
+    private void setNumber(String number) {
         this.number = number;
     }
 
@@ -99,7 +89,7 @@ public class Account {
         return name;
     }
 
-    public void setName(String name) {
+    private void setName(String name) {
         this.name = name;
     }
 
@@ -107,12 +97,16 @@ public class Account {
         return type;
     }
 
-    public void setType(String type) {
+    private void setType(String type) {
         this.type = type;
     }
 
     public LocalDate getBalanceDate() {
         return balanceDate;
+    }
+
+    public String getFormattedBalanceDate() {
+        return getBalanceDate().format(LocalDateUtils.DATE_FORMATTER);
     }
 
     public void setBalanceDate(LocalDate balanceDate) {
@@ -174,7 +168,7 @@ public class Account {
 
     @Override
     public String toString() {
-        return String.format("Account{bank=%s, number='%s', name='%s', type='%s', balance=%s, balanceDate=%s}", bank, number, name, type, getFormattedBalance(), balanceDate);
+        return String.format("Account{bank=%s, number='%s', name='%s', type='%s', balance=%s, balanceDate=%s}", getBank(), getNumber(), getName(), getType(), getFormattedBalance(), getFormattedBalanceDate());
     }
 
     public BigDecimal calculateStartingBalance(List<Transaction> read) {

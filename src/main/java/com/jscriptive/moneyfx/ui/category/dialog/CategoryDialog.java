@@ -34,7 +34,7 @@ public class CategoryDialog extends Dialog<Pair<String, Boolean>> {
         getDialogPane().getButtonTypes().addAll(saveButtonType, CANCEL);
         // Enable/Disable login button depending on whether a username was entered.
         Node importButton = getDialogPane().lookupButton(saveButtonType);
-        importButton.setDisable(true);
+        importButton.setDisable(StringUtils.isBlank(category));
 
         // Create the username and password labels and fields.
         GridPane grid = new GridPane();
@@ -50,9 +50,7 @@ public class CategoryDialog extends Dialog<Pair<String, Boolean>> {
 
         grid.add(new Label("Category:"), 0, 0);
         grid.add(categoryTextField, 1, 0);
-        if (StringUtils.isBlank(category)) {
-            grid.add(filterRuleCheckBox, 1, 1);
-        }
+        grid.add(filterRuleCheckBox, 1, 1);
 
         GridPane.setHgrow(categoryTextField, ALWAYS);
 

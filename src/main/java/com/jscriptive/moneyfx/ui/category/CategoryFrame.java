@@ -141,7 +141,13 @@ public class CategoryFrame implements Initializable {
         dataTable.setItems(categoryData);
         dataTable.addEventHandler(TAB_SELECTION, event -> {
             categoryData.clear();
-            categoryRepository.findAll().forEach(category -> {
+            List<Category> categories = categoryRepository.findAll();
+            if (categories.isEmpty()) {
+                Category other = Category.OTHER;
+                categoryRepository.save(other);
+                categories.add(other);
+            }
+            categories.forEach(category -> {
                 double sum = transactionRepository.findByCategory(category).parallelStream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum();
                 categoryData.add(new CategoryItem(category.getName(), CurrencyFormat.getInstance().format(sum), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
             });
@@ -171,15 +177,9 @@ public class CategoryFrame implements Initializable {
             } else {
                 Category category = new Category(categoryResult.get().getKey());
                 if (TRUE.equals(categoryResult.get().getValue())) {
-                    TransactionFilterDialog filterDialog = new TransactionFilterDialog();
-                    Optional<TransactionFilter> filterResult = filterDialog.showAndWait();
-                    if (filterResult.isPresent()) {
-                        TransactionFilter filter = filterResult.get();
-                        persistFilterRule(filter);
-                        category.setFilterRule(filter);
-                    }
+                    editTransactionFilter(category);
                 }
-                persistCategory(category);
+                categoryRepository.save(category);
                 double sum = 0.0;
                 if (category.getFilterRule() != null) {
                     Alert alert = new Alert(CONFIRMATION);
@@ -194,12 +194,6 @@ public class CategoryFrame implements Initializable {
                 categoryData.add(new CategoryItem(category.getName(), CurrencyFormat.getInstance().format(sum), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
             }
         }
-    }
-
-    private double applyCategoryRule(Category category) {
-        List<Transaction> transactions = transactionRepository.filterAll(category.getFilterRule());
-        transactions.forEach(trx -> transactionRepository.updateCategory(trx, category));
-        return transactions.parallelStream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum();
     }
 
     private void editCategory() {
@@ -218,27 +212,51 @@ public class CategoryFrame implements Initializable {
                     int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
                     Category category = categoryRepository.findByName(selectedItem.getName());
                     category.setName(categoryResult.get().getKey());
-                    persistCategory(category);
-                    categoryData.set(selectedIndex, new CategoryItem(category.getName(), selectedItem.getAmount(), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
+                    categoryRepository.save(category);
+                    String categorySum = selectedItem.getAmount();
+                    if (TRUE.equals(categoryResult.get().getValue())) {
+                        if (editTransactionFilter(category)) {
+                            Alert alert = new Alert(CONFIRMATION);
+                            alert.setTitle("Re-apply rule");
+                            alert.setHeaderText("Re-apply the category rule?");
+                            alert.setContentText("Should the edited category filter rule be re-applied on existing transactions?");
+                            Optional<ButtonType> result = alert.showAndWait();
+                            if (result.isPresent() && result.get() == OK) {
+                                List<Transaction> transactions = transactionRepository.findByCategory(category);
+                                Category other = categoryRepository.findByName(Category.OTHER.getName());
+                                transactions.forEach(trx -> {
+                                    trx.setCategory(other);
+                                    transactionRepository.save(trx);
+                                });
+                                categorySum = CurrencyFormat.getInstance().format(applyCategoryRule(category));
+                            }
+                        }
+                    }
+                    categoryData.set(selectedIndex, new CategoryItem(category.getName(), categorySum, category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
                 }
             }
         }
     }
 
-    private void persistFilterRule(TransactionFilter filter) {
-        if (filter.getId() == null) {
-            transactionFilterRepository.insert(filter);
-        } else {
-            transactionFilterRepository.update(filter);
+    private boolean editTransactionFilter(Category category) {
+        TransactionFilterDialog filterDialog = new TransactionFilterDialog(category.getFilterRule());
+        Optional<TransactionFilter> filterResult = filterDialog.showAndWait();
+        if (filterResult.isPresent()) {
+            TransactionFilter filter = filterResult.get();
+            transactionFilterRepository.save(filter);
+            category.setFilterRule(filter);
+            return true;
         }
+        return false;
     }
 
-    private void persistCategory(Category category) {
-        if (category.getId() == null) {
-            categoryRepository.insert(category);
-        } else {
-            categoryRepository.update(category);
-        }
+    private double applyCategoryRule(Category category) {
+        List<Transaction> transactions = transactionRepository.filterAll(category.getFilterRule());
+        transactions.forEach(trx -> {
+            trx.setCategory(category);
+            transactionRepository.save(trx);
+        });
+        return transactions.parallelStream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum();
     }
 
     private void deleteCategory() {
@@ -259,7 +277,10 @@ public class CategoryFrame implements Initializable {
                 Category category = new Category(selectedItem.getName());
                 List<Transaction> transactions = transactionRepository.findByCategory(category);
                 Category other = categoryRepository.findByName(Category.OTHER.getName());
-                transactions.forEach(trx -> transactionRepository.updateCategory(trx, other));
+                transactions.forEach(trx -> {
+                    trx.setCategory(other);
+                    transactionRepository.save(trx);
+                });
                 transactionFilterRepository.removeByCategory(category);
                 categoryRepository.remove(category);
                 categoryData.remove(selectedIndex);

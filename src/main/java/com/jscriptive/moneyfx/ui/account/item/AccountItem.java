@@ -8,6 +8,8 @@ import javafx.beans.property.StringProperty;
 
 import java.time.LocalDate;
 
+import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
+
 /**
  * Created by jscriptive.com on 13/11/2014.
  */
@@ -21,16 +23,12 @@ public class AccountItem {
     private final DoubleProperty balance;
     private final StringProperty formattedBalance;
 
-    public AccountItem() {
-        this("", "", "", "", LocalDate.now(), 0.0);
-    }
-
     public AccountItem(String bank, String number, String name, String type, LocalDate balanceDate, double balance) {
         this.bank = new SimpleStringProperty(bank);
         this.number = new SimpleStringProperty(number);
         this.name = new SimpleStringProperty(name);
         this.type = new SimpleStringProperty(type);
-        this.balanceDate = new SimpleStringProperty(balanceDate.toString());
+        this.balanceDate = new SimpleStringProperty(balanceDate.format(DATE_FORMATTER));
         this.balance = new SimpleDoubleProperty(balance);
         this.formattedBalance = new SimpleStringProperty(CurrencyFormat.getInstance().format(balance));
     }

@@ -42,8 +42,8 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
-import static com.jscriptive.moneyfx.util.LocalDateUtil.toLocalDate;
-import static com.jscriptive.moneyfx.util.LocalDateUtil.toMillis;
+import static com.jscriptive.moneyfx.util.LocalDateUtils.toLocalDate;
+import static com.jscriptive.moneyfx.util.LocalDateUtils.toMillis;
 
 /**
  * An axis that displays date and time values.

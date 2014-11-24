@@ -1,7 +1,6 @@
 package com.jscriptive.moneyfx.repository;
 
 import com.jscriptive.moneyfx.model.Account;
-import com.jscriptive.moneyfx.model.Bank;
 
 import java.util.List;
 
@@ -12,13 +11,9 @@ public interface AccountRepository {
 
     List<Account> findAll();
 
-    List<Account> findByBank(Bank bank);
-
     Account findByNumber(String number);
 
-    void insert(Account account);
+    void save(Account account);
 
-    void update(Account account);
-
-    boolean remove(Account account);
+    void remove(Account account);
 }

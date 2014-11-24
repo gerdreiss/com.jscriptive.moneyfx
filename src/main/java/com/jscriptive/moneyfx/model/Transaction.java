@@ -3,6 +3,7 @@ package com.jscriptive.moneyfx.model;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
@@ -16,19 +17,29 @@ public class Transaction {
 
     @Id
     private String id;
-
+    @DBRef
     private Account account;
-
+    @DBRef
     private Category category;
-
     @Indexed
     private String concept;
 
     private LocalDate dtOp;
-
     private LocalDate dtVal;
 
     private BigDecimal amount;
+
+    public Transaction() {
+    }
+
+    public Transaction(Account account, Category category, String concept, LocalDate dtOp, LocalDate dtVal, BigDecimal amount) {
+        this.account = account;
+        this.category = category;
+        this.concept = concept;
+        this.dtOp = dtOp;
+        this.dtVal = dtVal;
+        this.amount = amount;
+    }
 
     public String getId() {
         return id;

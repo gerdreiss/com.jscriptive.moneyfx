@@ -12,7 +12,7 @@ import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
-import com.jscriptive.moneyfx.util.LocalDateUtil;
+import com.jscriptive.moneyfx.util.LocalDateUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -25,7 +25,6 @@ import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
 
-import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
@@ -217,9 +216,8 @@ public class ChartFrame implements Initializable {
     private String getAccountLabel(Account account) {
         String accountLabel;
         if (account == null) {
-            Account formatter = new Account();
-            formatter.setBalance(BigDecimal.valueOf(allAccounts.stream().flatMapToDouble(a -> DoubleStream.of(a.getBalance().doubleValue())).sum()));
-            accountLabel = String.format(" All accounts [%s]", formatter.getFormattedBalance());
+            double balance = allAccounts.stream().flatMapToDouble(a -> DoubleStream.of(a.getBalance().doubleValue())).sum();
+            accountLabel = String.format(" All accounts [%s]", CurrencyFormat.getInstance().format(balance));
         } else {
             accountLabel = String.format(" %s %s [%s]",
                     account.getBank().getName(),
@@ -240,7 +238,7 @@ public class ChartFrame implements Initializable {
             for (int year = earliestTransactionDate.getYear(); year <= currentYear; year++) {
                 for (int month = earliestTransactionDate.getMonth().getValue(); month <= 12; month++) {
 
-                    String monthLabel = LocalDateUtil.getMonthLabel(year, month);
+                    String monthLabel = LocalDateUtils.getMonthLabel(year, month);
 
                     List<Transaction> incoming =
                             account == null

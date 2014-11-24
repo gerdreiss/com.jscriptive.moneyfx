@@ -69,9 +69,8 @@ public class TransactionFilterDialogController implements Initializable {
 
     public TransactionFilter getTransactionFilter() {
         TransactionFilter newFilter = new TransactionFilter(
-                accountCombo.getValue() == null ? null : accountCombo.getValue().getBank().getName(),
-                accountCombo.getValue() == null ? null : accountCombo.getValue().getNumber(),
-                categoryCombo.getValue() == null ? null : categoryCombo.getValue().getName(),
+                accountCombo.getValue(),
+                categoryCombo.getValue(),
                 conceptField.getText(),
                 new TransactionFilter.ValueRange<>(
                         dtOpFieldFrom.getValue(),
@@ -93,17 +92,17 @@ public class TransactionFilterDialogController implements Initializable {
     public void setFilter(TransactionFilter filter) {
         this.filter = filter;
         if (this.filter != null) {
-            if (this.filter.filterByBank() && this.filter.filterByAccount()) {
+            if (this.filter.filterByAccount()) {
                 this.accountCombo.getSelectionModel().select(
                         this.accountCombo.getItems().stream().filter(
-                                account -> account.isOfBank(this.filter.getBankName()) && account.getNumber().equals(this.filter.getAccountNumber())
+                                account -> account != null && account.equals(this.filter.getAccount())
                         ).findFirst().get()
                 );
             }
             if (this.filter.filterByCategory()) {
                 this.categoryCombo.getSelectionModel().select(
                         this.categoryCombo.getItems().stream().filter(
-                                category -> category.getName().equals(this.filter.getCategoryName())
+                                category -> category != null && category.equals(this.filter.getCategory())
                         ).findFirst().get()
                 );
             }

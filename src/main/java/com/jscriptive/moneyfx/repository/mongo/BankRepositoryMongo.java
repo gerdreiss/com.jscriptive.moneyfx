@@ -8,7 +8,6 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Collection;
 
-import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.is;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -22,23 +21,24 @@ public class BankRepositoryMongo implements BankRepository {
     private MongoTemplate mongoTemplate;
 
     @Override
-    public Bank findByName(String name) {
-        return mongoTemplate.findOne(query(where("name").is(name)), Bank.class);
-    }
-
-    @Override
-    public boolean remove(Bank bank) {
-        return mongoTemplate.remove(query(is(bank)), Bank.class).getN() > 0;
-    }
-
-    @Override
     public Collection<Bank> findAll() {
         return mongoTemplate.findAll(Bank.class);
     }
 
     @Override
-    public void insert(Bank bank) {
-        mongoTemplate.insert(bank);
+    public Bank findByName(String name) {
+        return mongoTemplate.findOne(query(where("name").is(name)), Bank.class);
     }
+
+    @Override
+    public void save(Bank bank) {
+        mongoTemplate.save(bank);
+    }
+
+    @Override
+    public void remove(Bank bank) {
+        mongoTemplate.remove(bank);
+    }
+
 
 }

@@ -12,9 +12,9 @@ public interface TransactionFilterRepository {
 
     Collection<TransactionFilter> findAll();
 
-    void insert(TransactionFilter filter);
+    void save(TransactionFilter filter);
 
-    void update(TransactionFilter filter);
+    void remove(TransactionFilter filter);
 
-    int removeByCategory(Category category);
+    void removeByCategory(Category category);
 }

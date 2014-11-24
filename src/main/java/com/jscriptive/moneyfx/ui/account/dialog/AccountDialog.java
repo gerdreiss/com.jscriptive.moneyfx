@@ -1,7 +1,6 @@
 package com.jscriptive.moneyfx.ui.account.dialog;
 
 import com.jscriptive.moneyfx.exception.TechnicalException;
-import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
@@ -27,7 +26,7 @@ public class AccountDialog extends Dialog<AccountItem> {
         this(null);
     }
 
-    public AccountDialog(Account account) {
+    public AccountDialog(AccountItem accountItem) {
         setTitle("Account");
         setHeaderText("Fill in the account data");
         Stage stage = (Stage) getDialogPane().getScene().getWindow();
@@ -55,7 +54,7 @@ public class AccountDialog extends Dialog<AccountItem> {
 
         AccountDialogController controller = loader.getController();
         controller.setDisabledNodeToObserve(importButton);
-        controller.setAccount(account);
+        controller.setAccount(accountItem);
 
         Platform.runLater(() -> getDialogPane().lookup("#bankField").requestFocus());
 

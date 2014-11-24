@@ -8,12 +8,12 @@ import javafx.beans.property.StringProperty;
  */
 public class TransactionItem {
 
-    private StringProperty account;
-    private StringProperty category;
-    private StringProperty concept;
-    private StringProperty dtOp;
-    private StringProperty dtVal;
-    private StringProperty amount;
+    private final StringProperty account;
+    private final StringProperty category;
+    private final StringProperty concept;
+    private final StringProperty dtOp;
+    private final StringProperty dtVal;
+    private final StringProperty amount;
 
     public TransactionItem(String account, String category, String concept, String dtOp, String dtVal, String formattedAmount) {
         this.account = new SimpleStringProperty(account);

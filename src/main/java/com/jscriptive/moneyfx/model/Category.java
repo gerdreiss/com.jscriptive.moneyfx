@@ -2,6 +2,7 @@ package com.jscriptive.moneyfx.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -14,23 +15,16 @@ public class Category {
 
     @Id
     private String id;
-
     @Indexed
     private String name;
-
+    @DBRef
     private TransactionFilter filterRule;
 
     public Category() {
     }
 
     public Category(String name) {
-        this(name, null);
-    }
-
-    public Category(String name, TransactionFilter filter) {
-        this();
         setName(name);
-        setFilterRule(filter);
     }
 
     public String getId() {

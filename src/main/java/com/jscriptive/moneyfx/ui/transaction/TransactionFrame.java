@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
+import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
 import static javafx.scene.control.SelectionMode.MULTIPLE;
 
 /**
@@ -118,8 +119,8 @@ public class TransactionFrame implements Initializable {
                         trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
                         trx.getCategory().getName(),
                         trx.getConcept(),
-                        trx.getDtOp().toString(),
-                        trx.getDtVal().toString(),
+                        trx.getDtOp().format(DATE_FORMATTER),
+                        trx.getDtVal().format(DATE_FORMATTER),
                         trx.getFormattedAmount()
                 )));
     }
@@ -137,7 +138,14 @@ public class TransactionFrame implements Initializable {
         Account extracted = extractor.extractAccountData(file);
         Account found = accountRepository.findByNumber(extracted.getNumber());
         if (found == null) {
-            AccountDialog dialog = new AccountDialog(extracted);
+            AccountDialog dialog = new AccountDialog(new AccountItem(
+                    extracted.getBank().getName(),
+                    extracted.getNumber(),
+                    extracted.getName(),
+                    extracted.getType(),
+                    extracted.getBalanceDate(),
+                    extracted.getBalance().doubleValue()
+            ));
             Optional<AccountItem> accountItem = dialog.showAndWait();
             if (accountItem.isPresent()) {
                 found = persistAccount(accountItem.get());
@@ -150,10 +158,16 @@ public class TransactionFrame implements Initializable {
         Bank bank = bankRepository.findByName(item.getBank());
         if (bank == null) {
             bank = new Bank(item.getBank());
-            bankRepository.insert(bank);
+            bankRepository.save(bank);
         }
-        Account account = new Account(bank, item.getNumber(), item.getName(), item.getType(), new BigDecimal(item.getBalance()), LocalDate.parse(item.getBalanceDate()));
-        accountRepository.insert(account);
+        Account account = new Account(
+                bank,
+                item.getNumber(),
+                item.getName(),
+                item.getType(),
+                new BigDecimal(item.getBalance()),
+                LocalDate.parse(item.getBalanceDate(), DATE_FORMATTER));
+        accountRepository.save(account);
         return account;
     }
 
@@ -167,11 +181,11 @@ public class TransactionFrame implements Initializable {
             persistTransaction(trx);
         });
         transactions.forEach(trx -> transactionData.add(new TransactionItem(
-                trx.getAccount().getNumber(),
+                trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
                 trx.getCategory().getName(),
                 trx.getConcept(),
-                trx.getDtOp().toString(),
-                trx.getDtVal().toString(),
+                trx.getDtOp().format(DATE_FORMATTER),
+                trx.getDtVal().format(DATE_FORMATTER),
                 trx.getFormattedAmount()
         )));
     }
@@ -180,7 +194,7 @@ public class TransactionFrame implements Initializable {
         Category other = categoryRepository.findByName(Category.OTHER.getName());
         if (other == null) {
             other = Category.OTHER;
-            categoryRepository.insert(other);
+            categoryRepository.save(other);
         }
         return other;
     }
@@ -189,9 +203,9 @@ public class TransactionFrame implements Initializable {
         Category category = categoryRepository.findByName(trx.getCategory().getName());
         if (category == null) {
             category = new Category(trx.getCategory().getName());
-            categoryRepository.insert(category);
+            categoryRepository.save(category);
         }
-        transactionRepository.insert(trx);
+        transactionRepository.save(trx);
     }
 
     private void filterTransactionData(TransactionFilter filter) {
@@ -201,8 +215,8 @@ public class TransactionFrame implements Initializable {
                         trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
                         trx.getCategory().getName(),
                         trx.getConcept(),
-                        trx.getDtOp().toString(),
-                        trx.getDtVal().toString(),
+                        trx.getDtOp().format(DATE_FORMATTER),
+                        trx.getDtVal().format(DATE_FORMATTER),
                         trx.getFormattedAmount()
                 )));
     }

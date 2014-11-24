@@ -3,14 +3,11 @@ package com.jscriptive.moneyfx.model;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
-import static com.jscriptive.moneyfx.model.Account.NUMBER_LAST_DIGITS;
-import static com.jscriptive.moneyfx.model.Account.PREFIX_LAST_DIGITS;
-import static org.apache.commons.lang3.StringUtils.right;
 
 /**
  * Created by jscriptive.com on 20/11/2014.
@@ -20,33 +17,27 @@ public class TransactionFilter {
 
     @Id
     private String id;
-
+    @DBRef
+    private Account account;
+    @DBRef
+    private Category category;
     @Indexed
-    private String bankName;
+    private String concept;
 
-    @Indexed
-    private final String accountNumber;
+    private ValueRange<LocalDate> dtOpRange;
+    private ValueRange<LocalDate> dtValRange;
+    private ValueRange<BigDecimal> amountRange;
 
-    @Indexed
-    private final String categoryName;
+    public TransactionFilter() {
+    }
 
-    @Indexed
-    private final String concept;
-
-    private final ValueRange<LocalDate> dtOpRange;
-
-    private final ValueRange<LocalDate> dtValRange;
-
-    private final ValueRange<BigDecimal> amountRange;
-
-    public TransactionFilter(String bankName, String accountNumber, String categoryName, String concept, ValueRange<LocalDate> dtOpRange, ValueRange<LocalDate> dtValRange, ValueRange<BigDecimal> amountRange) {
-        this.bankName = bankName;
-        this.accountNumber = accountNumber;
-        this.categoryName = categoryName;
-        this.concept = concept;
-        this.dtOpRange = dtOpRange;
-        this.dtValRange = dtValRange;
-        this.amountRange = amountRange;
+    public TransactionFilter(Account account, Category category, String concept, ValueRange<LocalDate> dtOpRange, ValueRange<LocalDate> dtValRange, ValueRange<BigDecimal> amountRange) {
+        this.setAccount(account);
+        this.setCategory(category);
+        this.setConcept(concept);
+        this.setDtOpRange(dtOpRange);
+        this.setDtValRange(dtValRange);
+        this.setAmountRange(amountRange);
     }
 
     public String getId() {
@@ -57,56 +48,72 @@ public class TransactionFilter {
         this.id = id;
     }
 
-    public String getBankName() {
-        return bankName;
+    public Account getAccount() {
+        return account;
     }
 
-    public boolean filterByBank() {
-        return getBankName() != null;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
-    public String getAccountNumber() {
-        return accountNumber;
+    public Category getCategory() {
+        return category;
     }
 
-    public boolean filterByAccount() {
-        return getAccountNumber() != null;
-    }
-
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public boolean filterByCategory() {
-        return getCategoryName() != null;
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
     public String getConcept() {
         return concept;
     }
 
-    public boolean filterByConcept() {
-        return StringUtils.isNotBlank(getConcept());
+    public void setConcept(String concept) {
+        this.concept = concept;
     }
 
     public ValueRange<LocalDate> getDtOpRange() {
         return dtOpRange;
     }
 
-    public boolean filterByDtOp() {
-        return getDtOpRange() != null && (getDtOpRange().hasFrom() || dtOpRange.hasTo());
+    public void setDtOpRange(ValueRange<LocalDate> dtOpRange) {
+        this.dtOpRange = dtOpRange;
     }
 
     public ValueRange<LocalDate> getDtValRange() {
         return dtValRange;
     }
 
-    public boolean filterByDtVal() {
-        return getDtValRange() != null && (getDtValRange().hasFrom() || getDtValRange().hasTo());
+    public void setDtValRange(ValueRange<LocalDate> dtValRange) {
+        this.dtValRange = dtValRange;
     }
 
     public ValueRange<BigDecimal> getAmountRange() {
         return amountRange;
+    }
+
+    public void setAmountRange(ValueRange<BigDecimal> amountRange) {
+        this.amountRange = amountRange;
+    }
+
+    public boolean filterByAccount() {
+        return getAccount() != null;
+    }
+
+    public boolean filterByCategory() {
+        return getCategory() != null;
+    }
+
+    public boolean filterByConcept() {
+        return StringUtils.isNotBlank(getConcept());
+    }
+
+    public boolean filterByDtOp() {
+        return getDtOpRange() != null && (getDtOpRange().hasFrom() || dtOpRange.hasTo());
+    }
+
+    public boolean filterByDtVal() {
+        return getDtValRange() != null && (getDtValRange().hasFrom() || getDtValRange().hasTo());
     }
 
     public boolean filterByAmount() {
@@ -116,15 +123,13 @@ public class TransactionFilter {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TransactionFilter)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         TransactionFilter that = (TransactionFilter) o;
 
-        if (bankName != null ? !bankName.equals(that.bankName) : that.bankName != null) return false;
-        if (accountNumber != null ? !accountNumber.equals(that.accountNumber) : that.accountNumber != null)
-            return false;
+        if (account != null ? !account.equals(that.account) : that.account != null) return false;
         if (amountRange != null ? !amountRange.equals(that.amountRange) : that.amountRange != null) return false;
-        if (categoryName != null ? !categoryName.equals(that.categoryName) : that.categoryName != null) return false;
+        if (category != null ? !category.equals(that.category) : that.category != null) return false;
         if (concept != null ? !concept.equals(that.concept) : that.concept != null) return false;
         if (dtOpRange != null ? !dtOpRange.equals(that.dtOpRange) : that.dtOpRange != null) return false;
         //noinspection RedundantIfStatement
@@ -135,9 +140,8 @@ public class TransactionFilter {
 
     @Override
     public int hashCode() {
-        int result = bankName != null ? bankName.hashCode() : 0;
-        result = 31 * result + (accountNumber != null ? accountNumber.hashCode() : 0);
-        result = 31 * result + (categoryName != null ? categoryName.hashCode() : 0);
+        int result = account != null ? account.hashCode() : 0;
+        result = 31 * result + (category != null ? category.hashCode() : 0);
         result = 31 * result + (concept != null ? concept.hashCode() : 0);
         result = 31 * result + (dtOpRange != null ? dtOpRange.hashCode() : 0);
         result = 31 * result + (dtValRange != null ? dtValRange.hashCode() : 0);
@@ -147,20 +151,17 @@ public class TransactionFilter {
 
     @Override
     public String toString() {
-        return String.format("TransactionFilter {bankName=%s, accountNumber=%s, categoryName=%s, concept='%s', dtOpRange=%s, dtValRange=%s, amountRange=%s}",
-                bankName, accountNumber, categoryName, concept, dtOpRange, dtValRange, amountRange);
+        return String.format("TransactionFilter{account=%s, category=%s, concept='%s', dtOpRange=%s, dtValRange=%s, amountRange=%s}",
+                account, category, concept, dtOpRange, dtValRange, amountRange);
     }
 
     public String toPresentableString() {
         StringBuilder sb = new StringBuilder();
-        if (filterByBank()) {
-            sb.append("bank: \"").append(getBankName()).append("\"; ");
-        }
         if (filterByAccount()) {
-            sb.append("account: \"").append(PREFIX_LAST_DIGITS).append(right(getAccountNumber(), NUMBER_LAST_DIGITS)).append("\"; ");
+            sb.append("account: \"").append(getAccount().getBank().getName()).append(getAccount().getLastFourDigits()).append("\"; ");
         }
         if (filterByCategory()) {
-            sb.append("category: \"").append(getCategoryName()).append("\"; ");
+            sb.append("category: \"").append(getCategory().getName()).append("\"; ");
         }
         if (filterByConcept()) {
             sb.append("concept: \"").append(getConcept()).append("\"; ");
@@ -178,8 +179,8 @@ public class TransactionFilter {
     }
 
     public static class ValueRange<T> {
-        private final T from;
-        private final T to;
+        private T from;
+        private T to;
 
         public ValueRange(T from, T to) {
             this.from = from;

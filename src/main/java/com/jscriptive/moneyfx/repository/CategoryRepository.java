@@ -9,13 +9,12 @@ import java.util.List;
  */
 public interface CategoryRepository {
 
-    void insert(Category category);
-
     List<Category> findAll();
 
     Category findByName(String name);
 
-    boolean remove(Category category);
+    void save(Category category);
 
-    void update(Category category);
+    void remove(Category category);
+
 }

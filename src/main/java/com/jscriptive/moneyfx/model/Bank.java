@@ -1,6 +1,7 @@
 package com.jscriptive.moneyfx.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -11,14 +12,13 @@ public class Bank {
 
     @Id
     private String id;
-
+    @Indexed(unique = true)
     private String name;
 
     public Bank() {
     }
 
     public Bank(String name) {
-        this();
         setName(name);
     }
 
@@ -34,14 +34,14 @@ public class Bank {
         return name;
     }
 
-    public void setName(String name) {
+    private void setName(String name) {
         this.name = name;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Bank)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
 
         Bank bank = (Bank) o;
 

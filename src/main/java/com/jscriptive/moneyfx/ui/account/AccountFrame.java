@@ -33,6 +33,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
+import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
 import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
 import static javafx.scene.control.ButtonType.OK;
 import static javafx.scene.input.KeyCode.DELETE;
@@ -119,11 +120,11 @@ public class AccountFrame implements Initializable {
         Bank bank = bankRepository.findByName(item.getBank());
         if (bank == null) {
             bank = new Bank(item.getBank());
-            bankRepository.insert(bank);
+            bankRepository.save(bank);
         }
         Account account = new Account(bank, item.getNumber(), item.getName(), item.getType(), new BigDecimal(item.getBalance()));
-        account.setBalanceDate(LocalDate.parse(item.getBalanceDate()));
-        accountRepository.insert(account);
+        account.setBalanceDate(LocalDate.parse(item.getBalanceDate(), DATE_FORMATTER));
+        accountRepository.save(account);
     }
 
     public void contextMenuItemEditSelected(ActionEvent actionEvent) {
@@ -138,26 +139,20 @@ public class AccountFrame implements Initializable {
 
     private void editAccount() {
         AccountItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
-        int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
-        Account toUpdate = new Account(
-                new Bank(selectedItem.getBank()),
-                selectedItem.getNumber(),
-                selectedItem.getName(),
-                selectedItem.getType(),
-                BigDecimal.valueOf(selectedItem.getBalance()),
-                LocalDate.parse(selectedItem.getBalanceDate()));
-        AccountDialog dialog = new AccountDialog(toUpdate);
-        Optional<AccountItem> result = dialog.showAndWait();
-        if (result.isPresent()) {
-            Account account = new Account(
-                    new Bank(result.get().getBank()),
-                    result.get().getNumber(),
-                    result.get().getName(),
-                    result.get().getType(),
-                    BigDecimal.valueOf(result.get().getBalance()),
-                    LocalDate.parse(result.get().getBalanceDate()));
-            accountRepository.update(account);
-            accountData.set(selectedIndex, result.get());
+        if (selectedItem != null) {
+            AccountDialog dialog = new AccountDialog(selectedItem);
+            Optional<AccountItem> result = dialog.showAndWait();
+            if (result.isPresent()) {
+                Account account = new Account(
+                        bankRepository.findByName(result.get().getBank()),
+                        result.get().getNumber(),
+                        result.get().getName(),
+                        result.get().getType(),
+                        BigDecimal.valueOf(result.get().getBalance()),
+                        LocalDate.parse(result.get().getBalanceDate(), DATE_FORMATTER));
+                accountRepository.save(account);
+                accountData.set(dataTable.getSelectionModel().getSelectedIndex(), result.get());
+            }
         }
     }
 
@@ -183,11 +178,7 @@ public class AccountFrame implements Initializable {
         Optional<ButtonType> result = alert.showAndWait();
         if (result.get() == OK) {
             int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
-            Account account = new Account(
-                    new Bank(selectedItem.getBank()),
-                    selectedItem.getNumber(),
-                    selectedItem.getName(),
-                    selectedItem.getType());
+            Account account = accountRepository.findByNumber(selectedItem.getNumber());
             transactionRepository.removeByAccount(account);
             accountRepository.remove(account);
             bankRepository.remove(account.getBank());
