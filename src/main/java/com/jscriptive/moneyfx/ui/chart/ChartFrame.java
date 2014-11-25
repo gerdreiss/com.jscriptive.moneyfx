@@ -6,7 +6,6 @@
 package com.jscriptive.moneyfx.ui.chart;
 
 import com.jscriptive.moneyfx.model.Account;
-import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.model.Transaction;
 import com.jscriptive.moneyfx.repository.CategoryRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
@@ -205,17 +204,17 @@ public class ChartFrame implements Initializable {
             outSeries.setName("Out" + accountLabel);
             barChart.getData().add(outSeries);
 
-            Transaction earliest =
+            Transaction earliestTransaction =
                     account == null
                             ? transactionRepository.findEarliestTransaction()
                             : transactionRepository.findEarliestTransactionOfAccount(account);
-            Transaction latest =
+            Transaction latestTransaction =
                     account == null
                             ? transactionRepository.findLatestTransaction()
                             : transactionRepository.findLatestTransactionOfAccount(account);
-            if (earliest != null) {
+            if (earliestTransaction != null && latestTransaction != null) {
                 ObservableList<String> categories = FXCollections.observableArrayList();
-                for (LocalDate date = earliest.getDtOp(); date.isBefore(latest.getDtOp()); date = date.plusMonths(1)) {
+                for (LocalDate date = earliestTransaction.getDtOp(); date.isBefore(latestTransaction.getDtOp()); date = date.plusMonths(1)) {
                     categories.add(LocalDateUtils.getMonthLabel(date.getYear(), date.getMonthValue()));
                 }
                 xAxis.setCategories(categories);
@@ -225,36 +224,28 @@ public class ChartFrame implements Initializable {
                         return new Task<Void>() {
                             @Override
                             protected Void call() throws Exception {
-                                LocalDate early = earliest.getDtOp();
-                                LocalDate today = now();
-                                int earlyMonth = early.getMonthValue();
-                                int earlyYear = early.getYear();
-                                int currentYear = today.getYear();
-                                for (int year = earlyYear; year <= currentYear; year++) {
-                                    for (int month = earlyMonth; month <= 12; month++) {
+                                for (LocalDate date = earliestTransaction.getDtOp(); date.isBefore(latestTransaction.getDtOp()); date = date.plusMonths(1)) {
 
-                                        String monthLabel = LocalDateUtils.getMonthLabel(year, month);
+                                    String monthLabel = LocalDateUtils.getMonthLabel(date.getYear(), date.getMonthValue());
 
-                                        List<Transaction> incoming =
-                                                account == null
-                                                        ? transactionRepository.findIncomingByYearAndMonth(year, month)
-                                                        : transactionRepository.findIncomingByAccountAndYearAndMonth(account, year, month);
-                                        double sumIncoming = getSum(incoming);
-                                        XYChart.Data<String, Number> inData = new XYChart.Data<>(monthLabel, sumIncoming);
+                                    List<Transaction> incoming =
+                                            account == null
+                                                    ? transactionRepository.findIncomingByYearAndMonth(date.getYear(), date.getMonthValue())
+                                                    : transactionRepository.findIncomingByAccountAndYearAndMonth(account, date.getYear(), date.getMonthValue());
+                                    XYChart.Data<String, Number> inData = new XYChart.Data<>(monthLabel, getSum(incoming));
 
-                                        List<Transaction> outgoing =
-                                                account == null
-                                                        ? transactionRepository.findOutgoingByYearAndMonth(year, month)
-                                                        : transactionRepository.findOutgoingByAccountAndYearAndMonth(account, year, month);
-                                        double sumOutgoing = getSum(outgoing);
-                                        XYChart.Data<String, Number> outData = new XYChart.Data<>(monthLabel, sumOutgoing);
+                                    List<Transaction> outgoing =
+                                            account == null
+                                                    ? transactionRepository.findOutgoingByYearAndMonth(date.getYear(), date.getMonthValue())
+                                                    : transactionRepository.findOutgoingByAccountAndYearAndMonth(account, date.getYear(), date.getMonthValue());
+                                    XYChart.Data<String, Number> outData = new XYChart.Data<>(monthLabel, getSum(outgoing));
 
-                                        Platform.runLater(() -> {
-                                            inSeries.getData().add(inData);
-                                            outSeries.getData().add(outData);
-                                        });
-                                    }
+                                    Platform.runLater(() -> {
+                                        inSeries.getData().add(inData);
+                                        outSeries.getData().add(outData);
+                                    });
                                 }
+
                                 return null;
                             }
                         };
@@ -262,7 +253,6 @@ public class ChartFrame implements Initializable {
                 };
                 service.start();
             }
-
         }
     }
 
@@ -291,15 +281,13 @@ public class ChartFrame implements Initializable {
                             Platform.runLater(() ->
                                     pieChart.setTitle(format("%s for transactions from %s until %s",
                                             pieChart.getTitle(), earliest.getDtOp(), now())));
-                            List<Category> categories = categoryRepository.findAll();
-                            for (int idx = 0; idx < categories.size(); idx++) {
-                                Category category = categories.get(idx);
+                            categoryRepository.findAll().forEach(category -> {
                                 List<Transaction> transactions =
                                         (accountCombo.getValue() == null)
                                                 ? transactionRepository.findByCategory(category)
                                                 : transactionRepository.findByAccountAndCategory(accountCombo.getValue(), category);
                                 Platform.runLater(() -> pieChart.getData().add(new PieChart.Data(category.getName(), getSum(transactions))));
-                            }
+                            });
                             return null;
                         }
                     };
