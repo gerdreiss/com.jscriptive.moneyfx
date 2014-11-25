@@ -16,13 +16,12 @@ public class CurrencyFormat {
 
     private static final Locale LOCALE = GERMANY;
 
-    private static CurrencyFormat instance;
+    private static class SingletonHolder {
+        public static final CurrencyFormat instance = new CurrencyFormat();
+    }
 
     public static CurrencyFormat getInstance() {
-        if (instance == null) {
-            instance = new CurrencyFormat();
-        }
-        return instance;
+        return SingletonHolder.instance;
     }
 
     private final BigDecimalValidator validator;

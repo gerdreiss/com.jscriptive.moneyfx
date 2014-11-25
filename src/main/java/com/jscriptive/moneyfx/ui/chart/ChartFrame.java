@@ -6,6 +6,7 @@
 package com.jscriptive.moneyfx.ui.chart;
 
 import com.jscriptive.moneyfx.model.Account;
+import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.model.Transaction;
 import com.jscriptive.moneyfx.repository.CategoryRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
@@ -13,8 +14,11 @@ import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import com.jscriptive.moneyfx.util.LocalDateUtils;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
@@ -32,6 +36,8 @@ import java.util.stream.DoubleStream;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
 import static java.lang.Math.abs;
+import static java.lang.String.format;
+import static java.time.LocalDate.now;
 
 /**
  * @author jscriptive.com
@@ -46,12 +52,10 @@ public class ChartFrame implements Initializable {
 
     @FXML
     private ToggleGroup chartToggleGroup;
+    @FXML
 
     private CategoryRepository categoryRepository;
     private TransactionRepository transactionRepository;
-
-
-    private List<Account> allAccounts;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
@@ -60,9 +64,9 @@ public class ChartFrame implements Initializable {
         chartFrame.addEventHandler(TAB_SELECTION, event -> setupAccountComboBox());
     }
 
+
     private void setupAccountComboBox() {
-        allAccounts = RepositoryProvider.getInstance().getAccountRepository().findAll();
-        List<Account> accounts = new ArrayList<>(allAccounts);
+        List<Account> accounts = new ArrayList<>(RepositoryProvider.getInstance().getAccountRepository().findAll());
         accounts.add(0, null);
         accountCombo.setConverter(new AccountStringConverter(accounts));
         accountCombo.getItems().setAll(accounts);
@@ -91,18 +95,84 @@ public class ChartFrame implements Initializable {
     public void dailyBalanceToggled(ActionEvent actionEvent) {
         LocalDateAxis xAxis = new LocalDateAxis();
         NumberAxis yAxis = new NumberAxis();
-        xAxis.setLabel("Day of year");
-        yAxis.setLabel("Balance in Euro");
 
         final LineChart<LocalDate, Number> lineChart = new LineChart<>(xAxis, yAxis);
-        lineChart.setTitle("Balance development day by day");
+        lineChart.setCreateSymbols(false);
 
         chartFrame.setCenter(lineChart);
 
         ToggleButton toggle = (ToggleButton) actionEvent.getTarget();
         if (toggle.isSelected()) {
-            Map<Account, List<Transaction>> transactionMap = mapTransactionsToAccount();
-            transactionMap.entrySet().forEach(entry -> addDataSeries(lineChart, entry));
+            xAxis.setLabel("Day of year");
+            yAxis.setLabel("Balance in Euro");
+            lineChart.setTitle("Balance development day by day");
+
+            Account account = accountCombo.getValue();
+            Transaction earliest =
+                    account == null
+                            ? transactionRepository.findEarliestTransaction()
+                            : transactionRepository.findEarliestTransactionOfAccount(account);
+            Transaction latest =
+                    account == null
+                            ? transactionRepository.findLatestTransaction()
+                            : transactionRepository.findLatestTransactionOfAccount(account);
+            xAxis.setLowerBound(earliest.getDtOp());
+            xAxis.setUpperBound(latest.getDtOp());
+
+            Service<Void> service = new Service<Void>() {
+
+                @Override
+                protected Task<Void> createTask() {
+                    return new Task<Void>() {
+
+                        @Override
+                        protected Void call() throws Exception {
+                            Map<Account, List<Transaction>> transactionMap = new HashMap<>();
+                            if (account == null) {
+                                accountCombo.getItems().forEach(each -> {
+                                    if (each != null) {
+                                        transactionMap.put(each, transactionRepository.findByAccount(each));
+                                    }
+                                });
+                            } else {
+                                transactionMap.put(account, transactionRepository.findByAccount(account));
+                            }
+
+                            transactionMap.entrySet().forEach(entry -> {
+                                Account account = entry.getKey();
+                                List<Transaction> transactionList = entry.getValue();
+
+                                XYChart.Series<LocalDate, Number> series = new XYChart.Series<>();
+                                series.setName(format("%s %s [%s]",
+                                        account.getBank().getName(),
+                                        account.getLastFourDigits(),
+                                        account.getFormattedBalance()));
+
+                                // sort transactions by operation value descending
+                                transactionList.sort((t1, t2) -> t2.getDtOp().compareTo(t1.getDtOp()));
+                                account.calculateStartingBalance(transactionList);
+                                series.getData().add(new XYChart.Data<>(
+                                        account.getBalanceDate(),
+                                        account.getBalance()));
+
+                                // sort transactions by operation value ascending
+                                transactionList.sort((t1, t2) -> t1.getDtOp().compareTo(t2.getDtOp()));
+                                transactionList.forEach(trx -> {
+                                    account.calculateCurrentBalance(trx);
+                                    series.getData().add(new XYChart.Data<>(
+                                            account.getBalanceDate(),
+                                            account.getBalance()));
+                                });
+
+                                Platform.runLater(() -> lineChart.getData().add(series));
+                            });
+
+                            return null;
+                        }
+                    };
+                }
+            };
+            service.start();
         }
     }
 
@@ -129,13 +199,70 @@ public class ChartFrame implements Initializable {
 
             XYChart.Series<String, Number> inSeries = new XYChart.Series<>();
             inSeries.setName("In" + accountLabel);
+            barChart.getData().add(inSeries);
+
             XYChart.Series<String, Number> outSeries = new XYChart.Series<>();
             outSeries.setName("Out" + accountLabel);
-
-            addData(account, inSeries, outSeries);
-
-            barChart.getData().add(inSeries);
             barChart.getData().add(outSeries);
+
+            Transaction earliest =
+                    account == null
+                            ? transactionRepository.findEarliestTransaction()
+                            : transactionRepository.findEarliestTransactionOfAccount(account);
+            Transaction latest =
+                    account == null
+                            ? transactionRepository.findLatestTransaction()
+                            : transactionRepository.findLatestTransactionOfAccount(account);
+            if (earliest != null) {
+                ObservableList<String> categories = FXCollections.observableArrayList();
+                for (LocalDate date = earliest.getDtOp(); date.isBefore(latest.getDtOp()); date = date.plusMonths(1)) {
+                    categories.add(LocalDateUtils.getMonthLabel(date.getYear(), date.getMonthValue()));
+                }
+                xAxis.setCategories(categories);
+                Service<Void> service = new Service<Void>() {
+                    @Override
+                    protected Task<Void> createTask() {
+                        return new Task<Void>() {
+                            @Override
+                            protected Void call() throws Exception {
+                                LocalDate early = earliest.getDtOp();
+                                LocalDate today = now();
+                                int earlyMonth = early.getMonthValue();
+                                int earlyYear = early.getYear();
+                                int currentYear = today.getYear();
+                                for (int year = earlyYear; year <= currentYear; year++) {
+                                    for (int month = earlyMonth; month <= 12; month++) {
+
+                                        String monthLabel = LocalDateUtils.getMonthLabel(year, month);
+
+                                        List<Transaction> incoming =
+                                                account == null
+                                                        ? transactionRepository.findIncomingByYearAndMonth(year, month)
+                                                        : transactionRepository.findIncomingByAccountAndYearAndMonth(account, year, month);
+                                        double sumIncoming = getSum(incoming);
+                                        XYChart.Data<String, Number> inData = new XYChart.Data<>(monthLabel, sumIncoming);
+
+                                        List<Transaction> outgoing =
+                                                account == null
+                                                        ? transactionRepository.findOutgoingByYearAndMonth(year, month)
+                                                        : transactionRepository.findOutgoingByAccountAndYearAndMonth(account, year, month);
+                                        double sumOutgoing = getSum(outgoing);
+                                        XYChart.Data<String, Number> outData = new XYChart.Data<>(monthLabel, sumOutgoing);
+
+                                        Platform.runLater(() -> {
+                                            inSeries.getData().add(inData);
+                                            outSeries.getData().add(outData);
+                                        });
+                                    }
+                                }
+                                return null;
+                            }
+                        };
+                    }
+                };
+                service.start();
+            }
+
         }
     }
 
@@ -152,74 +279,44 @@ public class ChartFrame implements Initializable {
 
         ToggleButton toggle = (ToggleButton) actionEvent.getTarget();
         if (toggle.isSelected()) {
-            Transaction earliest = accountCombo.getValue() == null
-                    ? transactionRepository.findEarliestTransaction()
-                    : transactionRepository.findEarliestTransactionOfAccount(accountCombo.getValue());
-            pieChart.setTitle(String.format("%s for transactions from %s until %s", pieChart.getTitle(), earliest.getDtOp(), LocalDate.now()));
-
-            ObservableList<PieChart.Data> pieChartData = FXCollections.observableArrayList();
-            categoryRepository.findAll().forEach(category -> {
-                double sum = getSum(
-                        accountCombo.getValue() == null
-                                ? transactionRepository.findByCategory(category)
-                                : transactionRepository.findByAccountAndCategory(accountCombo.getValue(), category)
-                );
-                pieChartData.add(new PieChart.Data(String.format("%s %s", category.getName(), CurrencyFormat.getInstance().format(sum)), sum));
-            });
-            pieChart.getData().addAll(pieChartData);
+            Service<Void> service = new Service<Void>() {
+                @Override
+                protected Task<Void> createTask() {
+                    return new Task<Void>() {
+                        @Override
+                        protected Void call() throws Exception {
+                            Transaction earliest = accountCombo.getValue() == null
+                                    ? transactionRepository.findEarliestTransaction()
+                                    : transactionRepository.findEarliestTransactionOfAccount(accountCombo.getValue());
+                            Platform.runLater(() ->
+                                    pieChart.setTitle(format("%s for transactions from %s until %s",
+                                            pieChart.getTitle(), earliest.getDtOp(), now())));
+                            List<Category> categories = categoryRepository.findAll();
+                            for (int idx = 0; idx < categories.size(); idx++) {
+                                Category category = categories.get(idx);
+                                List<Transaction> transactions =
+                                        (accountCombo.getValue() == null)
+                                                ? transactionRepository.findByCategory(category)
+                                                : transactionRepository.findByAccountAndCategory(accountCombo.getValue(), category);
+                                Platform.runLater(() -> pieChart.getData().add(new PieChart.Data(category.getName(), getSum(transactions))));
+                            }
+                            return null;
+                        }
+                    };
+                }
+            };
+            service.start();
         }
     }
 
-    private Map<Account, List<Transaction>> mapTransactionsToAccount() {
-        Map<Account, List<Transaction>> transactionMap = new HashMap<>();
-        if (accountCombo.getValue() == null) {
-            allAccounts.forEach(account ->
-                    transactionMap.put(account,
-                            transactionRepository.findByAccount(account)));
-        } else {
-            transactionMap.put(accountCombo.getValue(),
-                    transactionRepository.findByAccount(accountCombo.getValue()));
-        }
-        return transactionMap;
-    }
-
-    private void addDataSeries(LineChart<LocalDate, Number> lineChart, Map.Entry<Account, List<Transaction>> entry) {
-        Account account = entry.getKey();
-        List<Transaction> transactionList = entry.getValue();
-
-        XYChart.Series<LocalDate, Number> series = new XYChart.Series<>();
-        series.setName(String.format("%s %s [%s]",
-                account.getBank().getName(),
-                account.getLastFourDigits(),
-                account.getFormattedBalance()));
-
-        // sort transactions by operation value descending
-        transactionList.sort((t1, t2) -> t2.getDtOp().compareTo(t1.getDtOp()));
-        account.calculateStartingBalance(transactionList);
-        series.getData().add(new XYChart.Data<>(
-                account.getBalanceDate(),
-                account.getBalance()));
-
-        // sort transactions by operation value ascending
-        transactionList.sort((t1, t2) -> t1.getDtOp().compareTo(t2.getDtOp()));
-        transactionList.forEach(trx -> {
-            account.calculateCurrentBalance(trx);
-            series.getData().add(new XYChart.Data<>(
-                    account.getBalanceDate(),
-                    account.getBalance()));
-        });
-
-        lineChart.getData().add(series);
-        lineChart.setCreateSymbols(false);
-    }
 
     private String getAccountLabel(Account account) {
         String accountLabel;
         if (account == null) {
-            double balance = allAccounts.stream().flatMapToDouble(a -> DoubleStream.of(a.getBalance().doubleValue())).sum();
-            accountLabel = String.format(" All accounts [%s]", CurrencyFormat.getInstance().format(balance));
+            double balance = accountCombo.getItems().stream().flatMapToDouble(a -> DoubleStream.of(a == null ? 0.0 : a.getBalance().doubleValue())).sum();
+            accountLabel = format(" All accounts [%s]", CurrencyFormat.getInstance().format(balance));
         } else {
-            accountLabel = String.format(" %s %s [%s]",
+            accountLabel = format(" %s %s [%s]",
                     account.getBank().getName(),
                     account.getLastFourDigits(),
                     account.getFormattedBalance());
@@ -227,37 +324,6 @@ public class ChartFrame implements Initializable {
         return accountLabel;
     }
 
-    private void addData(Account account, XYChart.Series<String, Number> inSeries, XYChart.Series<String, Number> outSeries) {
-        Transaction earliest =
-                account == null
-                        ? transactionRepository.findEarliestTransaction()
-                        : transactionRepository.findEarliestTransactionOfAccount(account);
-        if (earliest != null) {
-            LocalDate earliestTransactionDate = earliest.getDtOp();
-            int currentYear = LocalDate.now().getYear();
-            for (int year = earliestTransactionDate.getYear(); year <= currentYear; year++) {
-                for (int month = earliestTransactionDate.getMonth().getValue(); month <= 12; month++) {
-
-                    String monthLabel = LocalDateUtils.getMonthLabel(year, month);
-
-                    List<Transaction> incoming =
-                            account == null
-                                    ? transactionRepository.findIncomingByYearAndMonth(year, month)
-                                    : transactionRepository.findIncomingByAccountAndYearAndMonth(account, year, month);
-                    List<Transaction> outgoing =
-                            account == null
-                                    ? transactionRepository.findOutgoingByYearAndMonth(year, month)
-                                    : transactionRepository.findOutgoingByAccountAndYearAndMonth(account, year, month);
-
-                    XYChart.Data<String, Number> inData = new XYChart.Data<>(monthLabel, getSum(incoming));
-                    XYChart.Data<String, Number> outData = new XYChart.Data<>(monthLabel, getSum(outgoing));
-
-                    inSeries.getData().add(inData);
-                    outSeries.getData().add(outData);
-                }
-            }
-        }
-    }
 
     private double getSum(List<Transaction> transactions) {
         return abs(transactions.parallelStream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum());

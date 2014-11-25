@@ -10,13 +10,12 @@ import java.util.Map;
  */
 public class TransactionExtractorProvider {
 
-    private static TransactionExtractorProvider instance;
+    private static class SingletonHolder {
+        public static final TransactionExtractorProvider instance = new TransactionExtractorProvider();
+    }
 
     public static TransactionExtractorProvider getInstance() {
-        if (instance == null) {
-            instance = new TransactionExtractorProvider();
-        }
-        return instance;
+        return SingletonHolder.instance;
     }
 
     private TransactionExtractorProvider() {
@@ -31,3 +30,4 @@ public class TransactionExtractorProvider {
         return extractors.get(bank);
     }
 }
+

@@ -23,21 +23,21 @@
             </fx:define>
 
             <ComboBox fx:id="accountCombo" promptText="All accounts" onAction="#accountChanged" prefHeight="34"/>
-            <ToggleButton text="Daily balance" onAction="#dailyBalanceToggled" toggleGroup="$chartToggleGroup">
+            <ToggleButton fx:id="dailyBalanceToggle" text="Daily balance" onAction="#dailyBalanceToggled" toggleGroup="$chartToggleGroup">
                 <graphic>
                     <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
                         <Image url="@../images/Stock-Exchange-32.png"/>
                     </ImageView>
                 </graphic>
             </ToggleButton>
-            <ToggleButton text="Monthly in/out" onAction="#monthlyInOutToggled" toggleGroup="$chartToggleGroup">
+            <ToggleButton fx:id="monthlyInOutToggle" text="Monthly in/out" onAction="#monthlyInOutToggled" toggleGroup="$chartToggleGroup">
                 <graphic>
                     <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
                         <Image url="@../images/Chart-Type-32.png"/>
                     </ImageView>
                 </graphic>
             </ToggleButton>
-            <ToggleButton text="By category" onAction="#byCategoryToggled" toggleGroup="$chartToggleGroup">
+            <ToggleButton fx:id="byCategoryToggle" text="By category" onAction="#byCategoryToggled" toggleGroup="$chartToggleGroup">
                 <graphic>
                     <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
                         <Image url="@../images/Pie-Chart-32.png"/>

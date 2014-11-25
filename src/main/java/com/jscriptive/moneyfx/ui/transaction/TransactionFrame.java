@@ -11,13 +11,17 @@ import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionImportDialog;
 import com.jscriptive.moneyfx.ui.transaction.item.TransactionItem;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.control.Button;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.util.Pair;
+import org.controlsfx.dialog.ProgressDialog;
 
 import java.io.File;
 import java.math.BigDecimal;
@@ -85,14 +89,14 @@ public class TransactionFrame implements Initializable {
     public void filterTransactionsFired(ActionEvent actionEvent) {
         Button b = (Button) actionEvent.getTarget();
         if (filtered) {
-            loadTransactionData();
+            loadTransactions();
             b.setText("Filter transactions");
             filtered = false;
         } else {
             TransactionFilterDialog dialog = new TransactionFilterDialog();
             Optional<TransactionFilter> result = dialog.showAndWait();
             if (result.isPresent()) {
-                filterTransactionData(result.get());
+                filterTransactions(result.get());
                 b.setText("Reload transactions");
                 filtered = true;
             }
@@ -109,20 +113,7 @@ public class TransactionFrame implements Initializable {
     private void setupTransactionTable() {
         dataTable.getSelectionModel().setSelectionMode(MULTIPLE);
         dataTable.setItems(transactionData);
-        dataTable.addEventHandler(TAB_SELECTION, event -> loadTransactionData());
-    }
-
-    private void loadTransactionData() {
-        transactionData.clear();
-        transactionRepository.findAll().forEach(trx ->
-                transactionData.add(new TransactionItem(
-                        trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
-                        trx.getCategory().getName(),
-                        trx.getConcept(),
-                        trx.getDtOp().format(DATE_FORMATTER),
-                        trx.getDtVal().format(DATE_FORMATTER),
-                        trx.getFormattedAmount()
-                )));
+        dataTable.addEventHandler(TAB_SELECTION, event -> loadTransactions());
     }
 
     private void setupTableColumns() {
@@ -181,7 +172,7 @@ public class TransactionFrame implements Initializable {
             persistTransaction(trx);
         });
         transactions.forEach(trx -> transactionData.add(new TransactionItem(
-                trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
+                trx.getAccount().getNumber(),
                 trx.getCategory().getName(),
                 trx.getConcept(),
                 trx.getDtOp().format(DATE_FORMATTER),
@@ -208,17 +199,43 @@ public class TransactionFrame implements Initializable {
         transactionRepository.save(trx);
     }
 
-    private void filterTransactionData(TransactionFilter filter) {
+    private void loadTransactions() {
+        filterTransactions(null);
+    }
+
+    private void filterTransactions(TransactionFilter filter) {
         transactionData.clear();
-        transactionRepository.filterAll(filter).forEach(trx ->
-                transactionData.add(new TransactionItem(
-                        trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
-                        trx.getCategory().getName(),
-                        trx.getConcept(),
-                        trx.getDtOp().format(DATE_FORMATTER),
-                        trx.getDtVal().format(DATE_FORMATTER),
-                        trx.getFormattedAmount()
-                )));
+        Service<Void> service = new Service<Void>() {
+            @Override
+            protected Task<Void> createTask() {
+                return new Task<Void>() {
+                    @Override
+                    protected Void call() throws Exception {
+                        updateMessage("Loading transactions...");
+                        List<Transaction> transactions = (filter == null) ? transactionRepository.findAll() : transactionRepository.filterAll(filter);
+                        for (int idx = 0; idx < transactions.size(); idx++) {
+                            Transaction trx = transactions.get(idx);
+                            transactionData.add(new TransactionItem(
+                                    trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
+                                    trx.getCategory().getName(),
+                                    trx.getConcept(),
+                                    trx.getDtOp().format(DATE_FORMATTER),
+                                    trx.getDtVal().format(DATE_FORMATTER),
+                                    trx.getFormattedAmount()));
+                            updateProgress(idx, transactions.size());
+                        }
+                        return null;
+                    }
+                };
+            }
+        };
+        ProgressDialog progress = new ProgressDialog(service);
+        progress.setTitle("Transaction loader");
+        progress.setHeaderText(null);
+        progress.getDialogPane().getStyleClass().clear();
+        progress.getDialogPane().getStylesheets().clear();
+        progress.getDialogPane().setPadding(new Insets(10, 10, 0, 10));
+        service.start();
     }
 
 }

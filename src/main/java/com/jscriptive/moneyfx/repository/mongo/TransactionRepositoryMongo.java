@@ -16,6 +16,7 @@ import java.util.List;
 import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.by;
 import static java.math.BigDecimal.ZERO;
 import static org.springframework.data.domain.Sort.Direction.ASC;
+import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -84,6 +85,16 @@ public class TransactionRepositoryMongo implements TransactionRepository {
     }
 
     @Override
+    public Transaction findLatestTransaction() {
+        return mongoTemplate.findOne(new Query().with(new Sort(DESC, "dtOp")), Transaction.class);
+    }
+
+    @Override
+    public Transaction findLatestTransactionOfAccount(Account account) {
+        return mongoTemplate.findOne(query(by(account)).with(new Sort(DESC, "dtOp")), Transaction.class);
+    }
+
+    @Override
     public void save(Transaction transaction) {
         mongoTemplate.save(transaction);
     }
@@ -92,6 +103,7 @@ public class TransactionRepositoryMongo implements TransactionRepository {
     public void remove(Transaction trx) {
         mongoTemplate.remove(trx);
     }
+
     @Override
     public void removeByAccount(Account account) {
         mongoTemplate.remove(query(by(account)), Transaction.class);

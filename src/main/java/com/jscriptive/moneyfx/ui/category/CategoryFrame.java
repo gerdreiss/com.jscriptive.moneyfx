@@ -18,9 +18,12 @@ import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionFilterDialog;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.TableColumn;
@@ -29,6 +32,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Pair;
+import org.controlsfx.dialog.ProgressDialog;
 
 import java.net.URL;
 import java.util.List;
@@ -140,17 +144,38 @@ public class CategoryFrame implements Initializable {
     private void setupCategoryTable() {
         dataTable.setItems(categoryData);
         dataTable.addEventHandler(TAB_SELECTION, event -> {
-            categoryData.clear();
             List<Category> categories = categoryRepository.findAll();
             if (categories.isEmpty()) {
                 Category other = Category.OTHER;
                 categoryRepository.save(other);
                 categories.add(other);
             }
-            categories.forEach(category -> {
-                double sum = transactionRepository.findByCategory(category).parallelStream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum();
-                categoryData.add(new CategoryItem(category.getName(), CurrencyFormat.getInstance().format(sum), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
-            });
+            categoryData.clear();
+            Service<Void> service = new Service<Void>() {
+                @Override
+                protected Task<Void> createTask() {
+                    return new Task<Void>() {
+                        @Override
+                        protected Void call() throws Exception {
+                            updateMessage("Loading categories...");
+                            for (int idx = 0; idx < categories.size(); idx++) {
+                                Category category = categories.get(idx);
+                                double sum = transactionRepository.findByCategory(category).parallelStream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum();
+                                categoryData.add(new CategoryItem(category.getName(), CurrencyFormat.getInstance().format(sum), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
+                                updateProgress(idx, categories.size());
+                            }
+                            return null;
+                        }
+                    };
+                }
+            };
+            ProgressDialog progress = new ProgressDialog(service);
+            progress.setTitle("Category loader");
+            progress.setHeaderText(null);
+            progress.getDialogPane().getStyleClass().clear();
+            progress.getDialogPane().getStylesheets().clear();
+            progress.getDialogPane().setPadding(new Insets(10, 10, 0, 10));
+            service.start();
         });
     }
 

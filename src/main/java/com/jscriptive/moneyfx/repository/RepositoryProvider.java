@@ -7,16 +7,15 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
  * Created by jscriptive.com on 17/11/2014.
  */
 public class RepositoryProvider {
-    private static RepositoryProvider instance;
-
-    public static RepositoryProvider getInstance() {
-        if (instance == null) {
-            instance = new RepositoryProvider();
-        }
-        return instance;
+    private RepositoryProvider() {
     }
 
-    private RepositoryProvider() {
+    private static class SingletonHolder {
+        public static final RepositoryProvider instance = new RepositoryProvider();
+    }
+
+    public static RepositoryProvider getInstance() {
+        return SingletonHolder.instance;
     }
 
     private ConfigurableApplicationContext context;

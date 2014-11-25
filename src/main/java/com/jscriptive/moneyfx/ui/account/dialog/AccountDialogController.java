@@ -5,7 +5,6 @@ import com.jscriptive.moneyfx.repository.BankRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
-import com.jscriptive.moneyfx.util.LocalDateUtils;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -18,7 +17,6 @@ import org.controlsfx.control.textfield.TextFields;
 
 import java.net.URL;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -50,7 +48,7 @@ public class AccountDialogController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         BankRepository bankRepository = RepositoryProvider.getInstance().getBankRepository();
         TextFields.bindAutoCompletion(bankField, bankRepository.findAll().stream().map(Bank::getName).collect(Collectors.toList()));
-        StringConverter converter = new StringConverter<LocalDate>() {
+        StringConverter<LocalDate> converter = new StringConverter<LocalDate>() {
             @Override
             public String toString(LocalDate date) {
                 if (date != null) {

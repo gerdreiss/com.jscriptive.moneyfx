@@ -34,6 +34,10 @@ public interface TransactionRepository {
 
     Transaction findEarliestTransactionOfAccount(Account account);
 
+    Transaction findLatestTransaction();
+
+    Transaction findLatestTransactionOfAccount(Account account);
+
     void save(Transaction transaction);
 
     void remove(Transaction trx);
