@@ -16,6 +16,7 @@ import javafx.stage.Stage;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 
 import static java.lang.String.format;
 
@@ -41,7 +42,7 @@ public class MoneyFX extends Application {
         Scene scene = new Scene(root);
         scene.getStylesheets().add("com/jscriptive/moneyfx/ui/css/MoneyFX.css");
         stage.setScene(scene);
-        stage.getIcons().add(new Image("com/jscriptive/moneyfx/ui/images/mFX.png"));
+        stage.getIcons().add(new Image("com/jscriptive/moneyfx/ui/images/mFX2.png"));
         stage.setTitle("MoneyFX");
         stage.show();
     }
@@ -50,13 +51,31 @@ public class MoneyFX extends Application {
         // start is called on the FX Application Thread,
         // so Thread.currentThread() is the FX application thread:
         Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
-            log.error("MoneyFX has produced an error", throwable);
             Alert error = new Alert(Alert.AlertType.ERROR);
             error.setTitle("MoneyFX error");
             error.setHeaderText("MoneyFX has produced an error");
-            error.setContentText(format("MoneyFX has produced an error: %s. For more info see the logs.", throwable.getMessage()));
+            Throwable message = getTheThrowable(throwable);
+            error.setContentText(format("MoneyFX has produced an error: %s.For more info see the logs.", message.getMessage()));
             error.showAndWait();
         });
+    }
+
+    private Throwable getTheThrowable(Throwable throwable) {
+        Throwable theThrowable = throwable;
+        if (throwable instanceof RuntimeException) {
+            if (throwable.getCause() != null) {
+                theThrowable = getTheThrowable(throwable.getCause());
+            }
+        } else if (throwable instanceof InvocationTargetException) {
+            if (((InvocationTargetException) throwable).getTargetException() != null) {
+                theThrowable = ((InvocationTargetException) throwable).getTargetException();
+            } else {
+                if (throwable.getCause() != null) {
+                    theThrowable = getTheThrowable(throwable.getCause());
+                }
+            }
+        }
+        return theThrowable;
     }
 
     private Parent loadMainFrame() {
