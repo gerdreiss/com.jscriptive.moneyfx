@@ -187,9 +187,9 @@ public class CategoryFrame implements Initializable {
 
     private void addNewCategory(ActionEvent actionEvent) {
         CategoryDialog categoryDialog = new CategoryDialog();
-        Optional<Pair<String, Boolean>> categoryResult = categoryDialog.showAndWait();
+        Optional<Pair<Category, Boolean>> categoryResult = categoryDialog.showAndWait();
         if (categoryResult.isPresent()) {
-            Category found = categoryRepository.findByName(categoryResult.get().getKey());
+            Category found = categoryRepository.findByName(categoryResult.get().getKey().getName());
             if (found != null) {
                 Alert alert = new Alert(ERROR);
                 alert.setTitle("Error");
@@ -200,7 +200,7 @@ public class CategoryFrame implements Initializable {
                     addCategoryFired(actionEvent);
                 }
             } else {
-                Category category = new Category(categoryResult.get().getKey());
+                Category category = categoryResult.get().getKey();
                 if (TRUE.equals(categoryResult.get().getValue())) {
                     editTransactionFilter(category);
                 }
@@ -232,11 +232,11 @@ public class CategoryFrame implements Initializable {
                 a.showAndWait();
             } else {
                 CategoryDialog categoryDialog = new CategoryDialog(selectedItem.getName());
-                Optional<Pair<String, Boolean>> categoryResult = categoryDialog.showAndWait();
+                Optional<Pair<Category, Boolean>> categoryResult = categoryDialog.showAndWait();
                 if (categoryResult.isPresent()) {
                     int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
                     Category category = categoryRepository.findByName(selectedItem.getName());
-                    category.setName(categoryResult.get().getKey());
+                    category.setName(categoryResult.get().getKey().getName());
                     categoryRepository.save(category);
                     String categorySum = selectedItem.getAmount();
                     if (TRUE.equals(categoryResult.get().getValue())) {
