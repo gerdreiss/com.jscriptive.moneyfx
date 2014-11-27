@@ -1,8 +1,7 @@
 package com.jscriptive.moneyfx.model;
 
+import com.jscriptive.moneyfx.util.BigDecimalUtils;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
-import com.jscriptive.moneyfx.util.LocalDateUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -10,51 +9,37 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
-
-import static java.math.BigDecimal.ZERO;
-import static java.math.MathContext.DECIMAL32;
-import static org.apache.commons.lang3.StringUtils.right;
 
 /**
  * Created by jscriptive.com on 29/10/2014.
  */
 @Document
-public class Account {
-
-    public static final String PREFIX_LAST_DIGITS = " ***";
-    public static final int NUMBER_LAST_DIGITS = 4;
+public class Transaction {
 
     @Id
     private String id;
     @DBRef
-    private Bank bank;
+    private Account account;
+    @DBRef
+    private Category category;
     @Indexed
-    private String number;
-    @Indexed
-    private String name;
-    private String type;
-    private BigDecimal balance;
-    private LocalDate balanceDate;
+    private String concept;
 
-    public Account() {
+    private LocalDate dtOp;
+    private LocalDate dtVal;
+
+    private BigDecimal amount;
+
+    public Transaction() {
     }
 
-    public Account(Bank bank, String number, String name, String type) {
-        this(bank, number, name, type, ZERO);
-    }
-
-    public Account(Bank bank, String number, String name, String type, BigDecimal balance) {
-        this(bank, number, name, type, balance, LocalDate.now());
-    }
-
-    public Account(Bank bank, String number, String name, String type, BigDecimal balance, LocalDate balanceDate) {
-        setBank(bank);
-        setNumber(number);
-        setName(name);
-        setType(type);
-        setBalance(balance);
-        setBalanceDate(balanceDate);
+    public Transaction(Account account, Category category, String concept, LocalDate dtOp, LocalDate dtVal, BigDecimal amount) {
+        setAccount(account);
+        setCategory(category);
+        setConcept(concept);
+        setDtOp(dtOp);
+        setDtVal(dtVal);
+        setAmount(amount);
     }
 
     public String getId() {
@@ -65,139 +50,85 @@ public class Account {
         this.id = id;
     }
 
-    public Bank getBank() {
-        return bank;
+    public Account getAccount() {
+        return account;
     }
 
-    private void setBank(Bank bank) {
-        this.bank = bank;
+    public void setAccount(Account account) {
+        this.account = account;
     }
 
-    public String getNumber() {
-        return number;
+    public String getConcept() {
+        return concept;
     }
 
-    public String getLastFourDigits() {
-        return PREFIX_LAST_DIGITS + right(number, NUMBER_LAST_DIGITS);
+    public void setConcept(String concept) {
+        this.concept = concept;
     }
 
-    private void setNumber(String number) {
-        this.number = number;
+    public LocalDate getDtOp() {
+        return dtOp;
     }
 
-    public String getName() {
-        return name;
+    public void setDtOp(LocalDate dtOp) {
+        this.dtOp = dtOp;
     }
 
-    private void setName(String name) {
-        this.name = name;
+    public LocalDate getDtVal() {
+        return dtVal;
     }
 
-    public String getType() {
-        return type;
+    public void setDtVal(LocalDate dtVal) {
+        this.dtVal = dtVal;
     }
 
-    private void setType(String type) {
-        this.type = type;
+    public BigDecimal getAmount() {
+        return amount;
     }
 
-    public LocalDate getBalanceDate() {
-        return balanceDate;
+    public String getFormattedAmount() {
+        return CurrencyFormat.getInstance().format(getAmount().doubleValue());
     }
 
-    public String getFormattedBalanceDate() {
-        return getBalanceDate().format(LocalDateUtils.DATE_FORMATTER);
+    public void setAmount(BigDecimal amount) {
+        this.amount = amount;
     }
 
-    public void setBalanceDate(LocalDate balanceDate) {
-        this.balanceDate = balanceDate;
+    public Category getCategory() {
+        return category;
     }
 
-    public BigDecimal getBalance() {
-        return balance;
+    public void setCategory(Category category) {
+        this.category = category;
     }
 
-    public String getFormattedBalance() {
-        return CurrencyFormat.getInstance().format(getBalance().doubleValue());
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
-
-    public void updateBalance(List<Transaction> transactions) {
-        transactions.forEach(trx -> addAmount(trx.getDtOp(), trx.getAmount()));
-    }
-
-    private void addAmount(LocalDate dtOp, BigDecimal amount) {
-        if (dtOp.isAfter(getBalanceDate())) {
-            setBalance(getBalance().add(amount));
-            setBalanceDate(dtOp);
-        }
-    }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Account)) return false;
+        if (!(o instanceof Transaction)) return false;
 
-        Account account = (Account) o;
+        Transaction that = (Transaction) o;
 
-        if (balance != null ? !balance.equals(account.balance) : account.balance != null) return false;
-        if (balanceDate != null ? !balanceDate.equals(account.balanceDate) : account.balanceDate != null) return false;
-        if (bank != null ? !bank.equals(account.bank) : account.bank != null) return false;
-        if (name != null ? !name.equals(account.name) : account.name != null) return false;
-        if (number != null ? !number.equals(account.number) : account.number != null) return false;
-        //noinspection RedundantIfStatement
-        if (type != null ? !type.equals(account.type) : account.type != null) return false;
-
-        return true;
+        if (account != null ? !account.equals(that.account) : that.account != null) return false;
+        if (concept != null ? !concept.equals(that.concept) : that.concept != null) return false;
+        if (dtOp != null ? !dtOp.equals(that.dtOp) : that.dtOp != null) return false;
+        if (dtVal != null ? !dtVal.equals(that.dtVal) : that.dtVal != null) return false;
+        return BigDecimalUtils.isEqual(this.amount, that.amount);
     }
 
     @Override
     public int hashCode() {
-        int result = bank != null ? bank.hashCode() : 0;
-        result = 31 * result + (number != null ? number.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (balance != null ? balance.hashCode() : 0);
-        result = 31 * result + (balanceDate != null ? balanceDate.hashCode() : 0);
+        int result = account != null ? account.hashCode() : 0;
+        result = 31 * result + (concept != null ? concept.hashCode() : 0);
+        result = 31 * result + (dtOp != null ? dtOp.hashCode() : 0);
+        result = 31 * result + (dtVal != null ? dtVal.hashCode() : 0);
+        result = 31 * result + (amount != null ? amount.hashCode() : 0);
         return result;
     }
 
-
     @Override
     public String toString() {
-        return String.format("Account{bank=%s, number='%s', name='%s', type='%s', balance=%s, balanceDate=%s}", getBank(), getNumber(), getName(), getType(), getFormattedBalance(), getFormattedBalanceDate());
-    }
-
-    public BigDecimal calculateStartingBalance(List<Transaction> read) {
-        // calculate the balance of the last transaction of the list "read"
-        read.forEach(trx -> {
-            // if the transaction date is before or the same as the account balance date - subtract the amount from the account balance
-            if (!trx.getDtOp().isAfter(getBalanceDate())) {
-                setBalance(getBalance().subtract(trx.getAmount(), DECIMAL32));
-                setBalanceDate(trx.getDtOp());
-            }
-        });
-        return getBalance();
-    }
-
-    public BigDecimal calculateCurrentBalance(Transaction trx) {
-        if (!trx.getDtOp().isBefore(getBalanceDate())) {
-            setBalance(getBalance().add(trx.getAmount(), DECIMAL32));
-        } else {
-            setBalance(getBalance().subtract(trx.getAmount(), DECIMAL32));
-        }
-        setBalanceDate(trx.getDtOp());
-        return getBalance();
-    }
-
-    public boolean isOfBank(String name) {
-        return getBank() != null && StringUtils.isNotBlank(name) && name.equals(getBank().getName());
-    }
-
-    public boolean numberEndsWith(String lastFourDigits) {
-        return StringUtils.isNotBlank(lastFourDigits) && StringUtils.isNotBlank(getNumber()) && getNumber().endsWith(lastFourDigits);
+        return String.format("Transaction{account=%s, concept='%s', dtOp=%s, dtVal=%s, amount=%s}", account, concept, dtOp, dtVal, getFormattedAmount());
     }
 }
