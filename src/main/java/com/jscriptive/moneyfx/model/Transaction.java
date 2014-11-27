@@ -1,5 +1,6 @@
 package com.jscriptive.moneyfx.model;
 
+import com.jscriptive.moneyfx.util.BigDecimalUtils;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -33,12 +34,12 @@ public class Transaction {
     }
 
     public Transaction(Account account, Category category, String concept, LocalDate dtOp, LocalDate dtVal, BigDecimal amount) {
-        this.account = account;
-        this.category = category;
-        this.concept = concept;
-        this.dtOp = dtOp;
-        this.dtVal = dtVal;
-        this.amount = amount;
+        setAccount(account);
+        setCategory(category);
+        setConcept(concept);
+        setDtOp(dtOp);
+        setDtVal(dtVal);
+        setAmount(amount);
     }
 
     public String getId() {
@@ -113,10 +114,7 @@ public class Transaction {
         if (concept != null ? !concept.equals(that.concept) : that.concept != null) return false;
         if (dtOp != null ? !dtOp.equals(that.dtOp) : that.dtOp != null) return false;
         if (dtVal != null ? !dtVal.equals(that.dtVal) : that.dtVal != null) return false;
-        //noinspection RedundantIfStatement
-        if (amount != null ? !amount.equals(that.amount) : that.amount != null) return false;
-
-        return true;
+        return BigDecimalUtils.isEqual(this.amount, that.amount);
     }
 
     @Override
