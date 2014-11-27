@@ -72,6 +72,8 @@ public class TransactionFrame implements Initializable {
     private CategoryRepository categoryRepository;
     private TransactionRepository transactionRepository;
 
+    private TransactionFilter currentFilter;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         setupRepositories();
@@ -97,7 +99,8 @@ public class TransactionFrame implements Initializable {
         TransactionFilterDialog dialog = new TransactionFilterDialog();
         Optional<TransactionFilter> result = dialog.showAndWait();
         if (result.isPresent()) {
-            filterTransactions(result.get());
+            currentFilter = result.get();
+            filterTransactions(currentFilter);
         }
     }
 
@@ -129,12 +132,20 @@ public class TransactionFrame implements Initializable {
             CategoryDialog dialog = new CategoryDialog(categoryRepository.findAll());
             Optional<Pair<Category, Boolean>> result = dialog.showAndWait();
             if (result.isPresent()) {
-                toCategorize.forEach(trx -> {
-                    trx.setCategory(result.get().getKey());
-                    // TODO instead of just saving the transaction should be read from the database and updated with the new category
-                    //      reading all transactions, creating the instance from the table item, compare, set category, update?
-                    //transactionRepository.save(trx);
+                Category category = result.get().getKey();
+                if (category.getId() == null) {
+                    categoryRepository.save(category);
+                }
+                List<Transaction> transactions = (currentFilter == null) ? transactionRepository.findAll() : transactionRepository.filterAll(currentFilter);
+                toCategorize.forEach(aux -> {
+                    Optional<Transaction> first = transactions.parallelStream().filter(t -> t.equals(aux)).findFirst();
+                    if (first.isPresent()) {
+                        Transaction persisted = first.get();
+                        persisted.setCategory(category);
+                        transactionRepository.save(persisted);
+                    }
                 });
+                filterTransactions(currentFilter);
             }
         }
     }
@@ -236,7 +247,8 @@ public class TransactionFrame implements Initializable {
     }
 
     private void loadTransactions() {
-        filterTransactions(null);
+        currentFilter = null;
+        filterTransactions(currentFilter);
     }
 
     private void filterTransactions(TransactionFilter filter) {
