@@ -2,11 +2,9 @@
 
 <?import com.jscriptive.moneyfx.ui.common.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.*?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.image.Image?>
-<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.HBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" id="transactionFrame"
@@ -44,6 +42,33 @@
     </top>
     <center>
         <TableView fx:id="dataTable">
+            <contextMenu>
+                <ContextMenu fx:id="contextMenu">
+                    <items>
+                        <MenuItem fx:id="contextMenuItemEdit" text="Edit" onAction="#contextMenuItemEditSelected">
+                            <graphic>
+                                <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true">
+                                    <Image url="@../images/Document-Edit-24.png"/>
+                                </ImageView>
+                            </graphic>
+                        </MenuItem>
+                        <MenuItem fx:id="contextMenuItemDelete" text="Delete" onAction="#contextMenuItemDeleteSelected">
+                            <graphic>
+                                <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true">
+                                    <Image url="@../images/Document-Delete-01-24.png"/>
+                                </ImageView>
+                            </graphic>
+                        </MenuItem>
+                        <MenuItem fx:id="contextMenuItemCategorize" text="Categorize" onAction="#contextMenuItemCategorizeSelected">
+                            <graphic>
+                                <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true">
+                                    <Image url="@../images/Category-32.png"/>
+                                </ImageView>
+                            </graphic>
+                        </MenuItem>
+                    </items>
+                </ContextMenu>
+            </contextMenu>
             <columns>
                 <PercentageWidthTableColumn fx:id="accountColumn" text="Account" percentageWidth="0.15">
                     <cellValueFactory>

@@ -107,7 +107,21 @@ public class TransactionFrame implements Initializable {
         }
     }
 
+    public void contextMenuItemEditSelected(ActionEvent actionEvent) {
+    }
+
+    public void contextMenuItemDeleteSelected(ActionEvent actionEvent) {
+    }
+
     public void categorizeTransactionsFired(ActionEvent actionEvent) {
+        categorizeTransactions();
+    }
+
+    public void contextMenuItemCategorizeSelected(ActionEvent actionEvent) {
+        categorizeTransactions();
+    }
+
+    private void categorizeTransactions() {
         ObservableList<TransactionItem> selectedItems = dataTable.getSelectionModel().getSelectedItems();
         if (CollectionUtils.isEmpty(selectedItems)) {
             String contentText = "You didn't select any transaction from the table. Do you really want to categorize all transaction currently displayed?";

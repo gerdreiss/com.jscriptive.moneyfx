@@ -27,11 +27,11 @@
  ******************************************************************************/
 
 .default-color0.chart-bar {
-    -fx-background-color: darkseagreen;
+    -fx-background-color: limegreen;
 }
 
 .default-color1.chart-bar {
-    -fx-background-color: coral;
+    -fx-background-color: firebrick;
 }
 
 /*******************************************************************************
