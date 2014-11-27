@@ -1,6 +1,5 @@
 package com.jscriptive.moneyfx.model;
 
-import com.jscriptive.moneyfx.util.BigDecimalUtils;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import com.jscriptive.moneyfx.util.LocalDateUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -13,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.jscriptive.moneyfx.util.BigDecimalUtils.isEqual;
 import static java.math.BigDecimal.ZERO;
 import static java.math.MathContext.DECIMAL32;
 import static org.apache.commons.lang3.StringUtils.right;
@@ -90,7 +90,7 @@ public class Account {
         return name;
     }
 
-    private void setName(String name) {
+    public void setName(String name) {
         this.name = name;
     }
 
@@ -98,7 +98,7 @@ public class Account {
         return type;
     }
 
-    private void setType(String type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -149,7 +149,7 @@ public class Account {
         if (name != null ? !name.equals(that.name) : that.name != null) return false;
         if (number != null ? !number.equals(that.number) : that.number != null) return false;
         if (type != null ? !type.equals(that.type) : that.type != null) return false;
-        return BigDecimalUtils.isEqual(this.balance, that.balance);
+        return isEqual(this.balance, that.balance);
     }
 
     @Override

@@ -26,6 +26,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.util.Pair;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.log4j.Logger;
 import org.controlsfx.dialog.ProgressDialog;
 
 import java.io.File;
@@ -49,6 +50,8 @@ import static javafx.scene.control.SelectionMode.MULTIPLE;
  * @author jscriptive.com
  */
 public class TransactionFrame implements Initializable {
+
+    private static Logger log = Logger.getLogger(TransactionFrame.class);
 
     @FXML
     private TableView<TransactionItem> dataTable;
@@ -160,7 +163,18 @@ public class TransactionFrame implements Initializable {
     private void setupTransactionTable() {
         dataTable.getSelectionModel().setSelectionMode(MULTIPLE);
         dataTable.setItems(transactionData);
-        dataTable.addEventHandler(TAB_SELECTION, event -> loadTransactions());
+        dataTable.addEventHandler(TAB_SELECTION, event -> {
+            if (event.isWithParams()) {
+                Object firstParam = event.getFirstParam();
+                if (firstParam instanceof TransactionFilter) {
+                    currentFilter = (TransactionFilter) firstParam;
+                    log.debug("TabSelectionEvent received with filter: " + currentFilter);
+                }
+            } else {
+                log.debug("TabSelectionEvent received without params");
+            }
+            filterTransactions(currentFilter);
+        });
     }
 
     private void setupTableColumns() {
@@ -244,11 +258,6 @@ public class TransactionFrame implements Initializable {
             categoryRepository.save(category);
         }
         transactionRepository.save(trx);
-    }
-
-    private void loadTransactions() {
-        currentFilter = null;
-        filterTransactions(currentFilter);
     }
 
     private void filterTransactions(TransactionFilter filter) {

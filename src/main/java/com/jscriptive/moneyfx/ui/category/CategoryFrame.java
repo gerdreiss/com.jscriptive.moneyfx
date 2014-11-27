@@ -14,6 +14,7 @@ import com.jscriptive.moneyfx.repository.TransactionFilterRepository;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.category.dialog.CategoryDialog;
 import com.jscriptive.moneyfx.ui.category.item.CategoryItem;
+import com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionFilterDialog;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.collections.FXCollections;
@@ -32,6 +33,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import javafx.util.Pair;
+import org.apache.log4j.Logger;
 import org.controlsfx.dialog.ProgressDialog;
 
 import java.net.URL;
@@ -51,6 +53,8 @@ import static javafx.scene.input.KeyCode.DELETE;
  * @author jscriptive.com
  */
 public class CategoryFrame implements Initializable {
+
+    private static Logger log = Logger.getLogger(CategoryFrame.class);
 
     @FXML
     private TableView<CategoryItem> dataTable;
@@ -130,6 +134,13 @@ public class CategoryFrame implements Initializable {
         }
     }
 
+    public void contextMenuShowTransactions(ActionEvent actionEvent) {
+        CategoryItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
+        Category persistedCategory = categoryRepository.findByName(selectedItem.getName());
+        TransactionFilter filter = new TransactionFilter();
+        filter.setCategory(persistedCategory);
+        dataTable.getScene().lookup("#tabPane").fireEvent(new ShowTransactionsEvent(filter));
+    }
 
     /**
      * ********************** private helper methods ****************************************************************
@@ -312,5 +323,4 @@ public class CategoryFrame implements Initializable {
             }
         }
     }
-
 }

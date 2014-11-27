@@ -3,6 +3,7 @@ package com.jscriptive.moneyfx.ui.transaction.dialog;
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.model.TransactionFilter;
+import com.jscriptive.moneyfx.model.ValueRange;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
 import com.jscriptive.moneyfx.ui.common.CategoryStringConverter;
@@ -11,6 +12,7 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
+import javafx.util.StringConverter;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -53,14 +55,17 @@ public class TransactionFilterDialogController implements Initializable {
 
     private void setupAccountComboBox() {
         List<Account> accounts = RepositoryProvider.getInstance().getAccountRepository().findAll();
+        StringConverter<Account> converter = new AccountStringConverter(accounts);
+        accounts.sort((a1, a2) -> converter.toString(a1).compareTo(converter.toString(a2)));
         accounts.add(0, null);
-        accountCombo.setConverter(new AccountStringConverter(accounts));
+        accountCombo.setConverter(converter);
         accountCombo.getItems().addAll(accounts);
         accountCombo.getSelectionModel().selectFirst();
     }
 
     private void setupCategoryComboBox() {
         List<Category> categories = RepositoryProvider.getInstance().getCategoryRepository().findAll();
+        categories.sort((c1, c2) -> c1.getName().compareTo(c2.getName()));
         categories.add(0, null);
         categoryCombo.setConverter(new CategoryStringConverter(categories));
         categoryCombo.getItems().addAll(categories);
@@ -72,13 +77,13 @@ public class TransactionFilterDialogController implements Initializable {
                 accountCombo.getValue(),
                 categoryCombo.getValue(),
                 conceptField.getText(),
-                new TransactionFilter.ValueRange<>(
+                new ValueRange<>(
                         dtOpFieldFrom.getValue(),
                         dtOpFieldTo.getValue()),
-                new TransactionFilter.ValueRange<>(
+                new ValueRange<>(
                         dtValFieldFrom.getValue(),
                         dtValFieldTo.getValue()),
-                new TransactionFilter.ValueRange<>(
+                new ValueRange<>(
                         isBlank(amountFieldFrom.getText()) ? null : new BigDecimal(amountFieldFrom.getText()),
                         isBlank(amountFieldTo.getText()) ? null : new BigDecimal(amountFieldTo.getText()))
         );

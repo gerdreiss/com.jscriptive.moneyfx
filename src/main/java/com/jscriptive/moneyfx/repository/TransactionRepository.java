@@ -1,10 +1,8 @@
 package com.jscriptive.moneyfx.repository;
 
-import com.jscriptive.moneyfx.model.Account;
-import com.jscriptive.moneyfx.model.Category;
-import com.jscriptive.moneyfx.model.Transaction;
-import com.jscriptive.moneyfx.model.TransactionFilter;
+import com.jscriptive.moneyfx.model.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -30,18 +28,18 @@ public interface TransactionRepository {
 
     List<Transaction> findOutgoingByYearAndMonth(Integer year, Integer month);
 
-    Transaction findEarliestTransaction();
-
-    Transaction findEarliestTransactionOfAccount(Account account);
-
-    Transaction findLatestTransaction();
-
-    Transaction findLatestTransactionOfAccount(Account account);
-
     void save(Transaction transaction);
 
     void remove(Transaction trx);
 
     void removeByAccount(Account account);
+
+    long countTransactions();
+
+    long countTransactionsOfAccount(Account account);
+
+    ValueRange<LocalDate> getTransactionOpDateRange();
+
+    ValueRange<LocalDate> getTransactionOpDateRangeForAccount(Account account);
 
 }

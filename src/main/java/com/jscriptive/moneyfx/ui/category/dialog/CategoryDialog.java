@@ -64,6 +64,7 @@ public class CategoryDialog extends Dialog<Pair<Category, Boolean>> {
         CheckBox filterRuleCheckBox = new CheckBox(String.format("%s filter rule for this category", StringUtils.isBlank(category) ? "Create" : "Edit"));
 
         ObservableList<Category> items = FXCollections.observableArrayList(categories);
+        items.sort((o1, o2) -> o1.getName().compareTo(o2.getName()));
         items.add(new Category("Create new"));
         ComboBox<Category> categoryComboBox = new ComboBox<>(items);
         categoryComboBox.setPrefWidth(300);

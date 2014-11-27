@@ -51,10 +51,11 @@ public class MoneyFX extends Application {
         // start is called on the FX Application Thread,
         // so Thread.currentThread() is the FX application thread:
         Thread.currentThread().setUncaughtExceptionHandler((thread, throwable) -> {
+            Throwable message = getTheThrowable(throwable);
+            log.error("MoneyFX has produced an error:", message);
             Alert error = new Alert(Alert.AlertType.ERROR);
             error.setTitle("MoneyFX error");
             error.setHeaderText("MoneyFX has produced an error");
-            Throwable message = getTheThrowable(throwable);
             error.setContentText(format("MoneyFX has produced an error: %s.For more info see the logs.", message.getMessage()));
             error.showAndWait();
         });

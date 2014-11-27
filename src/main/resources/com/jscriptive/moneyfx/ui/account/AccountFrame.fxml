@@ -17,7 +17,7 @@
             <padding>
                 <Insets bottom="10.0"/>
             </padding>
-            <Button text="Add account" onAction="#addAccountFired">
+            <Button text="Add new" onAction="#addAccountFired">
                 <graphic>
                     <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true">
                         <Image url="@../images/Add-New-32.png"/>
@@ -42,6 +42,13 @@
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true">
                                     <Image url="@../images/Document-Delete-01-24.png"/>
+                                </ImageView>
+                            </graphic>
+                        </MenuItem>
+                        <MenuItem fx:id="contextMenuShowTransactions" text="Show transactions" onAction="#contextMenuShowTransactions">
+                            <graphic>
+                                <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true">
+                                    <Image url="@../images/Transaction-Fee-32.png"/>
                                 </ImageView>
                             </graphic>
                         </MenuItem>

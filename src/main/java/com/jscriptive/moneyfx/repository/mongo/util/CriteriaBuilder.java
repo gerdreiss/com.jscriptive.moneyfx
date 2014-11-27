@@ -1,9 +1,6 @@
 package com.jscriptive.moneyfx.repository.mongo.util;
 
-import com.jscriptive.moneyfx.model.Account;
-import com.jscriptive.moneyfx.model.Bank;
-import com.jscriptive.moneyfx.model.Category;
-import com.jscriptive.moneyfx.model.TransactionFilter;
+import com.jscriptive.moneyfx.model.*;
 import org.apache.commons.lang3.StringUtils;
 import org.bson.types.ObjectId;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -156,7 +153,7 @@ public class CriteriaBuilder {
         return criteria.and("concept").regex(concept);
     }
 
-    private static Criteria addDtOp(Criteria criteria, TransactionFilter.ValueRange<LocalDate> dtOpRange) {
+    private static Criteria addDtOp(Criteria criteria, ValueRange<LocalDate> dtOpRange) {
         if (dtOpRange.hasFrom() && dtOpRange.hasTo()) {
             criteria = criteria.and("dtOp").gte(dtOpRange.from()).lte(dtOpRange.to());
         } else if (dtOpRange.hasFrom()) {
@@ -167,7 +164,7 @@ public class CriteriaBuilder {
         return criteria;
     }
 
-    private static Criteria addDtVal(Criteria criteria, TransactionFilter.ValueRange<LocalDate> dtValRange) {
+    private static Criteria addDtVal(Criteria criteria, ValueRange<LocalDate> dtValRange) {
         if (dtValRange.hasFrom() && dtValRange.hasTo()) {
             criteria = criteria.and("dtVal").gte(dtValRange.from()).lte(dtValRange.to());
         } else if (dtValRange.hasFrom()) {
@@ -178,7 +175,7 @@ public class CriteriaBuilder {
         return criteria;
     }
 
-    private static Criteria addAmount(Criteria criteria, TransactionFilter.ValueRange<BigDecimal> amountRange) {
+    private static Criteria addAmount(Criteria criteria, ValueRange<BigDecimal> amountRange) {
         if (amountRange.hasFrom() && amountRange.hasTo()) {
             criteria = criteria.and("amount").gte(amountRange.from()).lte(amountRange.to());
         } else if (amountRange.hasFrom()) {

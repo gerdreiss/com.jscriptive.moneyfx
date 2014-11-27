@@ -19,21 +19,21 @@
             <padding>
                 <Insets bottom="10.0"/>
             </padding>
-            <Button fx:id="importButton" text="Import transactions" onAction="#importTransactionsFired">
+            <Button fx:id="importButton" text="Import" onAction="#importTransactionsFired">
                 <graphic>
                     <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true">
                         <Image url="@../images/Data-Import-32.png"/>
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="filterButton" text="Filter transactions" onAction="#filterTransactionsFired">
+            <Button fx:id="filterButton" text="Filter" onAction="#filterTransactionsFired">
                 <graphic>
                     <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true">
                         <Image url="@../images/Filter-Standard-32.png"/>
                     </ImageView>
                 </graphic>
             </Button>
-            <Button fx:id="categorizeButton" text="Categorize transactions" onAction="#categorizeTransactionsFired">
+            <Button fx:id="categorizeButton" text="Categorize" onAction="#categorizeTransactionsFired">
                 <graphic>
                     <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true">
                         <Image url="@../images/Category-32.png"/>

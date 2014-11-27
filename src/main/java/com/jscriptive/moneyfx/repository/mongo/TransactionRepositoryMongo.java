@@ -1,9 +1,6 @@
 package com.jscriptive.moneyfx.repository.mongo;
 
-import com.jscriptive.moneyfx.model.Account;
-import com.jscriptive.moneyfx.model.Category;
-import com.jscriptive.moneyfx.model.Transaction;
-import com.jscriptive.moneyfx.model.TransactionFilter;
+import com.jscriptive.moneyfx.model.*;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -11,6 +8,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.by;
@@ -75,26 +73,6 @@ public class TransactionRepositoryMongo implements TransactionRepository {
     }
 
     @Override
-    public Transaction findEarliestTransaction() {
-        return mongoTemplate.findOne(new Query().with(new Sort(ASC, "dtOp")), Transaction.class);
-    }
-
-    @Override
-    public Transaction findEarliestTransactionOfAccount(Account account) {
-        return mongoTemplate.findOne(query(by(account)).with(new Sort(ASC, "dtOp")), Transaction.class);
-    }
-
-    @Override
-    public Transaction findLatestTransaction() {
-        return mongoTemplate.findOne(new Query().with(new Sort(DESC, "dtOp")), Transaction.class);
-    }
-
-    @Override
-    public Transaction findLatestTransactionOfAccount(Account account) {
-        return mongoTemplate.findOne(query(by(account)).with(new Sort(DESC, "dtOp")), Transaction.class);
-    }
-
-    @Override
     public void save(Transaction transaction) {
         mongoTemplate.save(transaction);
     }
@@ -109,4 +87,49 @@ public class TransactionRepositoryMongo implements TransactionRepository {
         mongoTemplate.remove(query(by(account)), Transaction.class);
     }
 
+    @Override
+    public long countTransactions() {
+        return mongoTemplate.count(null, Transaction.class);
+    }
+
+    @Override
+    public long countTransactionsOfAccount(Account account) {
+        return mongoTemplate.count(query(by(account)), Transaction.class);
+    }
+
+    @Override
+    public ValueRange<LocalDate> getTransactionOpDateRange() {
+        if (countTransactions() == 0L) {
+            return new ValueRange<>(null, null);
+        }
+        Transaction earliestTransaction = findEarliestTransaction();
+        Transaction latestTransaction = findLatestTransaction();
+        return new ValueRange<>(earliestTransaction.getDtOp(), latestTransaction.getDtOp());
+    }
+
+    @Override
+    public ValueRange<LocalDate> getTransactionOpDateRangeForAccount(Account account) {
+        if (countTransactionsOfAccount(account) == 0L) {
+            return new ValueRange<>(null, null);
+        }
+        Transaction earliestTransaction = findEarliestTransactionOfAccount(account);
+        Transaction latestTransaction = findLatestTransactionOfAccount(account);
+        return new ValueRange<>(earliestTransaction.getDtOp(), latestTransaction.getDtOp());
+    }
+
+    private Transaction findEarliestTransaction() {
+        return mongoTemplate.findOne(new Query().with(new Sort(ASC, "dtOp")), Transaction.class);
+    }
+
+    private Transaction findEarliestTransactionOfAccount(Account account) {
+        return mongoTemplate.findOne(query(by(account)).with(new Sort(ASC, "dtOp")), Transaction.class);
+    }
+
+    private Transaction findLatestTransaction() {
+        return mongoTemplate.findOne(new Query().with(new Sort(DESC, "dtOp")), Transaction.class);
+    }
+
+    private Transaction findLatestTransactionOfAccount(Account account) {
+        return mongoTemplate.findOne(query(by(account)).with(new Sort(DESC, "dtOp")), Transaction.class);
+    }
 }

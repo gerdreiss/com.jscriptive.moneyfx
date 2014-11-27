@@ -7,12 +7,14 @@ package com.jscriptive.moneyfx.ui.account;
 
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Bank;
+import com.jscriptive.moneyfx.model.TransactionFilter;
 import com.jscriptive.moneyfx.repository.AccountRepository;
 import com.jscriptive.moneyfx.repository.BankRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.account.dialog.AccountDialog;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
+import com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -143,13 +145,11 @@ public class AccountFrame implements Initializable {
             AccountDialog dialog = new AccountDialog(selectedItem);
             Optional<AccountItem> result = dialog.showAndWait();
             if (result.isPresent()) {
-                Account account = new Account(
-                        bankRepository.findByName(result.get().getBank()),
-                        result.get().getNumber(),
-                        result.get().getName(),
-                        result.get().getType(),
-                        BigDecimal.valueOf(result.get().getBalance()),
-                        LocalDate.parse(result.get().getBalanceDate(), DATE_FORMATTER));
+                Account account = accountRepository.findByNumber(result.get().getNumber());
+                account.setName(result.get().getName());
+                account.setType(result.get().getType());
+                account.setBalance(BigDecimal.valueOf(result.get().getBalance()));
+                account.setBalanceDate(LocalDate.parse(result.get().getBalanceDate(), DATE_FORMATTER));
                 accountRepository.save(account);
                 accountData.set(dataTable.getSelectionModel().getSelectedIndex(), result.get());
             }
@@ -184,5 +184,13 @@ public class AccountFrame implements Initializable {
             bankRepository.remove(account.getBank());
             accountData.remove(selectedIndex);
         }
+    }
+
+    public void contextMenuShowTransactions(ActionEvent actionEvent) {
+        AccountItem selectedItem = dataTable.getSelectionModel().getSelectedItem();
+        Account persistedAccount = accountRepository.findByNumber(selectedItem.getNumber());
+        TransactionFilter filter = new TransactionFilter();
+        filter.setAccount(persistedAccount);
+        dataTable.getScene().lookup("#tabPane").fireEvent(new ShowTransactionsEvent(filter));
     }
 }

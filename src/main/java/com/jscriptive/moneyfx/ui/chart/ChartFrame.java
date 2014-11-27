@@ -7,12 +7,12 @@ package com.jscriptive.moneyfx.ui.chart;
 
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Transaction;
+import com.jscriptive.moneyfx.model.ValueRange;
 import com.jscriptive.moneyfx.repository.CategoryRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
-import com.jscriptive.moneyfx.util.LocalDateUtils;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -34,9 +34,9 @@ import java.util.*;
 import java.util.stream.DoubleStream;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
+import static com.jscriptive.moneyfx.util.LocalDateUtils.getMonthLabel;
 import static java.lang.Math.abs;
 import static java.lang.String.format;
-import static java.time.LocalDate.now;
 
 /**
  * @author jscriptive.com
@@ -107,16 +107,15 @@ public class ChartFrame implements Initializable {
             lineChart.setTitle("Balance development day by day");
 
             Account account = accountCombo.getValue();
-            Transaction earliest =
+            ValueRange<LocalDate> period =
                     account == null
-                            ? transactionRepository.findEarliestTransaction()
-                            : transactionRepository.findEarliestTransactionOfAccount(account);
-            Transaction latest =
-                    account == null
-                            ? transactionRepository.findLatestTransaction()
-                            : transactionRepository.findLatestTransactionOfAccount(account);
-            xAxis.setLowerBound(earliest.getDtOp());
-            xAxis.setUpperBound(latest.getDtOp());
+                            ? transactionRepository.getTransactionOpDateRange()
+                            : transactionRepository.getTransactionOpDateRangeForAccount(account);
+            if (period.isEmpty()) {
+                return;
+            }
+            xAxis.setLowerBound(period.from());
+            xAxis.setUpperBound(period.to());
 
             Service<Void> service = new Service<Void>() {
 
@@ -204,55 +203,52 @@ public class ChartFrame implements Initializable {
             outSeries.setName("Out" + accountLabel);
             barChart.getData().add(outSeries);
 
-            Transaction earliestTransaction =
+            ValueRange<LocalDate> period =
                     account == null
-                            ? transactionRepository.findEarliestTransaction()
-                            : transactionRepository.findEarliestTransactionOfAccount(account);
-            Transaction latestTransaction =
-                    account == null
-                            ? transactionRepository.findLatestTransaction()
-                            : transactionRepository.findLatestTransactionOfAccount(account);
-            if (earliestTransaction != null && latestTransaction != null) {
-                ObservableList<String> categories = FXCollections.observableArrayList();
-                for (LocalDate date = earliestTransaction.getDtOp(); date.isBefore(latestTransaction.getDtOp()); date = date.plusMonths(1)) {
-                    categories.add(LocalDateUtils.getMonthLabel(date.getYear(), date.getMonthValue()));
-                }
-                xAxis.setCategories(categories);
-                Service<Void> service = new Service<Void>() {
-                    @Override
-                    protected Task<Void> createTask() {
-                        return new Task<Void>() {
-                            @Override
-                            protected Void call() throws Exception {
-                                for (LocalDate date = earliestTransaction.getDtOp(); date.isBefore(latestTransaction.getDtOp()); date = date.plusMonths(1)) {
-
-                                    String monthLabel = LocalDateUtils.getMonthLabel(date.getYear(), date.getMonthValue());
-
-                                    List<Transaction> incoming =
-                                            account == null
-                                                    ? transactionRepository.findIncomingByYearAndMonth(date.getYear(), date.getMonthValue())
-                                                    : transactionRepository.findIncomingByAccountAndYearAndMonth(account, date.getYear(), date.getMonthValue());
-                                    XYChart.Data<String, Number> inData = new XYChart.Data<>(monthLabel, getSum(incoming));
-
-                                    List<Transaction> outgoing =
-                                            account == null
-                                                    ? transactionRepository.findOutgoingByYearAndMonth(date.getYear(), date.getMonthValue())
-                                                    : transactionRepository.findOutgoingByAccountAndYearAndMonth(account, date.getYear(), date.getMonthValue());
-                                    XYChart.Data<String, Number> outData = new XYChart.Data<>(monthLabel, getSum(outgoing));
-
-                                    Platform.runLater(() -> {
-                                        inSeries.getData().add(inData);
-                                        outSeries.getData().add(outData);
-                                    });
-                                }
-
-                                return null;
-                            }
-                        };
-                    }
-                };
-                service.start();
+                            ? transactionRepository.getTransactionOpDateRange()
+                            : transactionRepository.getTransactionOpDateRangeForAccount(account);
+            if (period.isEmpty()) {
+                return;
             }
+            ObservableList<String> categories = FXCollections.observableArrayList();
+            for (LocalDate date = period.from(); date.isBefore(period.to()); date = date.plusMonths(1)) {
+                categories.add(getMonthLabel(date.getYear(), date.getMonthValue()));
+            }
+            xAxis.setCategories(categories);
+            Service<Void> service = new Service<Void>() {
+                @Override
+                protected Task<Void> createTask() {
+                    return new Task<Void>() {
+                        @Override
+                        protected Void call() throws Exception {
+                            for (LocalDate date = period.from(); date.isBefore(period.to()); date = date.plusMonths(1)) {
+
+                                String monthLabel = getMonthLabel(date.getYear(), date.getMonthValue());
+
+                                List<Transaction> incoming =
+                                        account == null
+                                                ? transactionRepository.findIncomingByYearAndMonth(date.getYear(), date.getMonthValue())
+                                                : transactionRepository.findIncomingByAccountAndYearAndMonth(account, date.getYear(), date.getMonthValue());
+                                XYChart.Data<String, Number> inData = new XYChart.Data<>(monthLabel, getSum(incoming));
+
+                                List<Transaction> outgoing =
+                                        account == null
+                                                ? transactionRepository.findOutgoingByYearAndMonth(date.getYear(), date.getMonthValue())
+                                                : transactionRepository.findOutgoingByAccountAndYearAndMonth(account, date.getYear(), date.getMonthValue());
+                                XYChart.Data<String, Number> outData = new XYChart.Data<>(monthLabel, getSum(outgoing));
+
+                                Platform.runLater(() -> {
+                                    inSeries.getData().add(inData);
+                                    outSeries.getData().add(outData);
+                                });
+                            }
+
+                            return null;
+                        }
+                    };
+                }
+            };
+            service.start();
         }
     }
 
@@ -275,12 +271,16 @@ public class ChartFrame implements Initializable {
                     return new Task<Void>() {
                         @Override
                         protected Void call() throws Exception {
-                            Transaction earliest = accountCombo.getValue() == null
-                                    ? transactionRepository.findEarliestTransaction()
-                                    : transactionRepository.findEarliestTransactionOfAccount(accountCombo.getValue());
+                            ValueRange<LocalDate> period =
+                                    accountCombo.getValue() == null
+                                            ? transactionRepository.getTransactionOpDateRange()
+                                            : transactionRepository.getTransactionOpDateRangeForAccount(accountCombo.getValue());
+                            if (period.isEmpty()) {
+                                return null;
+                            }
                             Platform.runLater(() ->
                                     pieChart.setTitle(format("%s for transactions from %s until %s",
-                                            pieChart.getTitle(), earliest.getDtOp(), now())));
+                                            pieChart.getTitle(), period.from(), period.to())));
                             categoryRepository.findAll().forEach(category -> {
                                 List<Transaction> transactions =
                                         (accountCombo.getValue() == null)
