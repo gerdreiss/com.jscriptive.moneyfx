@@ -3,6 +3,7 @@ package com.jscriptive.moneyfx.ui.category.dialog;
 import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.ui.common.CategoryStringConverter;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -62,9 +63,25 @@ public class CategoryDialog extends Dialog<Pair<Category, Boolean>> {
         categoryTextField.textProperty().addListener((observable, oldValue, newValue) -> importButton.setDisable(StringUtils.isBlank(newValue)));
         CheckBox filterRuleCheckBox = new CheckBox(String.format("%s filter rule for this category", StringUtils.isBlank(category) ? "Create" : "Edit"));
 
-        ComboBox<Category> categoryComboBox = new ComboBox<>(FXCollections.observableArrayList(categories));
+        ObservableList<Category> items = FXCollections.observableArrayList(categories);
+        items.add(new Category("Create new"));
+        ComboBox<Category> categoryComboBox = new ComboBox<>(items);
+        categoryComboBox.setPrefWidth(300);
         categoryComboBox.setConverter(new CategoryStringConverter(categories));
-        categoryComboBox.setOnAction(event -> importButton.setDisable(categoryComboBox.getValue() == null));
+        categoryComboBox.setOnAction(event -> {
+            Category value = categoryComboBox.getValue();
+            if (value == null) {
+                importButton.setDisable(true);
+            } else if ("Create new".equals(value.getName())) {
+                grid.getChildren().remove(categoryComboBox);
+                grid.add(categoryTextField, 1, 0);
+                GridPane.setHgrow(categoryTextField, ALWAYS);
+                importButton.setDisable(true);
+                categories.clear();
+            } else {
+                importButton.setDisable(false);
+            }
+        });
 
         if (categories.isEmpty()) {
             importButton.setDisable(StringUtils.isBlank(category));
@@ -72,7 +89,7 @@ public class CategoryDialog extends Dialog<Pair<Category, Boolean>> {
             grid.add(filterRuleCheckBox, 1, 1);
             GridPane.setHgrow(categoryTextField, ALWAYS);
         } else {
-            importButton.setDisable(categoryComboBox.getValue() == null);
+            importButton.setDisable(true);
             grid.add(categoryComboBox, 1, 0);
             GridPane.setHgrow(categoryComboBox, ALWAYS);
         }
