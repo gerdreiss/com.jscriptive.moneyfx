@@ -37,6 +37,7 @@ import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
 import static com.jscriptive.moneyfx.util.LocalDateUtils.getMonthLabel;
 import static java.lang.Math.abs;
 import static java.lang.String.format;
+import static javafx.geometry.Side.LEFT;
 
 /**
  * @author jscriptive.com
@@ -259,9 +260,8 @@ public class ChartFrame implements Initializable {
     public void byCategoryToggled(ActionEvent actionEvent) {
         final PieChart pieChart = new PieChart();
         pieChart.setTitle("Transaction balance by categories");
-
+        pieChart.setLegendSide(LEFT);
         chartFrame.setCenter(pieChart);
-
         ToggleButton toggle = (ToggleButton) actionEvent.getTarget();
         if (toggle.isSelected()) {
             Service<Void> service = new Service<Void>() {
@@ -278,14 +278,18 @@ public class ChartFrame implements Initializable {
                                 return null;
                             }
                             Platform.runLater(() ->
-                                    pieChart.setTitle(format("%s for transactions from %s until %s",
-                                            pieChart.getTitle(), period.from(), period.to())));
-                            categoryRepository.findAll().forEach(category -> {
+                                    pieChart.setTitle(format("%s for transactions from %s until %s", pieChart.getTitle(), period.from(), period.to())));
+                            categoryRepository.findAll().stream().sorted((c1, c2) -> c1.getName().compareTo(c2.getName())).forEach(category -> {
                                 List<Transaction> transactions =
                                         (accountCombo.getValue() == null)
                                                 ? transactionRepository.findByCategory(category)
                                                 : transactionRepository.findByAccountAndCategory(accountCombo.getValue(), category);
-                                Platform.runLater(() -> pieChart.getData().add(new PieChart.Data(category.getName(), getSum(transactions))));
+                                Platform.runLater(() -> {
+                                    double value = getSum(transactions);
+                                    String name = format("%s [%s]", category.getName(), CurrencyFormat.getInstance().format(value));
+                                    PieChart.Data data = new PieChart.Data(name, value);
+                                    pieChart.getData().add(data);
+                                });
                             });
                             return null;
                         }
@@ -303,9 +307,7 @@ public class ChartFrame implements Initializable {
             double balance = accountCombo.getItems().stream().flatMapToDouble(a -> DoubleStream.of(a == null ? 0.0 : a.getBalance().doubleValue())).sum();
             accountLabel = format(" All accounts [%s]", CurrencyFormat.getInstance().format(balance));
         } else {
-            accountLabel = format(" %s [%s]",
-                    account.toPresentableString(),
-                    account.getFormattedBalance());
+            accountLabel = format(" %s [%s]", account.toPresentableString(), account.getFormattedBalance());
         }
         return accountLabel;
     }
