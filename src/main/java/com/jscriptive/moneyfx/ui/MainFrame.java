@@ -37,7 +37,7 @@ public class MainFrame extends BorderPane implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         tabPane.addEventHandler(SHOW_TRANSACTIONS, event -> {
             filter = event.getFilter();
-            log.debug("ShowTransactionEvent received with filter: " + filter);
+            if (log.isDebugEnabled()) log.debug("ShowTransactionEvent received with filter: " + filter);
             tabPane.getSelectionModel().select(1);
         });
     }
@@ -52,10 +52,10 @@ public class MainFrame extends BorderPane implements Initializable {
             if (node != null) {
                 if (t.getId().equals("transactionsTab")) {
                     node.fireEvent(new TabSelectionEvent(filter));
-                    log.debug(format("TabSelectionEvent sent to %s with filter: %s", t.getId(), filter));
+                    if (log.isDebugEnabled()) log.debug(format("TabSelectionEvent sent to %s with filter: %s", t.getId(), filter));
                 } else {
                     node.fireEvent(new TabSelectionEvent());
-                    log.debug(format("TabSelectionEvent sent to %s", t.getId()));
+                    if (log.isDebugEnabled()) log.debug(format("TabSelectionEvent sent to %s", t.getId()));
                 }
             }
         }

@@ -184,10 +184,10 @@ public class TransactionFrame implements Initializable {
                 Object firstParam = event.getFirstParam();
                 if (firstParam instanceof TransactionFilter) {
                     currentFilter = (TransactionFilter) firstParam;
-                    log.debug("TabSelectionEvent received with filter: " + currentFilter);
+                    if (log.isDebugEnabled()) log.debug("TabSelectionEvent received with filter: " + currentFilter);
                 }
             } else {
-                log.debug("TabSelectionEvent received without params");
+                if (log.isDebugEnabled()) log.debug("TabSelectionEvent received without params");
             }
             filterTransactions(currentFilter);
         });
