@@ -1,7 +1,7 @@
 package com.jscriptive.moneyfx.model;
 
 /**
-* Created by Igor on 27/11/2014.
+* Created by jscriptive.com on 27/11/2014.
 */
 public class ValueRange<T> {
     private T from;

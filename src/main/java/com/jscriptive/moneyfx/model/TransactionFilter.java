@@ -158,7 +158,7 @@ public class TransactionFilter {
     public String toPresentableString() {
         StringBuilder sb = new StringBuilder();
         if (filterByAccount()) {
-            sb.append("account: \"").append(getAccount().getBank().getName()).append(getAccount().getLastFourDigits()).append("\"; ");
+            sb.append("account: \"").append(getAccount().toPresentableString()).append("\"; ");
         }
         if (filterByCategory()) {
             sb.append("category: \"").append(getCategory().getName()).append("\"; ");

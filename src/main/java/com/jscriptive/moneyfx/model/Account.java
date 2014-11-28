@@ -13,6 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static com.jscriptive.moneyfx.util.BigDecimalUtils.isEqual;
+import static java.lang.String.format;
 import static java.math.BigDecimal.ZERO;
 import static java.math.MathContext.DECIMAL32;
 import static org.apache.commons.lang3.StringUtils.right;
@@ -166,7 +167,11 @@ public class Account {
 
     @Override
     public String toString() {
-        return String.format("Account{bank=%s, number='%s', name='%s', type='%s', balance=%s, balanceDate=%s}", getBank(), getNumber(), getName(), getType(), getFormattedBalance(), getFormattedBalanceDate());
+        return format("Account{bank=%s, number='%s', name='%s', type='%s', balance=%s, balanceDate=%s}", getBank(), getNumber(), getName(), getType(), getFormattedBalance(), getFormattedBalanceDate());
+    }
+
+    public String toPresentableString() {
+        return format("%s %s %s", getBank().getName(), getBank().getCountryCode(), getLastFourDigits());
     }
 
     public BigDecimal calculateStartingBalance(List<Transaction> read) {
@@ -192,7 +197,7 @@ public class Account {
     }
 
     public boolean isOfBank(String name) {
-        return getBank() != null && StringUtils.isNotBlank(name) && name.equals(getBank().getName());
+        return getBank() != null && StringUtils.isNotBlank(name) && name.equals(format("%s %s", getBank().getName(), getBank().getCountryCode()));
     }
 
     public boolean numberEndsWith(String lastFourDigits) {

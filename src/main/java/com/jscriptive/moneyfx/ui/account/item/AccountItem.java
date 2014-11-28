@@ -15,6 +15,7 @@ import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
  */
 public class AccountItem {
 
+    private final StringProperty country;
     private final StringProperty bank;
     private final StringProperty number;
     private final StringProperty name;
@@ -23,7 +24,8 @@ public class AccountItem {
     private final DoubleProperty balance;
     private final StringProperty formattedBalance;
 
-    public AccountItem(String bank, String number, String name, String type, LocalDate balanceDate, double balance) {
+    public AccountItem(String country, String bank, String number, String name, String type, LocalDate balanceDate, double balance) {
+        this.country = new SimpleStringProperty(country);
         this.bank = new SimpleStringProperty(bank);
         this.number = new SimpleStringProperty(number);
         this.name = new SimpleStringProperty(name);
@@ -31,6 +33,18 @@ public class AccountItem {
         this.balanceDate = new SimpleStringProperty(balanceDate.format(DATE_FORMATTER));
         this.balance = new SimpleDoubleProperty(balance);
         this.formattedBalance = new SimpleStringProperty(CurrencyFormat.getInstance().format(balance));
+    }
+
+    public String getCountry() {
+        return country.get();
+    }
+
+    public StringProperty countryProperty() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country.set(country);
     }
 
     public String getBank() {

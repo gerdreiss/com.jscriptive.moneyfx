@@ -4,19 +4,22 @@ import com.jscriptive.moneyfx.model.Bank;
 import com.jscriptive.moneyfx.repository.BankRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
+import com.jscriptive.moneyfx.ui.common.LocalDateStringConverter;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
+import javafx.collections.FXCollections;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
-import javafx.util.StringConverter;
 import org.apache.commons.lang3.StringUtils;
 import org.controlsfx.control.textfield.TextFields;
 
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -31,6 +34,8 @@ public class AccountDialogController implements Initializable {
     @FXML
     private TextField bankField;
     @FXML
+    private ComboBox<String> countryCombo;
+    @FXML
     private TextField numberField;
     @FXML
     private TextField nameField;
@@ -43,39 +48,27 @@ public class AccountDialogController implements Initializable {
 
     private Node nodeToObserve;
 
-
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         BankRepository bankRepository = RepositoryProvider.getInstance().getBankRepository();
         TextFields.bindAutoCompletion(bankField, bankRepository.findAll().stream().map(Bank::getName).collect(Collectors.toList()));
-        StringConverter<LocalDate> converter = new StringConverter<LocalDate>() {
-            @Override
-            public String toString(LocalDate date) {
-                if (date != null) {
-                    return DATE_FORMATTER.format(date);
-                } else {
-                    return "";
-                }
-            }
-            @Override
-            public LocalDate fromString(String string) {
-                if (string != null && !string.isEmpty()) {
-                    return LocalDate.parse(string, DATE_FORMATTER);
-                } else {
-                    return null;
-                }
-            }
-        };
-        balanceDateField.setConverter(converter);
+
+        countryCombo.setItems(FXCollections.observableArrayList(Locale.getISOCountries()));
+        countryCombo.getSelectionModel().select("ES" /* TODO Locale.getDefault().getCountry() */);
+
+        balanceDateField.setConverter(new LocalDateStringConverter());
         balanceDateField.setPromptText(DATE_FORMAT.toLowerCase());
     }
 
     public void valueChanged(Event event) {
-        nodeToObserve.setDisable(anyInvalidFieldValues());
+        if (nodeToObserve != null) {
+            nodeToObserve.setDisable(anyInvalidFieldValues());
+        }
     }
 
     private boolean anyInvalidFieldValues() {
         return StringUtils.isAnyBlank(
+                countryCombo.getValue(),
                 bankField.getText(),
                 numberField.getText(),
                 nameField.getText(),
@@ -85,6 +78,7 @@ public class AccountDialogController implements Initializable {
 
     public AccountItem getAccount() {
         return new AccountItem(
+                countryCombo.getValue(),
                 bankField.getText(),
                 numberField.getText(),
                 nameField.getText(),
@@ -103,6 +97,10 @@ public class AccountDialogController implements Initializable {
             if (account.getBank() != null) {
                 bankField.setText(account.getBank());
                 bankField.setEditable(false);
+            }
+            if (account.getCountry() != null) {
+                countryCombo.getSelectionModel().select(account.getCountry());
+                countryCombo.setDisable(true);
             }
             if (account.getNumber() != null) {
                 numberField.setText(account.getNumber());

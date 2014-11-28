@@ -2,7 +2,10 @@ package com.jscriptive.moneyfx.model;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
+
+import static java.lang.String.format;
 
 /**
  * Created by jscriptive.com on 29/10/2014.
@@ -14,12 +17,15 @@ public class Bank {
     private String id;
     @Indexed(unique = true)
     private String name;
+    @DBRef
+    private Country country;
 
     public Bank() {
     }
 
-    public Bank(String name) {
+    public Bank(String name, Country country) {
         setName(name);
+        setCountry(country);
     }
 
     public String getId() {
@@ -38,24 +44,44 @@ public class Bank {
         this.name = name;
     }
 
+    public Country getCountry() {
+        return country;
+    }
+
+    public String getCountryCode() {
+        return country == null ? null : country.getLocale().getCountry();
+    }
+
+    public String getCurrencyCode() {
+        return country == null ? null : country.getCurrency().getCurrencyCode();
+    }
+
+    public void setCountry(Country country) {
+        this.country = country;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (!(o instanceof Bank)) return false;
 
         Bank bank = (Bank) o;
 
-        return !(name != null ? !name.equals(bank.name) : bank.name != null);
+        if (country != null ? !country.equals(bank.country) : bank.country != null) return false;
+        if (name != null ? !name.equals(bank.name) : bank.name != null) return false;
 
+        return true;
     }
 
     @Override
     public int hashCode() {
-        return name != null ? name.hashCode() : 0;
+        int result = name != null ? name.hashCode() : 0;
+        result = 31 * result + (country != null ? country.hashCode() : 0);
+        return result;
     }
 
     @Override
     public String toString() {
-        return String.format("Bank{name='%s'}", name);
+        return format("Bank{name='%s', country=%s}", name, country);
     }
 }

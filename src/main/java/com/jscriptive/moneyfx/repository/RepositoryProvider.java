@@ -27,6 +27,10 @@ public class RepositoryProvider {
         return context;
     }
 
+    public CountryRepository getCountryRepository() {
+        return getApplicationContext().getBean(CountryRepository.class);
+    }
+
     public BankRepository getBankRepository() {
         return getApplicationContext().getBean(BankRepository.class);
     }
@@ -46,4 +50,5 @@ public class RepositoryProvider {
     public TransactionFilterRepository getTransactionFilterRepository() {
         return getApplicationContext().getBean(TransactionFilterRepository.class);
     }
+
 }

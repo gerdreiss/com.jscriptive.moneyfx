@@ -56,9 +56,14 @@
                 </ContextMenu>
             </contextMenu>
             <columns>
-                <PercentageWidthTableColumn fx:id="bankColumn" text="Bank" percentageWidth="0.13">
+                <PercentageWidthTableColumn fx:id="bankColumn" text="Bank" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="bank"/>
+                    </cellValueFactory>
+                </PercentageWidthTableColumn>
+                <PercentageWidthTableColumn fx:id="countryColumn" text="Country" percentageWidth="0.05">
+                    <cellValueFactory>
+                        <PropertyValueFactory property="country"/>
                     </cellValueFactory>
                 </PercentageWidthTableColumn>
                 <PercentageWidthTableColumn fx:id="numberColumn" text="Number" percentageWidth="0.2">
@@ -66,7 +71,7 @@
                         <PropertyValueFactory property="number"/>
                     </cellValueFactory>
                 </PercentageWidthTableColumn>
-                <PercentageWidthTableColumn fx:id="nameColumn" text="Name" percentageWidth="0.30">
+                <PercentageWidthTableColumn fx:id="nameColumn" text="Name" percentageWidth="0.3">
                     <cellValueFactory>
                         <PropertyValueFactory property="name"/>
                     </cellValueFactory>
@@ -84,7 +89,7 @@
                         <FormattedTableCellFactory alignment="right"/>
                     </cellFactory>
                 </PercentageWidthTableColumn>
-                <PercentageWidthTableColumn fx:id="formattedBalanceColumn" text="Balance" percentageWidth="0.12">
+                <PercentageWidthTableColumn fx:id="formattedBalanceColumn" text="Balance" percentageWidth="0.1">
                     <cellValueFactory>
                         <PropertyValueFactory property="formattedBalance"/>
                     </cellValueFactory>

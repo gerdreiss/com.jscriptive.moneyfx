@@ -24,7 +24,7 @@ public class AccountStringConverter extends StringConverter<Account> {
         if (object == null) {
             return "All accounts";
         }
-        return object.getBank().getName() + object.getLastFourDigits();
+        return object.toPresentableString();
     }
 
     @Override
@@ -33,12 +33,12 @@ public class AccountStringConverter extends StringConverter<Account> {
             return null;
         }
         return accounts.stream().filter(account ->
-                isAccountWithBankAndFourDigits(string, account)).findFirst().get();
+                isAccountWithBankAndCountryAndFourDigits(string, account)).findFirst().get();
     }
 
-    private boolean isAccountWithBankAndFourDigits(String string, Account account) {
-        String bankName = substringBefore(string, PREFIX_LAST_DIGITS);
+    private boolean isAccountWithBankAndCountryAndFourDigits(String string, Account account) {
+        String bankCountry = substringBefore(string, PREFIX_LAST_DIGITS);
         String lastFourDigits = substringAfter(string, PREFIX_LAST_DIGITS);
-        return account.isOfBank(bankName) && account.numberEndsWith(lastFourDigits);
+        return account.isOfBank(bankCountry) && account.numberEndsWith(lastFourDigits);
     }
 }

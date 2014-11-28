@@ -1,9 +1,11 @@
 package com.jscriptive.moneyfx.importer;
 
-import com.jscriptive.moneyfx.importer.barclays.TransactionReaderBarclaysSearchResult;
+import com.jscriptive.moneyfx.importer.barclays.BarclaysTransactionExtractor;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.jscriptive.moneyfx.importer.barclays.BarclaysTransactionExtractor.BARCLAYS_BANKNAME;
 
 /**
  * Created by jscriptive.com on 17/11/2014.
@@ -22,9 +24,8 @@ public class TransactionExtractorProvider {
     }
 
     private final Map<String, TransactionExtractor> extractors = new HashMap<String, TransactionExtractor>() {{
-        put("Barclays", new TransactionReaderBarclaysSearchResult());
+        put(BARCLAYS_BANKNAME, new BarclaysTransactionExtractor());
     }};
-
 
     public TransactionExtractor getTransactionExtractor(String bank) {
         return extractors.get(bank);

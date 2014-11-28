@@ -1,13 +1,8 @@
 package com.jscriptive.moneyfx.importer.barclays;
 
 import com.jscriptive.moneyfx.exception.TechnicalException;
-import com.jscriptive.moneyfx.importer.TransactionExtractor;
-import com.jscriptive.moneyfx.model.Account;
-import com.jscriptive.moneyfx.model.Bank;
 import com.jscriptive.moneyfx.model.Transaction;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -16,49 +11,21 @@ import org.apache.poi.ss.usermodel.Workbook;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.math.MathContext;
 import java.net.URI;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
-import static java.math.MathContext.DECIMAL64;
+import static java.math.RoundingMode.HALF_UP;
 import static java.time.LocalDate.parse;
-import static java.time.format.DateTimeFormatter.ofPattern;
 
 /**
  * Created by jscriptive.com on 29/10/2014.
  */
-public class TransactionReaderBarclaysSearchResult implements TransactionExtractor {
+public class TransactionExtractorBarclaysSpainSearchResult {
 
-    private static final Bank BARCLAYS = new Bank("Barclays");
-    private final DateTimeFormatter df = ofPattern("dd-MM-yyyy");
 
-    @Override
-    public Account extractAccountData(URI file) {
-        InputStream in = null;
-        try {
-            in = file.toURL().openStream();
-            Sheet sheet = new HSSFWorkbook(in).getSheetAt(0);
-            String accountString = sheet.getRow(3).getCell(0).getStringCellValue();
-            if (StringUtils.isBlank(accountString)) {
-                return null;
-            }
-            String[] strings = StringUtils.split(StringUtils.normalizeSpace(accountString), " ", 2);
-            if (ArrayUtils.getLength(strings) != 2) {
-                return null;
-            }
-
-            //noinspection ConstantConditions
-            return new Account(BARCLAYS, strings[0], strings[1], null);
-
-        } catch (IOException e) {
-            throw new TechnicalException(e);
-        } finally {
-            IOUtils.closeQuietly(in);
-        }
-    }
-
-    @Override
     public List<Transaction> extractTransactionData(URI file) {
         List<Transaction> transactions = new ArrayList<>();
         InputStream in = null;
@@ -98,9 +65,9 @@ public class TransactionReaderBarclaysSearchResult implements TransactionExtract
 
         Transaction trx = new Transaction();
         trx.setConcept(concept);
-        trx.setDtOp(parse(dtOp.substring(dtOp.length() - 10), df));
-        trx.setDtVal(parse(dtVal.substring(dtVal.length() - 10), df));
-        trx.setAmount(new BigDecimal(amount, DECIMAL64));
+        trx.setDtOp(parse(dtOp.substring(dtOp.length() - 10), DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        trx.setDtVal(parse(dtVal.substring(dtVal.length() - 10), DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+        trx.setAmount(new BigDecimal(amount, new MathContext(2, HALF_UP)));
         return trx;
     }
 

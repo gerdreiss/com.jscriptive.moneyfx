@@ -141,9 +141,8 @@ public class ChartFrame implements Initializable {
                                 List<Transaction> transactionList = entry.getValue();
 
                                 XYChart.Series<LocalDate, Number> series = new XYChart.Series<>();
-                                series.setName(format("%s %s [%s]",
-                                        account.getBank().getName(),
-                                        account.getLastFourDigits(),
+                                series.setName(format("%s [%s]",
+                                        account.toPresentableString(),
                                         account.getFormattedBalance()));
 
                                 // sort transactions by operation value descending
@@ -304,9 +303,8 @@ public class ChartFrame implements Initializable {
             double balance = accountCombo.getItems().stream().flatMapToDouble(a -> DoubleStream.of(a == null ? 0.0 : a.getBalance().doubleValue())).sum();
             accountLabel = format(" All accounts [%s]", CurrencyFormat.getInstance().format(balance));
         } else {
-            accountLabel = format(" %s %s [%s]",
-                    account.getBank().getName(),
-                    account.getLastFourDigits(),
+            accountLabel = format(" %s [%s]",
+                    account.toPresentableString(),
                     account.getFormattedBalance());
         }
         return accountLabel;

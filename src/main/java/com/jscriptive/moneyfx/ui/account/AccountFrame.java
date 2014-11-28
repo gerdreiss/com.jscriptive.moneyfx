@@ -7,11 +7,9 @@ package com.jscriptive.moneyfx.ui.account;
 
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Bank;
+import com.jscriptive.moneyfx.model.Country;
 import com.jscriptive.moneyfx.model.TransactionFilter;
-import com.jscriptive.moneyfx.repository.AccountRepository;
-import com.jscriptive.moneyfx.repository.BankRepository;
-import com.jscriptive.moneyfx.repository.RepositoryProvider;
-import com.jscriptive.moneyfx.repository.TransactionRepository;
+import com.jscriptive.moneyfx.repository.*;
 import com.jscriptive.moneyfx.ui.account.dialog.AccountDialog;
 import com.jscriptive.moneyfx.ui.account.item.AccountItem;
 import com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent;
@@ -27,6 +25,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -35,6 +34,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
+import static com.jscriptive.moneyfx.util.BigDecimalUtils.CURRENCY_CONTEXT;
 import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
 import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
 import static javafx.scene.control.ButtonType.OK;
@@ -50,6 +50,8 @@ public class AccountFrame implements Initializable {
     @FXML
     private TableColumn<AccountItem, String> bankColumn;
     @FXML
+    private TableColumn<AccountItem, String> countryColumn;
+    @FXML
     private TableColumn<AccountItem, String> numberColumn;
     @FXML
     private TableColumn<AccountItem, String> nameColumn;
@@ -60,11 +62,9 @@ public class AccountFrame implements Initializable {
     @FXML
     private TableColumn<AccountItem, String> balanceDateColumn;
 
-
-    /**
-     * The data as an observable list of Persons.
-     */
     private final ObservableList<AccountItem> accountData = FXCollections.observableArrayList();
+
+    private CountryRepository countryRepository;
     private BankRepository bankRepository;
     private AccountRepository accountRepository;
     private TransactionRepository transactionRepository;
@@ -77,6 +77,7 @@ public class AccountFrame implements Initializable {
     }
 
     private void initializeRepositories() {
+        countryRepository = RepositoryProvider.getInstance().getCountryRepository();
         bankRepository = RepositoryProvider.getInstance().getBankRepository();
         accountRepository = RepositoryProvider.getInstance().getAccountRepository();
         transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
@@ -91,6 +92,7 @@ public class AccountFrame implements Initializable {
         accountData.clear();
         accountRepository.findAll().forEach(account ->
                 accountData.add(new AccountItem(
+                        account.getBank().getCountryCode(),
                         account.getBank().getName(),
                         account.getNumber(),
                         account.getName(),
@@ -102,6 +104,7 @@ public class AccountFrame implements Initializable {
 
     private void initializeColumns() {
         bankColumn.setCellValueFactory(cellData -> cellData.getValue().bankProperty());
+        countryColumn.setCellValueFactory(cellData -> cellData.getValue().countryProperty());
         numberColumn.setCellValueFactory(cellData -> cellData.getValue().numberProperty());
         nameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
         typeColumn.setCellValueFactory(cellData -> cellData.getValue().typeProperty());
@@ -121,11 +124,20 @@ public class AccountFrame implements Initializable {
     private void persistAccount(AccountItem item) {
         Bank bank = bankRepository.findByName(item.getBank());
         if (bank == null) {
-            bank = new Bank(item.getBank());
+            Country country = countryRepository.findByCode(item.getCountry());
+            if (country == null) {
+                country = Country.fromCountryCode(item.getCountry());
+                countryRepository.save(country);
+            }
+            bank = new Bank(item.getBank(), country);
             bankRepository.save(bank);
         }
-        Account account = new Account(bank, item.getNumber(), item.getName(), item.getType(), new BigDecimal(item.getBalance()));
-        account.setBalanceDate(LocalDate.parse(item.getBalanceDate(), DATE_FORMATTER));
+        Account account = new Account(bank,
+                item.getNumber(),
+                item.getName(),
+                item.getType(),
+                new BigDecimal(item.getBalance(), CURRENCY_CONTEXT),
+                LocalDate.parse(item.getBalanceDate(), DATE_FORMATTER));
         accountRepository.save(account);
     }
 
@@ -146,6 +158,16 @@ public class AccountFrame implements Initializable {
             Optional<AccountItem> result = dialog.showAndWait();
             if (result.isPresent()) {
                 Account account = accountRepository.findByNumber(result.get().getNumber());
+                String countryCode = result.get().getCountry();
+                if (!StringUtils.equals(account.getBank().getCountryCode(), countryCode)) {
+                    Country country = countryRepository.findByCode(countryCode);
+                    if (country == null) {
+                        country = Country.fromCountryCode(countryCode);
+                        countryRepository.save(country);
+                    }
+                    account.getBank().setCountry(country);
+                    bankRepository.save(account.getBank());
+                }
                 account.setName(result.get().getName());
                 account.setType(result.get().getType());
                 account.setBalance(BigDecimal.valueOf(result.get().getBalance()));
@@ -181,7 +203,6 @@ public class AccountFrame implements Initializable {
             Account account = accountRepository.findByNumber(selectedItem.getNumber());
             transactionRepository.removeByAccount(account);
             accountRepository.remove(account);
-            bankRepository.remove(account.getBank());
             accountData.remove(selectedIndex);
         }
     }

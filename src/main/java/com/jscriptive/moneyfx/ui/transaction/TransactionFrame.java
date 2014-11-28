@@ -70,6 +70,7 @@ public class TransactionFrame implements Initializable {
 
     private final ObservableList<TransactionItem> transactionData = FXCollections.observableArrayList();
 
+    private CountryRepository countryRepository;
     private BankRepository bankRepository;
     private AccountRepository accountRepository;
     private CategoryRepository categoryRepository;
@@ -168,6 +169,7 @@ public class TransactionFrame implements Initializable {
     }
 
     private void setupRepositories() {
+        countryRepository = RepositoryProvider.getInstance().getCountryRepository();
         bankRepository = RepositoryProvider.getInstance().getBankRepository();
         accountRepository = RepositoryProvider.getInstance().getAccountRepository();
         categoryRepository = RepositoryProvider.getInstance().getCategoryRepository();
@@ -205,6 +207,7 @@ public class TransactionFrame implements Initializable {
         Account found = accountRepository.findByNumber(extracted.getNumber());
         if (found == null) {
             AccountDialog dialog = new AccountDialog(new AccountItem(
+                    extracted.getBank().getCountryCode(),
                     extracted.getBank().getName(),
                     extracted.getNumber(),
                     extracted.getName(),
@@ -223,7 +226,12 @@ public class TransactionFrame implements Initializable {
     private Account persistAccount(AccountItem item) {
         Bank bank = bankRepository.findByName(item.getBank());
         if (bank == null) {
-            bank = new Bank(item.getBank());
+            Country country = countryRepository.findByCode(item.getCountry());
+            if (country == null) {
+                country = Country.fromCountryCode(item.getCountry());
+                countryRepository.save(country);
+            }
+            bank = new Bank(item.getBank(), country);
             bankRepository.save(bank);
         }
         Account account = new Account(
@@ -247,7 +255,7 @@ public class TransactionFrame implements Initializable {
             persistTransaction(trx);
         });
         transactions.forEach(trx -> transactionData.add(new TransactionItem(
-                trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
+                trx.getAccount().toPresentableString(),
                 trx.getCategory().getName(),
                 trx.getConcept(),
                 trx.getDtOp().format(DATE_FORMATTER),
@@ -287,7 +295,7 @@ public class TransactionFrame implements Initializable {
                         for (int idx = 0; idx < transactions.size(); idx++) {
                             Transaction trx = transactions.get(idx);
                             transactionData.add(new TransactionItem(
-                                    trx.getAccount().getBank().getName() + trx.getAccount().getLastFourDigits(),
+                                    trx.getAccount().toPresentableString(),
                                     trx.getCategory().getName(),
                                     trx.getConcept(),
                                     trx.getDtOp().format(DATE_FORMATTER),
