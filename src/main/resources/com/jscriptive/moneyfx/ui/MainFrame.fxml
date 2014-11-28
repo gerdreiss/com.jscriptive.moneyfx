@@ -7,8 +7,8 @@
 <?import javafx.scene.layout.HBox?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" id="mainFrame"
             fx:controller="com.jscriptive.moneyfx.ui.MainFrame"
-            prefHeight="768"
-            prefWidth="1024">
+            prefHeight="1024"
+            prefWidth="1280">
 
     <fx:define>
         <fx:include source="account/AccountFrame.fxml" fx:id="accountFrame"/>

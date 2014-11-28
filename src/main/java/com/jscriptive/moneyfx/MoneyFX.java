@@ -42,7 +42,7 @@ public class MoneyFX extends Application {
         Scene scene = new Scene(root);
         scene.getStylesheets().add("com/jscriptive/moneyfx/ui/css/MoneyFX.css");
         stage.setScene(scene);
-        stage.getIcons().add(new Image("com/jscriptive/moneyfx/ui/images/mFX2.png"));
+        stage.getIcons().add(new Image("com/jscriptive/moneyfx/ui/images/MoneyFX.png"));
         stage.setTitle("MoneyFX");
         stage.show();
     }
