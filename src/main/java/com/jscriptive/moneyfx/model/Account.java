@@ -16,6 +16,7 @@ import static com.jscriptive.moneyfx.util.BigDecimalUtils.isEqual;
 import static java.lang.String.format;
 import static java.math.BigDecimal.ZERO;
 import static java.math.MathContext.DECIMAL32;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.right;
 
 /**
@@ -196,11 +197,17 @@ public class Account {
         return getBalance();
     }
 
-    public boolean isOfBank(String name) {
-        return getBank() != null && StringUtils.isNotBlank(name) && name.equals(format("%s %s", getBank().getName(), getBank().getCountryCode()));
+    public boolean numberEndsWith(String lastFourDigits) {
+        return isNotBlank(lastFourDigits) && isNotBlank(getNumber()) && getNumber().endsWith(lastFourDigits);
     }
 
-    public boolean numberEndsWith(String lastFourDigits) {
-        return StringUtils.isNotBlank(lastFourDigits) && StringUtils.isNotBlank(getNumber()) && getNumber().endsWith(lastFourDigits);
+    public boolean isOfBank(String bankName) {
+        return isNotBlank(bankName) && getBank() != null && isNotBlank(getBank().getName()) &&
+                StringUtils.equals(bankName, getBank().getName());
+    }
+
+    public boolean isOfCountry(String countryCode) {
+        return isNotBlank(countryCode) && getBank() != null && isNotBlank(getBank().getCountryCode()) &&
+                StringUtils.equals(countryCode, getBank().getCountryCode());
     }
 }
