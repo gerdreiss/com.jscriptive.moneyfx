@@ -5,13 +5,12 @@
  */
 package com.jscriptive.moneyfx.ui.chart;
 
-import com.jscriptive.moneyfx.model.Account;
-import com.jscriptive.moneyfx.model.Transaction;
-import com.jscriptive.moneyfx.model.ValueRange;
+import com.jscriptive.moneyfx.model.*;
 import com.jscriptive.moneyfx.repository.CategoryRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
+import com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -26,8 +25,8 @@ import javafx.scene.chart.*;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
-import org.apache.commons.lang3.StringUtils;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -40,6 +39,7 @@ import static com.jscriptive.moneyfx.util.LocalDateUtils.getMonthLabel;
 import static java.lang.Math.abs;
 import static java.lang.String.format;
 import static javafx.geometry.Side.LEFT;
+import static javafx.scene.input.MouseEvent.MOUSE_CLICKED;
 
 /**
  * @author jscriptive.com
@@ -223,27 +223,35 @@ public class ChartFrame implements Initializable {
                     return new Task<Void>() {
                         @Override
                         protected Void call() throws Exception {
-                            for (LocalDate date = period.from(); date.isBefore(period.to()); date = date.plusMonths(1)) {
+                            for (LocalDate date = period.from().withDayOfMonth(1); date.isBefore(period.to()); date = date.plusMonths(1)) {
 
-                                String monthLabel = getMonthLabel(date.getYear(), date.getMonthValue());
+                                LocalDate localDate = date;
+
+                                String monthLabel = getMonthLabel(localDate.getYear(), localDate.getMonthValue());
 
                                 List<Transaction> incoming =
                                         account == null
-                                                ? transactionRepository.findIncomingByYearAndMonth(date.getYear(), date.getMonthValue())
-                                                : transactionRepository.findIncomingByAccountAndYearAndMonth(account, date.getYear(), date.getMonthValue());
+                                                ? transactionRepository.findIncomingByYearAndMonth(localDate.getYear(), localDate.getMonthValue())
+                                                : transactionRepository.findIncomingByAccountAndYearAndMonth(account, localDate.getYear(), localDate.getMonthValue());
                                 List<Transaction> incomingWithoutTransfers = incoming.parallelStream().filter(t -> !t.isTransfer()).collect(Collectors.toList());
                                 XYChart.Data<String, Number> inData = new XYChart.Data<>(monthLabel, getSum(incomingWithoutTransfers));
 
                                 List<Transaction> outgoing =
                                         account == null
-                                                ? transactionRepository.findOutgoingByYearAndMonth(date.getYear(), date.getMonthValue())
-                                                : transactionRepository.findOutgoingByAccountAndYearAndMonth(account, date.getYear(), date.getMonthValue());
+                                                ? transactionRepository.findOutgoingByYearAndMonth(localDate.getYear(), localDate.getMonthValue())
+                                                : transactionRepository.findOutgoingByAccountAndYearAndMonth(account, localDate.getYear(), localDate.getMonthValue());
                                 List<Transaction> outgoingWithoutTransfers = outgoing.parallelStream().filter(t -> !t.isTransfer()).collect(Collectors.toList());
                                 XYChart.Data<String, Number> outData = new XYChart.Data<>(monthLabel, getSum(outgoingWithoutTransfers));
 
                                 Platform.runLater(() -> {
                                     inSeries.getData().add(inData);
                                     outSeries.getData().add(outData);
+                                    inData.getNode().addEventHandler(MOUSE_CLICKED, event -> {
+                                        handleMonthlyInOutChartMouseClickEvent(account, localDate, event);
+                                    });
+                                    outData.getNode().addEventHandler(MOUSE_CLICKED, event -> {
+                                        handleMonthlyInOutChartMouseClickEvent(account, localDate, event);
+                                    });
                                 });
                             }
 
@@ -298,25 +306,33 @@ public class ChartFrame implements Initializable {
                     return new Task<Void>() {
                         @Override
                         protected Void call() throws Exception {
-                            for (LocalDate date = period.from(); date.isBefore(period.to()); date = date.plusYears(1)) {
+                            for (LocalDate date = period.from().withDayOfYear(1); date.isBefore(period.to()); date = date.plusYears(1)) {
+
+                                LocalDate localDate = date;
 
                                 List<Transaction> incoming =
                                         account == null
-                                                ? transactionRepository.findIncomingByYear(date.getYear())
-                                                : transactionRepository.findIncomingByAccountAndYear(account, date.getYear());
+                                                ? transactionRepository.findIncomingByYear(localDate.getYear())
+                                                : transactionRepository.findIncomingByAccountAndYear(account, localDate.getYear());
                                 List<Transaction> incomingWithoutTransfers = incoming.parallelStream().filter(t -> !t.isTransfer()).collect(Collectors.toList());
-                                XYChart.Data<Number, String> inData = new XYChart.Data<>(getSum(incomingWithoutTransfers), String.valueOf(date.getYear()));
+                                XYChart.Data<Number, String> inData = new XYChart.Data<>(getSum(incomingWithoutTransfers), String.valueOf(localDate.getYear()));
 
                                 List<Transaction> outgoing =
                                         account == null
-                                                ? transactionRepository.findOutgoingByYear(date.getYear())
-                                                : transactionRepository.findOutgoingByAccountAndYear(account, date.getYear());
+                                                ? transactionRepository.findOutgoingByYear(localDate.getYear())
+                                                : transactionRepository.findOutgoingByAccountAndYear(account, localDate.getYear());
                                 List<Transaction> outgoingWithoutTransfers = outgoing.parallelStream().filter(t -> !t.isTransfer()).collect(Collectors.toList());
-                                XYChart.Data<Number, String> outData = new XYChart.Data<>(getSum(outgoingWithoutTransfers), String.valueOf(date.getYear()));
+                                XYChart.Data<Number, String> outData = new XYChart.Data<>(getSum(outgoingWithoutTransfers), String.valueOf(localDate.getYear()));
 
                                 Platform.runLater(() -> {
                                     inSeries.getData().add(inData);
                                     outSeries.getData().add(outData);
+                                    inData.getNode().addEventHandler(MOUSE_CLICKED, event -> {
+                                        handleYearlyInOutChartMouseClickEvent(account, localDate, event);
+                                    });
+                                    outData.getNode().addEventHandler(MOUSE_CLICKED, event -> {
+                                        handleYearlyInOutChartMouseClickEvent(account, localDate, event);
+                                    });
                                 });
                             }
 
@@ -367,6 +383,9 @@ public class ChartFrame implements Initializable {
                                     String name = format("%s [%s]", category.getName(), CurrencyFormat.getInstance().format(value));
                                     PieChart.Data data = new PieChart.Data(name, value);
                                     pieChart.getData().add(data);
+                                    data.getNode().addEventHandler(MOUSE_CLICKED, event -> {
+                                        handleCategoryChartMouseClickEvent(accountCombo.getValue(), category, event);
+                                    });
                                 });
                             });
                             return null;
@@ -394,4 +413,38 @@ public class ChartFrame implements Initializable {
     private double getSum(List<Transaction> transactions) {
         return abs(transactions.parallelStream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum());
     }
+
+    private void handleMonthlyInOutChartMouseClickEvent(Account account, LocalDate month, MouseEvent event) {
+        if (event.getClickCount() == 2) {
+            TransactionFilter filter = new TransactionFilter(
+                    account, null, null,
+                    new ValueRange<>(month.withDayOfMonth(1), month.plusMonths(1).withDayOfMonth(1).minusDays(1)),
+                    new ValueRange<>(null, null),
+                    new ValueRange<>(null, null));
+            chartFrame.getScene().lookup("#tabPane").fireEvent(new ShowTransactionsEvent(filter));
+        }
+    }
+
+    private void handleYearlyInOutChartMouseClickEvent(Account account, LocalDate year, MouseEvent event) {
+        if (event.getClickCount() == 2) {
+            TransactionFilter filter = new TransactionFilter(
+                    account, null, null,
+                    new ValueRange<>(year.withDayOfYear(1), year.withDayOfYear(1).plusYears(1).minusDays(1)),
+                    new ValueRange<>(null, null),
+                    new ValueRange<>(null, null));
+            chartFrame.getScene().lookup("#tabPane").fireEvent(new ShowTransactionsEvent(filter));
+        }
+    }
+
+    private void handleCategoryChartMouseClickEvent(Account account, Category category, MouseEvent event) {
+        if (event.getClickCount() == 2) {
+            TransactionFilter filter = new TransactionFilter(
+                    account, category, null,
+                    new ValueRange<>(null, null),
+                    new ValueRange<>(null, null),
+                    new ValueRange<>(null, null));
+            chartFrame.getScene().lookup("#tabPane").fireEvent(new ShowTransactionsEvent(filter));
+        }
+    }
+
 }
