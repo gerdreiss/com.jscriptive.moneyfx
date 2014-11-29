@@ -24,72 +24,75 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @Repository
 public class TransactionRepositoryMongo implements TransactionRepository {
 
+    private static final Sort OPDATE_ASC = new Sort(ASC, "dtOp");
+    private static final Sort OPDATE_DESC = new Sort(DESC, "dtOp");
+
     @Autowired
     private MongoTemplate mongoTemplate;
 
     @Override
     public List<Transaction> findAll() {
-        return mongoTemplate.findAll(Transaction.class);
+        return mongoTemplate.find(new Query().with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> filterAll(TransactionFilter filter) {
-        return mongoTemplate.find(query(by(filter)), Transaction.class);
+        return mongoTemplate.find(query(by(filter)).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> findByCategory(Category category) {
-        return mongoTemplate.find(query(by(category)), Transaction.class);
+        return mongoTemplate.find(query(by(category)).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> findByAccount(Account account) {
-        return mongoTemplate.find(query(by(account)), Transaction.class);
+        return mongoTemplate.find(query(by(account)).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> findByAccountAndCategory(Account account, Category category) {
-        return mongoTemplate.find(query(by(account).andOperator(by(category))), Transaction.class);
+        return mongoTemplate.find(query(by(account).andOperator(by(category))).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> findIncomingByAccountAndYearAndMonth(Account account, Integer year, Integer month) {
-        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").gte(ZERO)), Transaction.class);
+        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").gte(ZERO)).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> findOutgoingByAccountAndYearAndMonth(Account account, Integer year, Integer month) {
-        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").lt(ZERO)), Transaction.class);
+        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").lt(ZERO)).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> findIncomingByYearAndMonth(Integer year, Integer month) {
-        return mongoTemplate.find(query(where("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").gte(ZERO)), Transaction.class);
+        return mongoTemplate.find(query(where("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").gte(ZERO)).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> findOutgoingByYearAndMonth(Integer year, Integer month) {
-        return mongoTemplate.find(query(where("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").lt(ZERO)), Transaction.class);
+        return mongoTemplate.find(query(where("dtOp.year").is(year).and("dtOp.month").is(month).and("amount").lt(ZERO)).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> findIncomingByAccountAndYear(Account account, Integer year) {
-        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year).and("amount").gte(ZERO)), Transaction.class);
+        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year).and("amount").gte(ZERO)).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> findOutgoingByAccountAndYear(Account account, Integer year) {
-        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year).and("amount").lt(ZERO)), Transaction.class);
+        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year).and("amount").lt(ZERO)).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> findIncomingByYear(Integer year) {
-        return mongoTemplate.find(query(where("dtOp.year").is(year).and("amount").gte(ZERO)), Transaction.class);
+        return mongoTemplate.find(query(where("dtOp.year").is(year).and("amount").gte(ZERO)).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
     public List<Transaction> findOutgoingByYear(Integer year) {
-        return mongoTemplate.find(query(where("dtOp.year").is(year).and("amount").lt(ZERO)), Transaction.class);
+        return mongoTemplate.find(query(where("dtOp.year").is(year).and("amount").lt(ZERO)).with(OPDATE_DESC), Transaction.class);
     }
 
     @Override
@@ -138,18 +141,18 @@ public class TransactionRepositoryMongo implements TransactionRepository {
     }
 
     private Transaction findEarliestTransaction() {
-        return mongoTemplate.findOne(new Query().with(new Sort(ASC, "dtOp")), Transaction.class);
+        return mongoTemplate.findOne(new Query().with(OPDATE_ASC), Transaction.class);
     }
 
     private Transaction findEarliestTransactionOfAccount(Account account) {
-        return mongoTemplate.findOne(query(by(account)).with(new Sort(ASC, "dtOp")), Transaction.class);
+        return mongoTemplate.findOne(query(by(account)).with(OPDATE_ASC), Transaction.class);
     }
 
     private Transaction findLatestTransaction() {
-        return mongoTemplate.findOne(new Query().with(new Sort(DESC, "dtOp")), Transaction.class);
+        return mongoTemplate.findOne(new Query().with(OPDATE_DESC), Transaction.class);
     }
 
     private Transaction findLatestTransactionOfAccount(Account account) {
-        return mongoTemplate.findOne(query(by(account)).with(new Sort(DESC, "dtOp")), Transaction.class);
+        return mongoTemplate.findOne(query(by(account)).with(OPDATE_DESC), Transaction.class);
     }
 }

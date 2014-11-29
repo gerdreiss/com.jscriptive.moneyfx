@@ -14,8 +14,6 @@ public class LocaleReadConverter implements Converter<DBObject, Locale> {
 
     @Override
     public Locale convert(DBObject object) {
-        return new Locale(
-                String.valueOf(object.get("language")),
-                String.valueOf(object.get("country")));
+        return new Locale(String.valueOf(object.get("language")), String.valueOf(object.get("country")));
     }
 }
