@@ -1,27 +1,37 @@
-package com.jscriptive.moneyfx.ui.transaction.item;
+package com.jscriptive.moneyfx.ui.item;
 
+import com.jscriptive.moneyfx.model.Transaction;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 
 /**
  * Created by jscriptive.com on 13/11/2014.
  */
-public class TransactionItem {
+public class TransactionItem implements UIItem {
 
     private final StringProperty account;
     private final StringProperty category;
     private final StringProperty concept;
-    private final StringProperty dtOp;
-    private final StringProperty dtVal;
-    private final StringProperty amount;
+    private final ObjectProperty<LocalDate> dtOp;
+    private final ObjectProperty<LocalDate> dtVal;
+    private final ObjectProperty<BigDecimal> amount;
 
-    public TransactionItem(String account, String category, String concept, String dtOp, String dtVal, String formattedAmount) {
+    public TransactionItem(Transaction trx) {
+        this(trx.getAccount().toPresentableString(), trx.getCategory().getName(), trx.getConcept(), trx.getDtOp(), trx.getDtVal(), trx.getAmount());
+    }
+
+    public TransactionItem(String account, String category, String concept, LocalDate dtOp, LocalDate dtVal, BigDecimal amount) {
         this.account = new SimpleStringProperty(account);
         this.category = new SimpleStringProperty(category);
         this.concept = new SimpleStringProperty(concept);
-        this.dtOp = new SimpleStringProperty(dtOp);
-        this.dtVal = new SimpleStringProperty(dtVal);
-        this.amount = new SimpleStringProperty(formattedAmount);
+        this.dtOp = new SimpleObjectProperty<>(dtOp);
+        this.dtVal = new SimpleObjectProperty<>(dtVal);
+        this.amount = new SimpleObjectProperty<>(amount);
     }
 
     public String getAccount() {
@@ -48,39 +58,39 @@ public class TransactionItem {
         this.concept.set(concept);
     }
 
-    public String getDtOp() {
+    public LocalDate getDtOp() {
         return dtOp.get();
     }
 
-    public StringProperty dtOpProperty() {
+    public ObjectProperty<LocalDate> dtOpProperty() {
         return dtOp;
     }
 
-    public void setDtOp(String dtOp) {
+    public void setDtOp(LocalDate dtOp) {
         this.dtOp.set(dtOp);
     }
 
-    public String getDtVal() {
+    public LocalDate getDtVal() {
         return dtVal.get();
     }
 
-    public StringProperty dtValProperty() {
+    public ObjectProperty<LocalDate> dtValProperty() {
         return dtVal;
     }
 
-    public void setDtVal(String dtVal) {
+    public void setDtVal(LocalDate dtVal) {
         this.dtVal.set(dtVal);
     }
 
-    public String getAmount() {
+    public BigDecimal getAmount() {
         return amount.get();
     }
 
-    public StringProperty amountProperty() {
+    public ObjectProperty<BigDecimal> amountProperty() {
         return amount;
     }
 
-    public void setAmount(String amount) {
+    public void setAmount(BigDecimal amount) {
         this.amount.set(amount);
     }
 

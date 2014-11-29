@@ -11,8 +11,8 @@ import com.jscriptive.moneyfx.model.Country;
 import com.jscriptive.moneyfx.model.TransactionFilter;
 import com.jscriptive.moneyfx.repository.*;
 import com.jscriptive.moneyfx.ui.account.dialog.AccountDialog;
-import com.jscriptive.moneyfx.ui.account.item.AccountItem;
 import com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent;
+import com.jscriptive.moneyfx.ui.item.AccountItem;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -34,8 +34,6 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
-import static com.jscriptive.moneyfx.util.BigDecimalUtils.CURRENCY_CONTEXT;
-import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
 import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
 import static javafx.scene.control.ButtonType.OK;
 import static javafx.scene.input.KeyCode.DELETE;
@@ -58,9 +56,9 @@ public class AccountFrame implements Initializable {
     @FXML
     private TableColumn<AccountItem, String> typeColumn;
     @FXML
-    private TableColumn<AccountItem, String> formattedBalanceColumn;
+    private TableColumn<AccountItem, BigDecimal> balanceColumn;
     @FXML
-    private TableColumn<AccountItem, String> balanceDateColumn;
+    private TableColumn<AccountItem, LocalDate> balanceDateColumn;
 
     private final ObservableList<AccountItem> accountData = FXCollections.observableArrayList();
 
@@ -91,15 +89,7 @@ public class AccountFrame implements Initializable {
     private void loadAccountData() {
         accountData.clear();
         accountRepository.findAll().forEach(account ->
-                accountData.add(new AccountItem(
-                        account.getBank().getCountryCode(),
-                        account.getBank().getName(),
-                        account.getNumber(),
-                        account.getName(),
-                        account.getType(),
-                        account.getBalanceDate(),
-                        account.getBalance().doubleValue()
-                )));
+                accountData.add(new AccountItem(account)));
     }
 
     private void initializeColumns() {
@@ -108,7 +98,7 @@ public class AccountFrame implements Initializable {
         numberColumn.setCellValueFactory(cellData -> cellData.getValue().numberProperty());
         nameColumn.setCellValueFactory(cellData -> cellData.getValue().nameProperty());
         typeColumn.setCellValueFactory(cellData -> cellData.getValue().typeProperty());
-        formattedBalanceColumn.setCellValueFactory(cellData -> cellData.getValue().formattedBalanceProperty());
+        balanceColumn.setCellValueFactory(cellData -> cellData.getValue().balanceProperty());
         balanceDateColumn.setCellValueFactory(cellData -> cellData.getValue().balanceDateProperty());
     }
 
@@ -136,8 +126,8 @@ public class AccountFrame implements Initializable {
                 item.getNumber(),
                 item.getName(),
                 item.getType(),
-                new BigDecimal(item.getBalance(), CURRENCY_CONTEXT),
-                LocalDate.parse(item.getBalanceDate(), DATE_FORMATTER));
+                item.getBalance(),
+                item.getBalanceDate());
         accountRepository.save(account);
     }
 
@@ -170,8 +160,8 @@ public class AccountFrame implements Initializable {
                 }
                 account.setName(result.get().getName());
                 account.setType(result.get().getType());
-                account.setBalance(BigDecimal.valueOf(result.get().getBalance()));
-                account.setBalanceDate(LocalDate.parse(result.get().getBalanceDate(), DATE_FORMATTER));
+                account.setBalance(result.get().getBalance());
+                account.setBalanceDate(result.get().getBalanceDate());
                 accountRepository.save(account);
                 accountData.set(dataTable.getSelectionModel().getSelectedIndex(), result.get());
             }

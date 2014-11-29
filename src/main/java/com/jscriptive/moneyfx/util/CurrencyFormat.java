@@ -30,6 +30,10 @@ public class CurrencyFormat {
         validator = CurrencyValidator.getInstance();
     }
 
+    public String format(BigDecimal value) {
+        return validator.format(value, LOCALE);
+    }
+
     public String format(double value) {
         return validator.format(value, LOCALE);
     }
@@ -38,12 +42,12 @@ public class CurrencyFormat {
         return validator.format(value, LOCALE);
     }
 
-    public double parse(String value) {
+    public BigDecimal parse(String value) {
         BigDecimal parsed = validator.validate(value, LOCALE);
         if (parsed == null) {
             parsed = NumberUtils.createBigDecimal(value);
         }
-        return parsed.doubleValue();
+        return parsed;
     }
 
     public boolean isValid(String value) {

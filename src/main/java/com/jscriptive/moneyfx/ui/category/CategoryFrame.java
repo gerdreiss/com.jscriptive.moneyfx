@@ -13,10 +13,9 @@ import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionFilterRepository;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.category.dialog.CategoryDialog;
-import com.jscriptive.moneyfx.ui.category.item.CategoryItem;
 import com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent;
+import com.jscriptive.moneyfx.ui.item.CategoryItem;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionFilterDialog;
-import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
@@ -36,6 +35,7 @@ import javafx.util.Pair;
 import org.apache.log4j.Logger;
 import org.controlsfx.dialog.ProgressDialog;
 
+import java.math.BigDecimal;
 import java.net.URL;
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +61,7 @@ public class CategoryFrame implements Initializable {
     @FXML
     private TableColumn<CategoryItem, String> nameColumn;
     @FXML
-    private TableColumn<CategoryItem, String> amountColumn;
+    private TableColumn<CategoryItem, BigDecimal> amountColumn;
     @FXML
     private TableColumn<CategoryItem, String> ruleColumn;
 
@@ -172,7 +172,7 @@ public class CategoryFrame implements Initializable {
                             for (int idx = 0; idx < categories.size(); idx++) {
                                 Category category = categories.get(idx);
                                 double sum = transactionRepository.findByCategory(category).parallelStream().flatMapToDouble(trx -> DoubleStream.of(trx.getAmount().doubleValue())).sum();
-                                categoryData.add(new CategoryItem(category.getName(), CurrencyFormat.getInstance().format(sum), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
+                                categoryData.add(new CategoryItem(category, BigDecimal.valueOf(sum)));
                                 updateProgress(idx, categories.size());
                             }
                             return null;
@@ -227,7 +227,7 @@ public class CategoryFrame implements Initializable {
                         sum = applyCategoryRule(category);
                     }
                 }
-                categoryData.add(new CategoryItem(category.getName(), CurrencyFormat.getInstance().format(sum), category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
+                categoryData.add(new CategoryItem(category, BigDecimal.valueOf(sum)));
             }
         }
     }
@@ -249,7 +249,7 @@ public class CategoryFrame implements Initializable {
                     Category category = categoryRepository.findByName(selectedItem.getName());
                     category.setName(categoryResult.get().getKey().getName());
                     categoryRepository.save(category);
-                    String categorySum = selectedItem.getAmount();
+                    BigDecimal categorySum = selectedItem.getAmount();
                     if (TRUE.equals(categoryResult.get().getValue())) {
                         if (editTransactionFilter(category)) {
                             Alert alert = new Alert(CONFIRMATION);
@@ -264,11 +264,11 @@ public class CategoryFrame implements Initializable {
                                     trx.setCategory(other);
                                     transactionRepository.save(trx);
                                 });
-                                categorySum = CurrencyFormat.getInstance().format(applyCategoryRule(category));
+                                categorySum = BigDecimal.valueOf(applyCategoryRule(category));
                             }
                         }
                     }
-                    categoryData.set(selectedIndex, new CategoryItem(category.getName(), categorySum, category.getFilterRule() == null ? "" : category.getFilterRule().toPresentableString()));
+                    categoryData.set(selectedIndex, new CategoryItem(category, categorySum));
                 }
             }
         }

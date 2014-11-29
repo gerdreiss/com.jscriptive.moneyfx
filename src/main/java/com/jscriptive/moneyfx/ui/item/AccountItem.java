@@ -1,38 +1,45 @@
-package com.jscriptive.moneyfx.ui.account.item;
+package com.jscriptive.moneyfx.ui.item;
 
-import com.jscriptive.moneyfx.util.CurrencyFormat;
-import javafx.beans.property.DoubleProperty;
-import javafx.beans.property.SimpleDoubleProperty;
+import com.jscriptive.moneyfx.model.Account;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-
-import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
 
 /**
  * Created by jscriptive.com on 13/11/2014.
  */
-public class AccountItem {
+public class AccountItem implements UIItem {
 
     private final StringProperty country;
     private final StringProperty bank;
     private final StringProperty number;
     private final StringProperty name;
     private final StringProperty type;
-    private final StringProperty balanceDate;
-    private final DoubleProperty balance;
-    private final StringProperty formattedBalance;
+    private final ObjectProperty<LocalDate> balanceDate;
+    private final ObjectProperty<BigDecimal> balance;
 
-    public AccountItem(String country, String bank, String number, String name, String type, LocalDate balanceDate, double balance) {
+    public AccountItem(Account account) {
+        this(account.getBank() == null ? null : account.getBank().getCountryCode(),
+                account.getBank() == null ? null : account.getBank().getName(),
+                account.getNumber(),
+                account.getName(),
+                account.getType(),
+                account.getBalanceDate(),
+                account.getBalance());
+    }
+
+    public AccountItem(String country, String bank, String number, String name, String type, LocalDate balanceDate, BigDecimal balance) {
         this.country = new SimpleStringProperty(country);
         this.bank = new SimpleStringProperty(bank);
         this.number = new SimpleStringProperty(number);
         this.name = new SimpleStringProperty(name);
         this.type = new SimpleStringProperty(type);
-        this.balanceDate = new SimpleStringProperty(balanceDate.format(DATE_FORMATTER));
-        this.balance = new SimpleDoubleProperty(balance);
-        this.formattedBalance = new SimpleStringProperty(CurrencyFormat.getInstance().format(balance));
+        this.balanceDate = new SimpleObjectProperty<>(balanceDate);
+        this.balance = new SimpleObjectProperty<>(balance);
     }
 
     public String getCountry() {
@@ -95,39 +102,28 @@ public class AccountItem {
         this.type.set(type);
     }
 
-    public String getBalanceDate() {
+    public LocalDate getBalanceDate() {
         return balanceDate.get();
     }
 
-    public StringProperty balanceDateProperty() {
+    public ObjectProperty<LocalDate> balanceDateProperty() {
         return balanceDate;
     }
 
-    public void setBalanceDate(String balanceDate) {
+    public void setBalanceDate(LocalDate balanceDate) {
         this.balanceDate.set(balanceDate);
     }
 
-    public double getBalance() {
+    public BigDecimal getBalance() {
         return balance.get();
     }
 
-    public DoubleProperty balanceProperty() {
+    public ObjectProperty<BigDecimal> balanceProperty() {
         return balance;
     }
 
-    public void setBalance(double balance) {
+    public void setBalance(BigDecimal balance) {
         this.balance.set(balance);
     }
 
-    public String getFormattedBalance() {
-        return formattedBalance.get();
-    }
-
-    public StringProperty formattedBalanceProperty() {
-        return formattedBalance;
-    }
-
-    public void setFormattedBalance(String formattedBalance) {
-        this.formattedBalance.set(formattedBalance);
-    }
 }

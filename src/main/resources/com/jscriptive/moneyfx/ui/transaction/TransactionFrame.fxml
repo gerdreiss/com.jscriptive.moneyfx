@@ -59,7 +59,8 @@
                                 </ImageView>
                             </graphic>
                         </MenuItem>
-                        <MenuItem fx:id="contextMenuItemCategorize" text="Categorize" onAction="#contextMenuItemCategorizeSelected">
+                        <MenuItem fx:id="contextMenuItemCategorize" text="Categorize"
+                                  onAction="#contextMenuItemCategorizeSelected">
                             <graphic>
                                 <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true">
                                     <Image url="@../images/Category-32.png"/>

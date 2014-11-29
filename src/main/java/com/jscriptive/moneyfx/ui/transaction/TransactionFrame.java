@@ -5,13 +5,12 @@ import com.jscriptive.moneyfx.importer.TransactionExtractorProvider;
 import com.jscriptive.moneyfx.model.*;
 import com.jscriptive.moneyfx.repository.*;
 import com.jscriptive.moneyfx.ui.account.dialog.AccountDialog;
-import com.jscriptive.moneyfx.ui.account.item.AccountItem;
 import com.jscriptive.moneyfx.ui.category.dialog.CategoryDialog;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
+import com.jscriptive.moneyfx.ui.item.AccountItem;
+import com.jscriptive.moneyfx.ui.item.TransactionItem;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionFilterDialog;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionImportDialog;
-import com.jscriptive.moneyfx.ui.transaction.item.TransactionItem;
-import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
@@ -33,14 +32,13 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.net.URI;
 import java.net.URL;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
-import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
-import static java.time.LocalDate.parse;
 import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
 import static javafx.scene.control.ButtonType.CANCEL;
 import static javafx.scene.control.ButtonType.YES;
@@ -62,11 +60,11 @@ public class TransactionFrame implements Initializable {
     @FXML
     private TableColumn<TransactionItem, String> conceptColumn;
     @FXML
-    private TableColumn<TransactionItem, String> dtOpColumn;
+    private TableColumn<TransactionItem, LocalDate> dtOpColumn;
     @FXML
-    private TableColumn<TransactionItem, String> dtValColumn;
+    private TableColumn<TransactionItem, LocalDate> dtValColumn;
     @FXML
-    private TableColumn<TransactionItem, String> amountColumn;
+    private TableColumn<TransactionItem, BigDecimal> amountColumn;
 
     private final ObservableList<TransactionItem> transactionData = FXCollections.observableArrayList();
 
@@ -140,13 +138,13 @@ public class TransactionFrame implements Initializable {
             List<Account> accounts = accountRepository.findAll();
             AccountStringConverter converter = new AccountStringConverter(accounts);
             List<Transaction> toCategorize = selectedItems.stream().map(item -> new Transaction(
-                            converter.fromString(item.getAccount()),
-                            new Category(item.getCategory()),
-                            item.getConcept(),
-                            parse(item.getDtOp(), DATE_FORMATTER),
-                            parse(item.getDtVal(), DATE_FORMATTER),
-                            BigDecimal.valueOf(CurrencyFormat.getInstance().parse(item.getAmount())))
-            ).collect(Collectors.toList());
+                    converter.fromString(item.getAccount()),
+                    new Category(item.getCategory()),
+                    item.getConcept(),
+                    item.getDtOp(),
+                    item.getDtVal(),
+                    item.getAmount()
+            )).collect(Collectors.toList());
             CategoryDialog dialog = new CategoryDialog(categoryRepository.findAll());
             Optional<Pair<Category, Boolean>> result = dialog.showAndWait();
             if (result.isPresent()) {
@@ -206,15 +204,7 @@ public class TransactionFrame implements Initializable {
         Account extracted = extractor.extractAccountData(file);
         Account found = accountRepository.findByNumber(extracted.getNumber());
         if (found == null) {
-            AccountDialog dialog = new AccountDialog(new AccountItem(
-                    extracted.getBank().getCountryCode(),
-                    extracted.getBank().getName(),
-                    extracted.getNumber(),
-                    extracted.getName(),
-                    extracted.getType(),
-                    extracted.getBalanceDate(),
-                    extracted.getBalance().doubleValue()
-            ));
+            AccountDialog dialog = new AccountDialog(new AccountItem(extracted));
             Optional<AccountItem> accountItem = dialog.showAndWait();
             if (accountItem.isPresent()) {
                 found = persistAccount(accountItem.get());
@@ -239,8 +229,8 @@ public class TransactionFrame implements Initializable {
                 item.getNumber(),
                 item.getName(),
                 item.getType(),
-                new BigDecimal(item.getBalance()),
-                parse(item.getBalanceDate(), DATE_FORMATTER));
+                item.getBalance(),
+                item.getBalanceDate());
         accountRepository.save(account);
         return account;
     }
@@ -254,14 +244,7 @@ public class TransactionFrame implements Initializable {
             trx.setCategory(other);
             persistTransaction(trx);
         });
-        transactions.forEach(trx -> transactionData.add(new TransactionItem(
-                trx.getAccount().toPresentableString(),
-                trx.getCategory().getName(),
-                trx.getConcept(),
-                trx.getDtOp().format(DATE_FORMATTER),
-                trx.getDtVal().format(DATE_FORMATTER),
-                trx.getFormattedAmount()
-        )));
+        transactions.forEach(trx -> transactionData.add(new TransactionItem(trx)));
     }
 
     private Category getDefaultCategory() {
@@ -294,13 +277,7 @@ public class TransactionFrame implements Initializable {
                         List<Transaction> transactions = (filter == null) ? transactionRepository.findAll() : transactionRepository.filterAll(filter);
                         for (int idx = 0; idx < transactions.size(); idx++) {
                             Transaction trx = transactions.get(idx);
-                            transactionData.add(new TransactionItem(
-                                    trx.getAccount().toPresentableString(),
-                                    trx.getCategory().getName(),
-                                    trx.getConcept(),
-                                    trx.getDtOp().format(DATE_FORMATTER),
-                                    trx.getDtVal().format(DATE_FORMATTER),
-                                    trx.getFormattedAmount()));
+                            transactionData.add(new TransactionItem(trx));
                             updateProgress(idx, transactions.size());
                         }
                         return null;

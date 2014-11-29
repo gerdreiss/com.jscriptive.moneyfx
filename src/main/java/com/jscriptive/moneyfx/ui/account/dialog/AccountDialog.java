@@ -1,7 +1,7 @@
 package com.jscriptive.moneyfx.ui.account.dialog;
 
 import com.jscriptive.moneyfx.exception.TechnicalException;
-import com.jscriptive.moneyfx.ui.account.item.AccountItem;
+import com.jscriptive.moneyfx.ui.item.AccountItem;
 import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.JavaFXBuilderFactory;

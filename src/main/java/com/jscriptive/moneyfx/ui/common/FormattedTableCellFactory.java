@@ -1,5 +1,6 @@
 package com.jscriptive.moneyfx.ui.common;
 
+import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.TableCell;
@@ -7,7 +8,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Callback;
 
-import java.text.Format;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+
+import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
 
 /**
  * Created by jscriptive.com on 19/11/14.
@@ -15,7 +19,6 @@ import java.text.Format;
 public class FormattedTableCellFactory<S, T> implements Callback<TableColumn<S, T>, TableCell<S, T>> {
 
     private TextAlignment alignment;
-    private Format format;
 
     public TextAlignment getAlignment() {
         return alignment;
@@ -24,15 +27,6 @@ public class FormattedTableCellFactory<S, T> implements Callback<TableColumn<S, 
     public void setAlignment(TextAlignment alignment) {
         this.alignment = alignment;
     }
-
-    public Format getFormat() {
-        return format;
-    }
-
-    public void setFormat(Format format) {
-        this.format = format;
-    }
-
 
     @Override
     @SuppressWarnings("unchecked")
@@ -47,11 +41,14 @@ public class FormattedTableCellFactory<S, T> implements Callback<TableColumn<S, 
                 if (item == null) {
                     super.setText(null);
                     super.setGraphic(null);
-                } else if (format != null) {
-                    super.setText(format.format(item));
                 } else if (item instanceof Node) {
                     super.setText(null);
                     super.setGraphic((Node) item);
+                } else if (item instanceof LocalDate) {
+                    super.setText(((LocalDate) item).format(DATE_FORMATTER));
+                    super.setGraphic(null);
+                } else if (item instanceof BigDecimal) {
+                    super.setText(CurrencyFormat.getInstance().format(((BigDecimal) item).doubleValue()));
                 } else {
                     super.setText(item.toString());
                     super.setGraphic(null);

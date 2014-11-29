@@ -3,7 +3,7 @@ package com.jscriptive.moneyfx.ui.account.dialog;
 import com.jscriptive.moneyfx.model.Bank;
 import com.jscriptive.moneyfx.repository.BankRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
-import com.jscriptive.moneyfx.ui.account.item.AccountItem;
+import com.jscriptive.moneyfx.ui.item.AccountItem;
 import com.jscriptive.moneyfx.ui.common.LocalDateStringConverter;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.collections.FXCollections;
@@ -24,7 +24,6 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMAT;
-import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
 
 /**
  * Created by jscriptive.com on 18/11/2014.
@@ -112,11 +111,11 @@ public class AccountDialogController implements Initializable {
             if (account.getType() != null) {
                 typeField.setText(account.getType());
             }
-            if (account.getFormattedBalance() != null) {
-                balanceField.setText(account.getFormattedBalance());
+            if (account.getBalance() != null) {
+                balanceField.setText(CurrencyFormat.getInstance().format(account.getBalance()));
             }
             if (account.getBalanceDate() != null) {
-                balanceDateField.setValue(LocalDate.parse(account.getBalanceDate(), DATE_FORMATTER));
+                balanceDateField.setValue(account.getBalanceDate());
             }
         } else {
             balanceDateField.setValue(LocalDate.now());

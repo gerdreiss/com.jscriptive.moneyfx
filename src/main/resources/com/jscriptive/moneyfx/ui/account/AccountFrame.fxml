@@ -89,9 +89,9 @@
                         <FormattedTableCellFactory alignment="right"/>
                     </cellFactory>
                 </PercentageWidthTableColumn>
-                <PercentageWidthTableColumn fx:id="formattedBalanceColumn" text="Balance" percentageWidth="0.1">
+                <PercentageWidthTableColumn fx:id="balanceColumn" text="Balance" percentageWidth="0.1">
                     <cellValueFactory>
-                        <PropertyValueFactory property="formattedBalance"/>
+                        <PropertyValueFactory property="balance"/>
                     </cellValueFactory>
                     <cellFactory>
                         <FormattedTableCellFactory alignment="right"/>
