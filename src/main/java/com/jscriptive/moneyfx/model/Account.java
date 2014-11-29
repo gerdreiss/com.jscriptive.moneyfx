@@ -139,42 +139,6 @@ public class Account {
         }
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Account)) return false;
-
-        Account that = (Account) o;
-
-        if (balanceDate != null ? !balanceDate.equals(that.balanceDate) : that.balanceDate != null) return false;
-        if (bank != null ? !bank.equals(that.bank) : that.bank != null) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (number != null ? !number.equals(that.number) : that.number != null) return false;
-        if (type != null ? !type.equals(that.type) : that.type != null) return false;
-        return isEqual(this.balance, that.balance);
-    }
-
-    @Override
-    public int hashCode() {
-        int result = bank != null ? bank.hashCode() : 0;
-        result = 31 * result + (number != null ? number.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        result = 31 * result + (type != null ? type.hashCode() : 0);
-        result = 31 * result + (balance != null ? balance.hashCode() : 0);
-        result = 31 * result + (balanceDate != null ? balanceDate.hashCode() : 0);
-        return result;
-    }
-
-
-    @Override
-    public String toString() {
-        return format("Account{bank=%s, number='%s', name='%s', type='%s', balance=%s, balanceDate=%s}", getBank(), getNumber(), getName(), getType(), getFormattedBalance(), getFormattedBalanceDate());
-    }
-
-    public String toPresentableString() {
-        return format("%s %s %s", getBank().getName(), getBank().getCountryCode(), getLastFourDigits());
-    }
-
     public BigDecimal calculateStartingBalance(List<Transaction> read) {
         // calculate the balance of the last transaction of the list "read"
         read.forEach(trx -> {
@@ -209,5 +173,46 @@ public class Account {
     public boolean isOfCountry(String countryCode) {
         return isNotBlank(countryCode) && getBank() != null && isNotBlank(getBank().getCountryCode()) &&
                 StringUtils.equals(countryCode, getBank().getCountryCode());
+    }
+
+    public String getTransferConceptRegex() {
+        // TODO save regex for transaction concept that indicates a transfer between owner's accounts
+        return "TRASPASO.*?TRANSFERENCIA.*?(GERD|GERD.*?REISS)";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof Account)) return false;
+
+        Account that = (Account) o;
+
+        if (balanceDate != null ? !balanceDate.equals(that.balanceDate) : that.balanceDate != null) return false;
+        if (bank != null ? !bank.equals(that.bank) : that.bank != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
+        if (number != null ? !number.equals(that.number) : that.number != null) return false;
+        if (type != null ? !type.equals(that.type) : that.type != null) return false;
+        return isEqual(this.balance, that.balance);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = bank != null ? bank.hashCode() : 0;
+        result = 31 * result + (number != null ? number.hashCode() : 0);
+        result = 31 * result + (name != null ? name.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + (balance != null ? balance.hashCode() : 0);
+        result = 31 * result + (balanceDate != null ? balanceDate.hashCode() : 0);
+        return result;
+    }
+
+
+    @Override
+    public String toString() {
+        return format("Account{bank=%s, number='%s', name='%s', type='%s', balance=%s, balanceDate=%s}", getBank(), getNumber(), getName(), getType(), getFormattedBalance(), getFormattedBalanceDate());
+    }
+
+    public String toPresentableString() {
+        return format("%s %s %s", getBank().getName(), getBank().getCountryCode(), getLastFourDigits());
     }
 }

@@ -103,7 +103,7 @@ public class Transaction {
     }
 
     public boolean isTransfer() {
-        return false;
+        return getConcept().matches(getAccount().getTransferConceptRegex());
     }
 
     @Override
