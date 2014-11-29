@@ -80,4 +80,8 @@ public class MainFrame extends BorderPane implements Initializable {
         dialog.setResultConverter(buttonType -> buttonType == loginButtonType);
         dialog.showAndWait();
     }
+
+    public void backupButtonHit(ActionEvent actionEvent) {
+
+    }
 }
