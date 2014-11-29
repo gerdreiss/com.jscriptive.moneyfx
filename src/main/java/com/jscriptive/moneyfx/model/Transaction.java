@@ -102,6 +102,9 @@ public class Transaction {
         this.category = category;
     }
 
+    public boolean isTransfer() {
+        return false;
+    }
 
     @Override
     public boolean equals(Object o) {

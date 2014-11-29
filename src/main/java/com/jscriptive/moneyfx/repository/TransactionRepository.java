@@ -18,15 +18,23 @@ public interface TransactionRepository {
 
     List<Transaction> findByAccount(Account account);
 
+    List<Transaction> findByAccountAndCategory(Account account, Category category);
+
     List<Transaction> findIncomingByAccountAndYearAndMonth(Account value, Integer year, Integer month);
 
     List<Transaction> findOutgoingByAccountAndYearAndMonth(Account value, Integer year, Integer month);
 
-    List<Transaction> findByAccountAndCategory(Account account, Category category);
-
     List<Transaction> findIncomingByYearAndMonth(Integer year, Integer month);
 
     List<Transaction> findOutgoingByYearAndMonth(Integer year, Integer month);
+
+    List<Transaction> findIncomingByAccountAndYear(Account value, Integer year);
+
+    List<Transaction> findOutgoingByAccountAndYear(Account value, Integer year);
+
+    List<Transaction> findIncomingByYear(Integer year);
+
+    List<Transaction> findOutgoingByYear(Integer year);
 
     void save(Transaction transaction);
 

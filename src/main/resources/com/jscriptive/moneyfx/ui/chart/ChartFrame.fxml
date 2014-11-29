@@ -33,7 +33,14 @@
             <ToggleButton fx:id="monthlyInOutToggle" text="Monthly in/out" onAction="#monthlyInOutToggled" toggleGroup="$chartToggleGroup">
                 <graphic>
                     <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
-                        <Image url="@../images/Chart-Type-32.png"/>
+                        <Image url="@../images/Chart-TypeV-32.png"/>
+                    </ImageView>
+                </graphic>
+            </ToggleButton>
+            <ToggleButton fx:id="yearlyInOutToggle" text="Yearly in/out" onAction="#yearlyInOutToggled" toggleGroup="$chartToggleGroup">
+                <graphic>
+                    <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@../images/Chart-TypeH-32.png"/>
                     </ImageView>
                 </graphic>
             </ToggleButton>

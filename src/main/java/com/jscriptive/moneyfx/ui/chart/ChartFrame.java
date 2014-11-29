@@ -27,10 +27,12 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.BorderPane;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
@@ -229,13 +231,15 @@ public class ChartFrame implements Initializable {
                                         account == null
                                                 ? transactionRepository.findIncomingByYearAndMonth(date.getYear(), date.getMonthValue())
                                                 : transactionRepository.findIncomingByAccountAndYearAndMonth(account, date.getYear(), date.getMonthValue());
-                                XYChart.Data<String, Number> inData = new XYChart.Data<>(monthLabel, getSum(incoming));
+                                List<Transaction> incomingWithoutTransfers = incoming.parallelStream().filter(t -> !t.isTransfer()).collect(Collectors.toList());
+                                XYChart.Data<String, Number> inData = new XYChart.Data<>(monthLabel, getSum(incomingWithoutTransfers));
 
                                 List<Transaction> outgoing =
                                         account == null
                                                 ? transactionRepository.findOutgoingByYearAndMonth(date.getYear(), date.getMonthValue())
                                                 : transactionRepository.findOutgoingByAccountAndYearAndMonth(account, date.getYear(), date.getMonthValue());
-                                XYChart.Data<String, Number> outData = new XYChart.Data<>(monthLabel, getSum(outgoing));
+                                List<Transaction> outgoingWithoutTransfers = outgoing.parallelStream().filter(t -> !t.isTransfer()).collect(Collectors.toList());
+                                XYChart.Data<String, Number> outData = new XYChart.Data<>(monthLabel, getSum(outgoingWithoutTransfers));
 
                                 Platform.runLater(() -> {
                                     inSeries.getData().add(inData);
@@ -249,6 +253,80 @@ public class ChartFrame implements Initializable {
                 }
             };
             service.start();
+        }
+    }
+
+    public void yearlyInOutToggled(ActionEvent actionEvent) {
+        final NumberAxis xAxis = new NumberAxis();
+        final CategoryAxis yAxis = new CategoryAxis();
+        yAxis.setLabel("In/Out in Euro");
+        xAxis.setLabel("Year");
+
+        final BarChart<Number, String> barChart = new BarChart<>(xAxis, yAxis);
+        barChart.setTitle("Yearly in/out");
+
+        chartFrame.setCenter(barChart);
+
+        ToggleButton toggle = (ToggleButton) actionEvent.getTarget();
+        if (toggle.isSelected()) {
+            Account account = accountCombo.getValue();
+            String accountLabel = getAccountLabel(account);
+
+            XYChart.Series<Number, String> inSeries = new XYChart.Series<>();
+            inSeries.setName("In" + accountLabel);
+            barChart.getData().add(inSeries);
+
+            XYChart.Series<Number, String> outSeries = new XYChart.Series<>();
+            outSeries.setName("Out" + accountLabel);
+            barChart.getData().add(outSeries);
+
+            ValueRange<LocalDate> period =
+                    account == null
+                            ? transactionRepository.getTransactionOpDateRange()
+                            : transactionRepository.getTransactionOpDateRangeForAccount(account);
+            if (period.isEmpty()) {
+                return;
+            }
+            ObservableList<String> categories = FXCollections.observableArrayList();
+            for (int y = period.from().getYear(); y < period.to().getYear() + 6; y++) {
+                categories.add(String.valueOf(y));
+            }
+            yAxis.setCategories(categories);
+            Service<Void> service = new Service<Void>() {
+                @Override
+                protected Task<Void> createTask() {
+                    return new Task<Void>() {
+                        @Override
+                        protected Void call() throws Exception {
+                            for (LocalDate date = period.from(); date.isBefore(period.to()); date = date.plusYears(1)) {
+
+                                List<Transaction> incoming =
+                                        account == null
+                                                ? transactionRepository.findIncomingByYear(date.getYear())
+                                                : transactionRepository.findIncomingByAccountAndYear(account, date.getYear());
+                                List<Transaction> incomingWithoutTransfers = incoming.parallelStream().filter(t -> !t.isTransfer()).collect(Collectors.toList());
+                                XYChart.Data<Number, String> inData = new XYChart.Data<>(getSum(incomingWithoutTransfers), String.valueOf(date.getYear()));
+
+                                List<Transaction> outgoing =
+                                        account == null
+                                                ? transactionRepository.findOutgoingByYear(date.getYear())
+                                                : transactionRepository.findOutgoingByAccountAndYear(account, date.getYear());
+                                List<Transaction> outgoingWithoutTransfers = outgoing.parallelStream().filter(t -> !t.isTransfer()).collect(Collectors.toList());
+                                XYChart.Data<Number, String> outData = new XYChart.Data<>(getSum(outgoingWithoutTransfers), String.valueOf(date.getYear()));
+
+                                Platform.runLater(() -> {
+                                    inSeries.getData().add(inData);
+                                    outSeries.getData().add(outData);
+                                });
+                            }
+
+                            return null;
+                        }
+                    };
+                }
+            };
+            service.start();
+
         }
     }
 
