@@ -13,15 +13,14 @@ import com.jscriptive.moneyfx.repository.*;
 import com.jscriptive.moneyfx.ui.account.dialog.AccountDialog;
 import com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent;
 import com.jscriptive.moneyfx.ui.item.AccountItem;
+import com.jscriptive.moneyfx.util.CurrencyFormat;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -30,10 +29,13 @@ import org.apache.commons.lang3.StringUtils;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.stream.DoubleStream;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
+import static java.lang.Math.abs;
 import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
 import static javafx.scene.control.ButtonType.OK;
 import static javafx.scene.input.KeyCode.DELETE;
@@ -59,6 +61,8 @@ public class AccountFrame implements Initializable {
     private TableColumn<AccountItem, BigDecimal> balanceColumn;
     @FXML
     private TableColumn<AccountItem, LocalDate> balanceDateColumn;
+    @FXML
+    private Label dataSummaryLabel;
 
     private final ObservableList<AccountItem> accountData = FXCollections.observableArrayList();
 
@@ -90,6 +94,8 @@ public class AccountFrame implements Initializable {
         accountData.clear();
         accountRepository.findAll().forEach(account ->
                 accountData.add(new AccountItem(account)));
+
+        Platform.runLater(() -> dataSummaryLabel.setText("Accounts: " + accountData.size() + ", volume: " + getAbsSum(accountData)));
     }
 
     private void initializeColumns() {
@@ -203,5 +209,10 @@ public class AccountFrame implements Initializable {
         TransactionFilter filter = new TransactionFilter();
         filter.setAccount(persistedAccount);
         dataTable.getScene().lookup("#tabPane").fireEvent(new ShowTransactionsEvent(filter));
+    }
+
+    private String getAbsSum(List<AccountItem> accountItems) {
+        double sum = accountItems.parallelStream().flatMapToDouble(item -> DoubleStream.of(abs(item.getBalance().doubleValue()))).sum();
+        return CurrencyFormat.getInstance().format(sum);
     }
 }

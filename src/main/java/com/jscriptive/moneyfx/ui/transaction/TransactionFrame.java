@@ -11,6 +11,8 @@ import com.jscriptive.moneyfx.ui.item.AccountItem;
 import com.jscriptive.moneyfx.ui.item.TransactionItem;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionFilterDialog;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionImportDialog;
+import com.jscriptive.moneyfx.util.CurrencyFormat;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
@@ -19,10 +21,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.util.Pair;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
@@ -37,8 +36,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
+import java.util.stream.DoubleStream;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
+import static java.lang.Math.abs;
 import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
 import static javafx.scene.control.ButtonType.CANCEL;
 import static javafx.scene.control.ButtonType.YES;
@@ -65,6 +66,8 @@ public class TransactionFrame implements Initializable {
     private TableColumn<TransactionItem, LocalDate> dtValColumn;
     @FXML
     private TableColumn<TransactionItem, BigDecimal> amountColumn;
+    @FXML
+    private Label dataSummaryLabel;
 
     private final ObservableList<TransactionItem> transactionData = FXCollections.observableArrayList();
 
@@ -280,6 +283,7 @@ public class TransactionFrame implements Initializable {
                             transactionData.add(new TransactionItem(trx));
                             updateProgress(idx, transactions.size());
                         }
+                        Platform.runLater(() -> dataSummaryLabel.setText("Transactions: " + transactionData.size() + ", volume: " + getAbsSum(transactionData)));
                         return null;
                     }
                 };
@@ -292,5 +296,10 @@ public class TransactionFrame implements Initializable {
         progress.getDialogPane().getStylesheets().clear();
         progress.getDialogPane().setPadding(new Insets(10, 10, 0, 10));
         service.start();
+    }
+
+    private String getAbsSum(List<TransactionItem> transactionItems) {
+        double sum = transactionItems.parallelStream().flatMapToDouble(item -> DoubleStream.of(abs(item.getAmount().doubleValue()))).sum();
+        return CurrencyFormat.getInstance().format(sum);
     }
 }

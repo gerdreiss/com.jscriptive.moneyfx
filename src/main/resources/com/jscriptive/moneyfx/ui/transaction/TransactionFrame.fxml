@@ -5,8 +5,7 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.control.cell.*?>
 <?import javafx.scene.image.*?>
-<?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.*?>
 <BorderPane xmlns:fx="http://javafx.com/fxml/1" id="transactionFrame"
             fx:controller="com.jscriptive.moneyfx.ui.transaction.TransactionFrame">
     <padding>
@@ -38,6 +37,12 @@
                     </ImageView>
                 </graphic>
             </Button>
+            <HBox HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
+                <padding>
+                    <Insets left="10.0" right="10.0"/>
+                </padding>
+                <Label fx:id="dataSummaryLabel" alignment="CENTER_RIGHT" textAlignment="RIGHT" HBox.hgrow="ALWAYS"/>
+            </HBox>
         </HBox>
     </top>
     <center>

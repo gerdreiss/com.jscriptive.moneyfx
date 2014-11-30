@@ -105,4 +105,5 @@ public class TransactionItem implements UIItem {
     public void setCategory(String category) {
         this.category.set(category);
     }
+
 }

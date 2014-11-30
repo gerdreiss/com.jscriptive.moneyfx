@@ -16,6 +16,8 @@ import com.jscriptive.moneyfx.ui.category.dialog.CategoryDialog;
 import com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent;
 import com.jscriptive.moneyfx.ui.item.CategoryItem;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionFilterDialog;
+import com.jscriptive.moneyfx.util.CurrencyFormat;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
@@ -24,10 +26,7 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
-import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -44,6 +43,7 @@ import java.util.stream.DoubleStream;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
 import static java.lang.Boolean.TRUE;
+import static java.lang.Math.abs;
 import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
 import static javafx.scene.control.Alert.AlertType.ERROR;
 import static javafx.scene.control.ButtonType.OK;
@@ -64,6 +64,8 @@ public class CategoryFrame implements Initializable {
     private TableColumn<CategoryItem, BigDecimal> amountColumn;
     @FXML
     private TableColumn<CategoryItem, String> ruleColumn;
+    @FXML
+    private Label dataSummaryLabel;
 
     private final ObservableList<CategoryItem> categoryData = FXCollections.observableArrayList();
 
@@ -175,6 +177,7 @@ public class CategoryFrame implements Initializable {
                                 categoryData.add(new CategoryItem(category, BigDecimal.valueOf(sum)));
                                 updateProgress(idx, categories.size());
                             }
+                            Platform.runLater(() -> dataSummaryLabel.setText("Categories: " + categoryData.size() + ", volume: " + getAbsSum(categoryData)));
                             return null;
                         }
                     };
@@ -322,5 +325,10 @@ public class CategoryFrame implements Initializable {
                 categoryData.remove(selectedIndex);
             }
         }
+    }
+
+    private String getAbsSum(List<CategoryItem> categoryItems) {
+        double sum = categoryItems.parallelStream().flatMapToDouble(item -> DoubleStream.of(abs(item.getAmount().doubleValue()))).sum();
+        return CurrencyFormat.getInstance().format(sum);
     }
 }

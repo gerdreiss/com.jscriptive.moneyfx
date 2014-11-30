@@ -14,7 +14,7 @@ import static org.apache.commons.lang3.StringUtils.*;
  */
 public class AccountStringConverter extends StringConverter<Account> {
     private static final int COUNTRY_CODE_LENGTH = 2;
-    private static final int COUNTRY_CODE_PLUS_WHITESPACE_LENGTH = COUNTRY_CODE_LENGTH + 1;
+    private static final int COUNTRY_CODE_PLUS_WHITESPACE_LENGTH = COUNTRY_CODE_LENGTH+1;
 
     private final List<Account> accounts;
 
