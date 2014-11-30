@@ -312,17 +312,16 @@ public class CategoryFrame implements Initializable {
             alert.setContentText(String.format("Are you sure you want to delete the selected category: %s? The transactions in this category will be moved to category \"Other\"", selectedItem.getName()));
             Optional<ButtonType> result = alert.showAndWait();
             if (result.isPresent() && result.get() == OK) {
-                int selectedIndex = dataTable.getSelectionModel().getSelectedIndex();
-                Category category = new Category(selectedItem.getName());
-                List<Transaction> transactions = transactionRepository.findByCategory(category);
+                Category category = categoryRepository.findByName(selectedItem.getName());
                 Category other = categoryRepository.findByName(Category.OTHER.getName());
+                List<Transaction> transactions = transactionRepository.findByCategory(category);
                 transactions.forEach(trx -> {
                     trx.setCategory(other);
                     transactionRepository.save(trx);
                 });
                 transactionFilterRepository.removeByCategory(category);
                 categoryRepository.remove(category);
-                categoryData.remove(selectedIndex);
+                categoryData.remove(dataTable.getSelectionModel().getSelectedIndex());
             }
         }
     }

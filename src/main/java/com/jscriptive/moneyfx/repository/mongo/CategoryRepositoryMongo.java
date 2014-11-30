@@ -3,11 +3,14 @@ package com.jscriptive.moneyfx.repository.mongo;
 import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.repository.CategoryRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -17,12 +20,14 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 @Repository
 public class CategoryRepositoryMongo implements CategoryRepository {
 
+    private static final Sort NAME_ASC = new Sort(ASC, "name");
+
     @Autowired
     private MongoTemplate mongoTemplate;
 
     @Override
     public List<Category> findAll() {
-        return mongoTemplate.findAll(Category.class);
+        return mongoTemplate.find(new Query().with(NAME_ASC), Category.class);
     }
 
     @Override
