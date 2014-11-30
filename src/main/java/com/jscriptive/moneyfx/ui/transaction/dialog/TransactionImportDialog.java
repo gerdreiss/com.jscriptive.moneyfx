@@ -17,8 +17,8 @@ import org.controlsfx.control.textfield.TextFields;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static javafx.scene.control.ButtonBar.ButtonData.OK_DONE;
 import static javafx.scene.control.ButtonType.CANCEL;
 import static javafx.scene.input.KeyEvent.KEY_TYPED;
@@ -57,7 +57,7 @@ public class TransactionImportDialog extends Dialog<Pair<String, File>> {
             selectedBank = newValue;
             importButton.setDisable(StringUtils.isBlank(selectedBank) || selectedFile == null || !selectedFile.exists());
         });
-        TextFields.bindAutoCompletion(bankTextField, banks.stream().map(Bank::getName).collect(Collectors.toList()));
+        TextFields.bindAutoCompletion(bankTextField, banks.stream().map(Bank::getName).collect(toList()));
 
         TextField filePathTextField = new TextField();
         filePathTextField.setEditable(false);

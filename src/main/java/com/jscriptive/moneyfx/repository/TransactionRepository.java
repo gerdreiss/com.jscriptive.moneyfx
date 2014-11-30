@@ -10,6 +10,16 @@ import java.util.List;
  */
 public interface TransactionRepository {
 
+    void save(Transaction transaction);
+
+    void remove(Transaction trx);
+
+    void removeByAccount(Account account);
+
+    long countTransactions();
+
+    long countTransactionsOfAccount(Account account);
+
     List<Transaction> findAll();
 
     List<Transaction> filterAll(TransactionFilter filter);
@@ -20,31 +30,21 @@ public interface TransactionRepository {
 
     List<Transaction> findByAccountAndCategory(Account account, Category category);
 
-    List<Transaction> findIncomingByAccountAndYearAndMonth(Account value, Integer year, Integer month);
+    List<TransactionVolume> getYearlyIncomingVolumes();
 
-    List<Transaction> findOutgoingByAccountAndYearAndMonth(Account value, Integer year, Integer month);
+    List<TransactionVolume> getYearlyOutgoingVolumes();
 
-    List<Transaction> findIncomingByYearAndMonth(Integer year, Integer month);
+    List<TransactionVolume> getYearlyIncomingVolumesOfAccount(Account account);
 
-    List<Transaction> findOutgoingByYearAndMonth(Integer year, Integer month);
+    List<TransactionVolume> getYearlyOutgoingVolumesOfAccount(Account account);
 
-    List<Transaction> findIncomingByAccountAndYear(Account value, Integer year);
+    List<TransactionVolume> getMonthlyIncomingVolumes();
 
-    List<Transaction> findOutgoingByAccountAndYear(Account value, Integer year);
+    List<TransactionVolume> getMonthlyOutgoingVolumes();
 
-    List<Transaction> findIncomingByYear(Integer year);
+    List<TransactionVolume> getMonthlyIncomingVolumesOfAccount(Account account);
 
-    List<Transaction> findOutgoingByYear(Integer year);
-
-    void save(Transaction transaction);
-
-    void remove(Transaction trx);
-
-    void removeByAccount(Account account);
-
-    long countTransactions();
-
-    long countTransactionsOfAccount(Account account);
+    List<TransactionVolume> getMonthlyOutgoingVolumesOfAccount(Account account);
 
     ValueRange<LocalDate> getTransactionOpDateRange();
 

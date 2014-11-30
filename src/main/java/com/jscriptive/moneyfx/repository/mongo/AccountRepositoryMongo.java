@@ -2,12 +2,11 @@ package com.jscriptive.moneyfx.repository.mongo;
 
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.repository.AccountRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+import static java.util.stream.Collectors.toList;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -16,14 +15,11 @@ import static org.springframework.data.mongodb.core.query.Query.query;
  * Created by jscriptive.com on 16/11/14.
  */
 @Repository
-public class AccountRepositoryMongo implements AccountRepository {
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
+public class AccountRepositoryMongo extends AbstractRepositoryMongo<Account> implements AccountRepository {
 
     @Override
     public List<Account> findAll() {
-        return mongoTemplate.findAll(Account.class);
+        return mongoTemplate.findAll(Account.class).stream().sorted((a1, a2) -> a1.getBank().getName().compareTo(a2.getBank().getName())).collect(toList());
     }
 
     @Override
@@ -31,13 +27,4 @@ public class AccountRepositoryMongo implements AccountRepository {
         return mongoTemplate.findOne(query(where("number").is(number)), Account.class);
     }
 
-    @Override
-    public void save(Account account) {
-        mongoTemplate.save(account);
-    }
-
-    @Override
-    public void remove(Account account) {
-        mongoTemplate.remove(account);
-    }
 }

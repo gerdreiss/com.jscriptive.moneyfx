@@ -2,9 +2,7 @@ package com.jscriptive.moneyfx.repository.mongo;
 
 import com.jscriptive.moneyfx.model.Category;
 import com.jscriptive.moneyfx.repository.CategoryRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
@@ -18,12 +16,9 @@ import static org.springframework.data.mongodb.core.query.Query.query;
  * Created by jscriptive.com on 16/11/14.
  */
 @Repository
-public class CategoryRepositoryMongo implements CategoryRepository {
+public class CategoryRepositoryMongo extends AbstractRepositoryMongo<Category> implements CategoryRepository {
 
     private static final Sort NAME_ASC = new Sort(ASC, "name");
-
-    @Autowired
-    private MongoTemplate mongoTemplate;
 
     @Override
     public List<Category> findAll() {
@@ -33,15 +28,5 @@ public class CategoryRepositoryMongo implements CategoryRepository {
     @Override
     public Category findByName(String name) {
         return mongoTemplate.findOne(query(where("name").is(name)), Category.class);
-    }
-
-    @Override
-    public void save(Category category) {
-        mongoTemplate.save(category);
-    }
-
-    @Override
-    public void remove(Category category) {
-        mongoTemplate.remove(category);
     }
 }

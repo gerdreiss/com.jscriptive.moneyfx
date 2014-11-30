@@ -35,11 +35,11 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
 import static java.lang.Math.abs;
+import static java.util.stream.Collectors.toList;
 import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
 import static javafx.scene.control.ButtonType.CANCEL;
 import static javafx.scene.control.ButtonType.YES;
@@ -147,7 +147,7 @@ public class TransactionFrame implements Initializable {
                     item.getDtOp(),
                     item.getDtVal(),
                     item.getAmount()
-            )).collect(Collectors.toList());
+            )).collect(toList());
             CategoryDialog dialog = new CategoryDialog(categoryRepository.findAll());
             Optional<Pair<Category, Boolean>> result = dialog.showAndWait();
             if (result.isPresent()) {

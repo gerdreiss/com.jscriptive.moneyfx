@@ -19,11 +19,11 @@ import org.controlsfx.control.textfield.TextFields;
 
 import java.net.URL;
 import java.time.LocalDate;
-import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.stream.Collectors;
 
 import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMAT;
+import static java.util.Locale.getISOCountries;
+import static java.util.stream.Collectors.toList;
 
 /**
  * Created by jscriptive.com on 18/11/2014.
@@ -50,9 +50,9 @@ public class AccountDialogController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         BankRepository bankRepository = RepositoryProvider.getInstance().getBankRepository();
-        TextFields.bindAutoCompletion(bankField, bankRepository.findAll().stream().map(Bank::getName).collect(Collectors.toList()));
+        TextFields.bindAutoCompletion(bankField, bankRepository.findAll().stream().map(Bank::getName).collect(toList()));
 
-        countryCombo.setItems(FXCollections.observableArrayList(Locale.getISOCountries()));
+        countryCombo.setItems(FXCollections.observableArrayList(getISOCountries()));
         countryCombo.getSelectionModel().select("ES" /* TODO Locale.getDefault().getCountry() */);
 
         balanceDateField.setConverter(new LocalDateStringConverter());

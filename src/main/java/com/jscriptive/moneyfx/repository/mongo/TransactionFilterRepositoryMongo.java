@@ -16,7 +16,7 @@ import static org.springframework.data.mongodb.core.query.Query.query;
  * Created by jscriptive.com on 16/11/14.
  */
 @Repository
-public class TransactionFilterRepositoryMongo implements TransactionFilterRepository {
+public class TransactionFilterRepositoryMongo extends AbstractRepositoryMongo<TransactionFilter> implements TransactionFilterRepository {
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -24,16 +24,6 @@ public class TransactionFilterRepositoryMongo implements TransactionFilterReposi
     @Override
     public Collection<TransactionFilter> findAll() {
         return mongoTemplate.findAll(TransactionFilter.class);
-    }
-
-    @Override
-    public void save(TransactionFilter filter) {
-        mongoTemplate.save(filter);
-    }
-
-    @Override
-    public void remove(TransactionFilter filter) {
-        mongoTemplate.remove(filter);
     }
 
     @Override

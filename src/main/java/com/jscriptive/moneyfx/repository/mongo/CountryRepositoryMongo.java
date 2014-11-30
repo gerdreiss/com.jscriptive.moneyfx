@@ -15,7 +15,7 @@ import java.util.Optional;
  * Created by jscriptive.com on 16/11/14.
  */
 @Repository
-public class CountryRepositoryMongo implements CountryRepository {
+public class CountryRepositoryMongo extends AbstractRepositoryMongo<Country> implements CountryRepository {
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -40,16 +40,5 @@ public class CountryRepositoryMongo implements CountryRepository {
         }
         return null;
     }
-
-    @Override
-    public void save(Country country) {
-        mongoTemplate.save(country);
-    }
-
-    @Override
-    public void remove(Country country) {
-        mongoTemplate.remove(country);
-    }
-
 
 }
