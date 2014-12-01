@@ -245,10 +245,10 @@ public class TransactionFrame implements Initializable {
     }
 
     private void extractTransactionData(URI file, TransactionExtractor extractor, Account account) {
-        List<Transaction> all = transactionRepository.findAll();
         List<Transaction> transactions = extractor.extractTransactionData(file);
         account.updateBalance(transactions);
         Category other = getDefaultCategory();
+        List<Transaction> all = transactionRepository.findAll();
         transactions.forEach(trx -> {
             trx.setAccount(account);
             trx.setCategory(other);
@@ -256,10 +256,9 @@ public class TransactionFrame implements Initializable {
                 log.debug("Found transaction that has a duplicate in DB: " + trx);
             } else {
                 persistTransaction(trx);
+                transactionData.add(new TransactionItem(trx));
             }
-            transactionData.add(new TransactionItem(trx));
         });
-        //transactions.forEach(trx -> transactionData.add(new TransactionItem(trx)));
     }
 
     private Category getDefaultCategory() {
