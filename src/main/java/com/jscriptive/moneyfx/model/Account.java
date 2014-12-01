@@ -12,10 +12,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-import static com.jscriptive.moneyfx.util.BigDecimalUtils.CURRENCY_CONTEXT;
 import static com.jscriptive.moneyfx.util.BigDecimalUtils.isEqual;
 import static java.lang.String.format;
 import static java.math.BigDecimal.ZERO;
+import static java.math.MathContext.DECIMAL32;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.right;
 
@@ -144,7 +144,7 @@ public class Account {
         read.forEach(trx -> {
             // if the transaction date is before or the same as the account balance date - subtract the amount from the account balance
             if (!trx.getDtOp().isAfter(getBalanceDate())) {
-                setBalance(getBalance().subtract(trx.getAmount(), CURRENCY_CONTEXT));
+                setBalance(getBalance().subtract(trx.getAmount(), DECIMAL32));
                 setBalanceDate(trx.getDtOp());
             }
         });
@@ -153,9 +153,9 @@ public class Account {
 
     public BigDecimal calculateCurrentBalance(Transaction trx) {
         if (!trx.getDtOp().isBefore(getBalanceDate())) {
-            setBalance(getBalance().add(trx.getAmount(), CURRENCY_CONTEXT));
+            setBalance(getBalance().add(trx.getAmount(), DECIMAL32));
         } else {
-            setBalance(getBalance().subtract(trx.getAmount(), CURRENCY_CONTEXT));
+            setBalance(getBalance().subtract(trx.getAmount(), DECIMAL32));
         }
         setBalanceDate(trx.getDtOp());
         return getBalance();
@@ -186,6 +186,7 @@ public class Account {
 
         Account that = (Account) o;
 
+        if (StringUtils.equals(this.getId(), that.getId())) return true;
         if (balanceDate != null ? !balanceDate.equals(that.balanceDate) : that.balanceDate != null) return false;
         if (bank != null ? !bank.equals(that.bank) : that.bank != null) return false;
         if (name != null ? !name.equals(that.name) : that.name != null) return false;

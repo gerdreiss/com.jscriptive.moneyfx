@@ -94,7 +94,7 @@
                         <FormattedTableCellFactory alignment="center"/>
                     </cellFactory>
                 </PercentageWidthTableColumn>
-                <PercentageWidthTableColumn fx:id="conceptColumn" text="Concept" percentageWidth="0.4">
+                <PercentageWidthTableColumn fx:id="conceptColumn" text="Concept" percentageWidth="0.37">
                     <cellValueFactory>
                         <PropertyValueFactory property="concept"/>
                     </cellValueFactory>

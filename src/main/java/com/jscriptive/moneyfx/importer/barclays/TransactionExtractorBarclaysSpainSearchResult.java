@@ -17,8 +17,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.math.MathContext.DECIMAL32;
 import static java.math.RoundingMode.HALF_UP;
 import static java.time.LocalDate.parse;
+import static java.time.format.DateTimeFormatter.ofPattern;
 
 /**
  * Created by jscriptive.com on 29/10/2014.
@@ -65,9 +67,9 @@ public class TransactionExtractorBarclaysSpainSearchResult {
 
         Transaction trx = new Transaction();
         trx.setConcept(concept);
-        trx.setDtOp(parse(dtOp.substring(dtOp.length() - 10), DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-        trx.setDtVal(parse(dtVal.substring(dtVal.length() - 10), DateTimeFormatter.ofPattern("dd-MM-yyyy")));
-        trx.setAmount(new BigDecimal(amount, new MathContext(2, HALF_UP)));
+        trx.setDtOp(parse(dtOp.substring(dtOp.length() - 10), ofPattern("dd-MM-yyyy")));
+        trx.setDtVal(parse(dtVal.substring(dtVal.length() - 10), ofPattern("dd-MM-yyyy")));
+        trx.setAmount(new BigDecimal(amount, DECIMAL32));
         return trx;
     }
 

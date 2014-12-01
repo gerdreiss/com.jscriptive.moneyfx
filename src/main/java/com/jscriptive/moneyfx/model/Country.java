@@ -2,6 +2,7 @@ package com.jscriptive.moneyfx.model;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.LocaleUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -65,10 +66,11 @@ public class Country {
         if (this == o) return true;
         if (!(o instanceof Country)) return false;
 
-        Country country = (Country) o;
+        Country that = (Country) o;
 
-        if (currency != null ? !currency.equals(country.currency) : country.currency != null) return false;
-        if (locale != null ? !locale.equals(country.locale) : country.locale != null) return false;
+        if (StringUtils.equals(this.getId(), that.getId())) return true;
+        if (currency != null ? !currency.equals(that.currency) : that.currency != null) return false;
+        if (locale != null ? !locale.equals(that.locale) : that.locale != null) return false;
 
         return true;
     }

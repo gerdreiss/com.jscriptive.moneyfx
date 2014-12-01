@@ -18,6 +18,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 
+import static org.apache.commons.lang3.StringUtils.normalizeSpace;
+import static org.apache.commons.lang3.StringUtils.split;
+
 /**
  * Created by jscriptive.com on 28/11/14.
  */
@@ -47,7 +50,7 @@ public class BarclaysTransactionExtractor implements TransactionExtractor {
             if (StringUtils.isBlank(accountString)) {
                 return null;
             }
-            String[] strings = StringUtils.split(StringUtils.normalizeSpace(accountString), " ", 2);
+            String[] strings = split(normalizeSpace(accountString), " ", 2);
             if (ArrayUtils.getLength(strings) != 2) {
                 return null;
             }

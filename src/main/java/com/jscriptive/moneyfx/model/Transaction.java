@@ -1,6 +1,8 @@
 package com.jscriptive.moneyfx.model;
 
 import com.jscriptive.moneyfx.util.CurrencyFormat;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -121,6 +123,7 @@ public class Transaction {
 
         Transaction that = (Transaction) o;
 
+        if (StringUtils.equals(this.getId(), that.getId())) return true;
         if (account != null ? !account.equals(that.account) : that.account != null) return false;
         if (concept != null ? !concept.equals(that.concept) : that.concept != null) return false;
         if (dtOp != null ? !dtOp.equals(that.dtOp) : that.dtOp != null) return false;

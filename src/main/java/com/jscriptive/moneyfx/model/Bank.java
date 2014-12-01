@@ -1,5 +1,6 @@
 package com.jscriptive.moneyfx.model;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -77,10 +78,11 @@ public class Bank {
         if (this == o) return true;
         if (!(o instanceof Bank)) return false;
 
-        Bank bank = (Bank) o;
+        Bank that = (Bank) o;
 
-        if (country != null ? !country.equals(bank.country) : bank.country != null) return false;
-        if (name != null ? !name.equals(bank.name) : bank.name != null) return false;
+        if (StringUtils.equals(this.getId(), that.getId())) return true;
+        if (country != null ? !country.equals(that.country) : that.country != null) return false;
+        if (name != null ? !name.equals(that.name) : that.name != null) return false;
 
         return true;
     }
