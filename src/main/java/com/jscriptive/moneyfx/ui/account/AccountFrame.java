@@ -5,6 +5,7 @@
  */
 package com.jscriptive.moneyfx.ui.account;
 
+import com.jscriptive.moneyfx.configuration.Configuration;
 import com.jscriptive.moneyfx.model.Account;
 import com.jscriptive.moneyfx.model.Bank;
 import com.jscriptive.moneyfx.model.Country;
@@ -92,9 +93,7 @@ public class AccountFrame implements Initializable {
 
     private void loadAccountData() {
         accountData.clear();
-        accountRepository.findAll().forEach(account ->
-                accountData.add(new AccountItem(account)));
-
+        accountRepository.findAll().forEach(account -> accountData.add(new AccountItem(account)));
         Platform.runLater(() -> dataSummaryLabel.setText("Accounts: " + accountData.size() + ", volume: " + getAbsSum(accountData)));
     }
 
@@ -126,6 +125,7 @@ public class AccountFrame implements Initializable {
                 countryRepository.save(country);
             }
             bank = new Bank(item.getBank(), country);
+            bank.setTransferConceptRegex(Configuration.getInstance().getTransferConceptRegexFor(bank));
             bankRepository.save(bank);
         }
         Account account = new Account(bank,
@@ -162,6 +162,7 @@ public class AccountFrame implements Initializable {
                         countryRepository.save(country);
                     }
                     account.getBank().setCountry(country);
+                    account.getBank().setTransferConceptRegex(Configuration.getInstance().getTransferConceptRegexFor(account.getBank()));
                     bankRepository.save(account.getBank());
                 }
                 account.setName(result.get().getName());

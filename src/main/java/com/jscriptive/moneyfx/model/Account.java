@@ -12,10 +12,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+import static com.jscriptive.moneyfx.util.BigDecimalUtils.CURRENCY_CONTEXT;
 import static com.jscriptive.moneyfx.util.BigDecimalUtils.isEqual;
 import static java.lang.String.format;
 import static java.math.BigDecimal.ZERO;
-import static java.math.MathContext.DECIMAL32;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.StringUtils.right;
 
@@ -144,7 +144,7 @@ public class Account {
         read.forEach(trx -> {
             // if the transaction date is before or the same as the account balance date - subtract the amount from the account balance
             if (!trx.getDtOp().isAfter(getBalanceDate())) {
-                setBalance(getBalance().subtract(trx.getAmount(), DECIMAL32));
+                setBalance(getBalance().subtract(trx.getAmount(), CURRENCY_CONTEXT));
                 setBalanceDate(trx.getDtOp());
             }
         });
@@ -153,9 +153,9 @@ public class Account {
 
     public BigDecimal calculateCurrentBalance(Transaction trx) {
         if (!trx.getDtOp().isBefore(getBalanceDate())) {
-            setBalance(getBalance().add(trx.getAmount(), DECIMAL32));
+            setBalance(getBalance().add(trx.getAmount(), CURRENCY_CONTEXT));
         } else {
-            setBalance(getBalance().subtract(trx.getAmount(), DECIMAL32));
+            setBalance(getBalance().subtract(trx.getAmount(), CURRENCY_CONTEXT));
         }
         setBalanceDate(trx.getDtOp());
         return getBalance();
@@ -176,8 +176,7 @@ public class Account {
     }
 
     public String getTransferConceptRegex() {
-        // TODO save regex for transaction concept that indicates a transfer between owner's accounts
-        return "TRASPASO.*?TRANSFERENCIA.*?(GERD|GERD.*?REISS)";
+        return getBank().getTransferConceptRegex();
     }
 
     @Override

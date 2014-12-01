@@ -1,6 +1,5 @@
 package com.jscriptive.moneyfx.model;
 
-import com.jscriptive.moneyfx.util.BigDecimalUtils;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -9,6 +8,8 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import static com.jscriptive.moneyfx.util.BigDecimalUtils.isEqual;
 
 /**
  * Created by jscriptive.com on 29/10/2014.
@@ -29,6 +30,8 @@ public class Transaction {
     private LocalDate dtVal;
 
     private BigDecimal amount;
+
+    private Boolean isTransfer;
 
     public Transaction() {
     }
@@ -56,6 +59,7 @@ public class Transaction {
 
     public void setAccount(Account account) {
         this.account = account;
+        setIsTransfer(getAccount() != null && getConcept() != null && getConcept().matches(getAccount().getTransferConceptRegex()));
     }
 
     public String getConcept() {
@@ -102,8 +106,12 @@ public class Transaction {
         this.category = category;
     }
 
-    public boolean isTransfer() {
-        return getConcept().matches(getAccount().getTransferConceptRegex());
+    public Boolean getIsTransfer() {
+        return isTransfer;
+    }
+
+    public void setIsTransfer(Boolean isTransfer) {
+        this.isTransfer = isTransfer;
     }
 
     @Override
@@ -117,7 +125,7 @@ public class Transaction {
         if (concept != null ? !concept.equals(that.concept) : that.concept != null) return false;
         if (dtOp != null ? !dtOp.equals(that.dtOp) : that.dtOp != null) return false;
         if (dtVal != null ? !dtVal.equals(that.dtVal) : that.dtVal != null) return false;
-        return BigDecimalUtils.isEqual(this.amount, that.amount);
+        return isEqual(this.amount, that.amount);
     }
 
     @Override

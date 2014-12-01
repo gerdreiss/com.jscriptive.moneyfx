@@ -13,6 +13,7 @@ import java.time.temporal.ChronoField;
 import java.util.List;
 
 import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.by;
+import static java.lang.Boolean.TRUE;
 import static java.lang.Integer.compare;
 import static java.math.BigDecimal.ZERO;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
@@ -167,7 +168,6 @@ public class TransactionRepositoryMongo extends AbstractRepositoryMongo<Transact
     }
 
     private Criteria getMatchCriteria(Account account, Integer zeroComparison) {
-        // TODO match for non transfers
         Criteria match = (account == null) ? where("amount") : by(account).and("amount");
         int comparison = compare(zeroComparison, INTEGER_ZERO);
         if (comparison < 0) {
@@ -177,7 +177,7 @@ public class TransactionRepositoryMongo extends AbstractRepositoryMongo<Transact
         } else {
             match = match.ne(ZERO);
         }
-        return match;
+        return match.and("isTransfer").ne(TRUE);
     }
 
     private Fields getOpDateFields(ChronoField chronoField) {

@@ -13,12 +13,16 @@ import static java.lang.String.format;
 @Document
 public class Bank {
 
+    private static final String PROP_TRANSFER_REGEX = "transfer.concept.regex";
+
     @Id
     private String id;
     @Indexed(unique = true)
     private String name;
     @DBRef
     private Country country;
+
+    private String transferConceptRegex;
 
     public Bank() {
     }
@@ -60,6 +64,14 @@ public class Bank {
         this.country = country;
     }
 
+    public void setTransferConceptRegex(String transferConceptRegex) {
+        this.transferConceptRegex = transferConceptRegex;
+    }
+
+    public String getTransferConceptRegex() {
+        return transferConceptRegex;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -84,4 +96,9 @@ public class Bank {
     public String toString() {
         return format("Bank{name='%s', country=%s}", name, country);
     }
+
+    public String getTransferConceptRegexConfigurationProperty() {
+        return format("%s.%s.%s", getName(), getCountryCode(), PROP_TRANSFER_REGEX);
+    }
+
 }

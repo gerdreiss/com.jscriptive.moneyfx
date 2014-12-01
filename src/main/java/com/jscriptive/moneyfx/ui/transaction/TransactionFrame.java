@@ -1,5 +1,6 @@
 package com.jscriptive.moneyfx.ui.transaction;
 
+import com.jscriptive.moneyfx.configuration.Configuration;
 import com.jscriptive.moneyfx.importer.TransactionExtractor;
 import com.jscriptive.moneyfx.importer.TransactionExtractorProvider;
 import com.jscriptive.moneyfx.model.*;
@@ -22,8 +23,8 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.image.ImageView;
 import javafx.util.Pair;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.log4j.Logger;
 import org.controlsfx.dialog.ProgressDialog;
 
@@ -44,6 +45,8 @@ import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
 import static javafx.scene.control.ButtonType.CANCEL;
 import static javafx.scene.control.ButtonType.YES;
 import static javafx.scene.control.SelectionMode.MULTIPLE;
+import static org.apache.commons.collections4.CollectionUtils.isEmpty;
+import static org.apache.commons.collections4.CollectionUtils.isNotEmpty;
 
 /**
  * @author jscriptive.com
@@ -58,6 +61,8 @@ public class TransactionFrame implements Initializable {
     private TableColumn<TransactionItem, String> accountColumn;
     @FXML
     private TableColumn<TransactionItem, String> categoryColumn;
+    @FXML
+    private TableColumn<TransactionItem, ImageView> transferColumn;
     @FXML
     private TableColumn<TransactionItem, String> conceptColumn;
     @FXML
@@ -125,7 +130,7 @@ public class TransactionFrame implements Initializable {
 
     private void categorizeTransactions() {
         ObservableList<TransactionItem> selectedItems = dataTable.getSelectionModel().getSelectedItems();
-        if (CollectionUtils.isEmpty(selectedItems)) {
+        if (isEmpty(selectedItems)) {
             String contentText = "You didn't select any transaction from the table. Do you really want to categorize all transaction currently displayed?";
             Alert confirmation = new Alert(CONFIRMATION, contentText, YES, CANCEL);
             confirmation.setTitle("Confirm selection");
@@ -137,7 +142,7 @@ public class TransactionFrame implements Initializable {
                 return;
             }
         }
-        if (CollectionUtils.isNotEmpty(selectedItems)) {
+        if (isNotEmpty(selectedItems)) {
             List<Account> accounts = accountRepository.findAll();
             AccountStringConverter converter = new AccountStringConverter(accounts);
             List<Transaction> toCategorize = selectedItems.stream().map(item -> new Transaction(
@@ -197,6 +202,7 @@ public class TransactionFrame implements Initializable {
     private void setupTableColumns() {
         accountColumn.setCellValueFactory(cellData -> cellData.getValue().accountProperty());
         categoryColumn.setCellValueFactory(cellData -> cellData.getValue().categoryProperty());
+        transferColumn.setCellValueFactory(cellData -> cellData.getValue().transferProperty());
         conceptColumn.setCellValueFactory(cellData -> cellData.getValue().conceptProperty());
         dtOpColumn.setCellValueFactory(cellData -> cellData.getValue().dtOpProperty());
         dtValColumn.setCellValueFactory(cellData -> cellData.getValue().dtValProperty());
@@ -225,10 +231,10 @@ public class TransactionFrame implements Initializable {
                 countryRepository.save(country);
             }
             bank = new Bank(item.getBank(), country);
+            bank.setTransferConceptRegex(Configuration.getInstance().getTransferConceptRegexFor(bank));
             bankRepository.save(bank);
         }
-        Account account = new Account(
-                bank,
+        Account account = new Account(bank,
                 item.getNumber(),
                 item.getName(),
                 item.getType(),
