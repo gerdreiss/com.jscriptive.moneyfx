@@ -1,7 +1,9 @@
 package com.jscriptive.moneyfx.model;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.validator.routines.RegexValidator;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -73,6 +75,15 @@ public class Bank {
         return transferConceptRegex;
     }
 
+    public String getTransferConceptRegexConfigurationProperty() {
+        return format("%s.%s.%s", getName(), getCountryCode(), PROP_TRANSFER_REGEX);
+    }
+
+    public Boolean isTransfer(Transaction transaction) {
+        RegexValidator regexValidator = new RegexValidator(this.transferConceptRegex, false);
+        return regexValidator.isValid(transaction.getConcept());
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -98,9 +109,4 @@ public class Bank {
     public String toString() {
         return format("Bank{name='%s', country=%s}", name, country);
     }
-
-    public String getTransferConceptRegexConfigurationProperty() {
-        return format("%s.%s.%s", getName(), getCountryCode(), PROP_TRANSFER_REGEX);
-    }
-
 }

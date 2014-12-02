@@ -6,14 +6,14 @@
 package com.jscriptive.moneyfx.ui.account;
 
 import com.jscriptive.moneyfx.configuration.Configuration;
-import com.jscriptive.moneyfx.model.Account;
-import com.jscriptive.moneyfx.model.Bank;
-import com.jscriptive.moneyfx.model.Country;
-import com.jscriptive.moneyfx.model.TransactionFilter;
+import com.jscriptive.moneyfx.importer.TransactionExtractor;
+import com.jscriptive.moneyfx.importer.TransactionExtractorProvider;
+import com.jscriptive.moneyfx.model.*;
 import com.jscriptive.moneyfx.repository.*;
 import com.jscriptive.moneyfx.ui.account.dialog.AccountDialog;
 import com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent;
 import com.jscriptive.moneyfx.ui.item.AccountItem;
+import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionImportDialog;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
@@ -25,9 +25,13 @@ import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
+import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.math.BigDecimal;
+import java.net.URI;
 import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
@@ -45,6 +49,8 @@ import static javafx.scene.input.KeyCode.DELETE;
  * @author jscriptive.com
  */
 public class AccountFrame implements Initializable {
+
+    private static Logger log = Logger.getLogger(AccountFrame.class);
 
     @FXML
     private TableView<AccountItem> dataTable;
@@ -70,6 +76,7 @@ public class AccountFrame implements Initializable {
     private CountryRepository countryRepository;
     private BankRepository bankRepository;
     private AccountRepository accountRepository;
+    private CategoryRepository categoryRepository;
     private TransactionRepository transactionRepository;
 
     @Override
@@ -83,6 +90,7 @@ public class AccountFrame implements Initializable {
         countryRepository = RepositoryProvider.getInstance().getCountryRepository();
         bankRepository = RepositoryProvider.getInstance().getBankRepository();
         accountRepository = RepositoryProvider.getInstance().getAccountRepository();
+        categoryRepository = RepositoryProvider.getInstance().getCategoryRepository();
         transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
     }
 
@@ -116,7 +124,36 @@ public class AccountFrame implements Initializable {
         }
     }
 
-    private void persistAccount(AccountItem item) {
+    public void importTransactionsFired(ActionEvent actionEvent) {
+        TransactionImportDialog dialog = new TransactionImportDialog(bankRepository.findAll());
+        Optional<Pair<String, File>> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String bank = result.get().getKey();
+            File file = result.get().getValue();
+            TransactionExtractor extractor = TransactionExtractorProvider.getInstance().getTransactionExtractor(bank);
+            Account account = extractAccountData(file.toURI(), extractor);
+            if (account != null) {
+                extractTransactionData(file.toURI(), extractor, account);
+            }
+            TabPane tabPane = (TabPane) dataTable.getScene().lookup("#tabPane");
+            tabPane.getSelectionModel().select(1);
+        }
+    }
+
+    private Account extractAccountData(URI file, TransactionExtractor extractor) {
+        Account extracted = extractor.extractAccountData(file);
+        Account found = accountRepository.findByNumber(extracted.getNumber());
+        if (found == null) {
+            AccountDialog dialog = new AccountDialog(new AccountItem(extracted));
+            Optional<AccountItem> accountItem = dialog.showAndWait();
+            if (accountItem.isPresent()) {
+                found = persistAccount(accountItem.get());
+            }
+        }
+        return found;
+    }
+
+    private Account persistAccount(AccountItem item) {
         Bank bank = bankRepository.findByName(item.getBank());
         if (bank == null) {
             Country country = countryRepository.findByCode(item.getCountry());
@@ -135,6 +172,42 @@ public class AccountFrame implements Initializable {
                 item.getBalance(),
                 item.getBalanceDate());
         accountRepository.save(account);
+        return account;
+    }
+
+    private void extractTransactionData(URI file, TransactionExtractor extractor, Account account) {
+        List<Transaction> transactions = extractor.extractTransactionData(file);
+        account.updateBalance(transactions);
+        Category other = getDefaultCategory();
+        List<Transaction> all = transactionRepository.findAll();
+        transactions.forEach(trx -> {
+            trx.setAccount(account);
+            trx.setCategory(other);
+            if (all.contains(trx)) {
+                log.debug("Found transaction that has a duplicate in DB: " + trx);
+            } else {
+                persistTransaction(trx);
+            }
+        });
+    }
+
+    private Category getDefaultCategory() {
+        Category other = categoryRepository.findByName(Category.OTHER.getName());
+        if (other == null) {
+            other = Category.OTHER;
+            categoryRepository.save(other);
+        }
+        return other;
+    }
+
+    private void persistTransaction(Transaction trx) {
+        Category category = categoryRepository.findByName(trx.getCategory().getName());
+        if (category == null) {
+            category = new Category(trx.getCategory().getName());
+            categoryRepository.save(category);
+            trx.setCategory(category);
+        }
+        transactionRepository.save(trx);
     }
 
     public void contextMenuItemEditSelected(ActionEvent actionEvent) {

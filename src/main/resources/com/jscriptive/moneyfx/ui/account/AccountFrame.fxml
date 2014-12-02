@@ -24,6 +24,13 @@
                     </ImageView>
                 </graphic>
             </Button>
+            <Button text="Import transactions" onAction="#importTransactionsFired">
+                <graphic>
+                    <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true">
+                        <Image url="@../images/Data-Import-32.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
             <HBox HBox.hgrow="ALWAYS" alignment="CENTER_RIGHT">
                 <padding>
                     <Insets left="10.0" right="10.0"/>

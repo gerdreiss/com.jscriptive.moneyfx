@@ -259,6 +259,8 @@ public class TransactionFrame implements Initializable {
                 transactionData.add(new TransactionItem(trx));
             }
         });
+        dataTable.setItems(transactionData);
+        Platform.runLater(() -> dataSummaryLabel.setText("Transactions: " + transactionData.size() + ", volume: " + getAbsSum(transactionData)));
     }
 
     private Category getDefaultCategory() {
@@ -275,6 +277,7 @@ public class TransactionFrame implements Initializable {
         if (category == null) {
             category = new Category(trx.getCategory().getName());
             categoryRepository.save(category);
+            trx.setCategory(category);
         }
         transactionRepository.save(trx);
     }
@@ -294,6 +297,7 @@ public class TransactionFrame implements Initializable {
                             transactionData.add(new TransactionItem(trx));
                             updateProgress(idx, transactions.size());
                         }
+                        dataTable.setItems(transactionData);
                         Platform.runLater(() -> dataSummaryLabel.setText("Transactions: " + transactionData.size() + ", volume: " + getAbsSum(transactionData)));
                         return null;
                     }

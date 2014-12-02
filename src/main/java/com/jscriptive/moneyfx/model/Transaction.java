@@ -2,7 +2,6 @@ package com.jscriptive.moneyfx.model;
 
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.math.NumberUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
@@ -12,6 +11,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 
 import static com.jscriptive.moneyfx.util.BigDecimalUtils.isEqual;
+import static java.lang.String.format;
 
 /**
  * Created by jscriptive.com on 29/10/2014.
@@ -61,7 +61,9 @@ public class Transaction {
 
     public void setAccount(Account account) {
         this.account = account;
-        setIsTransfer(getAccount() != null && getConcept() != null && getConcept().matches(getAccount().getTransferConceptRegex()));
+        if (this.account != null) {
+            setIsTransfer(this.account.getBank().isTransfer(this));
+        }
     }
 
     public String getConcept() {
@@ -143,6 +145,6 @@ public class Transaction {
 
     @Override
     public String toString() {
-        return String.format("Transaction{account=%s, concept='%s', dtOp=%s, dtVal=%s, amount=%s}", account, concept, dtOp, dtVal, getFormattedAmount());
+        return format("Transaction{account=%s, concept='%s', dtOp=%s, dtVal=%s, amount=%s}", account, concept, dtOp, dtVal, getFormattedAmount());
     }
 }
