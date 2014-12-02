@@ -33,11 +33,13 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.DoubleStream;
 
+import static com.jscriptive.moneyfx.model.Account.ALL_ACCOUNTS;
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
 import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
 import static com.jscriptive.moneyfx.util.LocalDateUtils.getMonthLabel;
 import static java.lang.Math.abs;
 import static java.lang.String.format;
+import static java.time.LocalDate.of;
 import static java.time.LocalDate.ofYearDay;
 import static javafx.geometry.Side.LEFT;
 import static javafx.scene.input.MouseEvent.MOUSE_CLICKED;
@@ -70,7 +72,7 @@ public class ChartFrame implements Initializable {
 
     private void setupAccountComboBox() {
         List<Account> accounts = new ArrayList<>(RepositoryProvider.getInstance().getAccountRepository().findAll());
-        accounts.add(0, null);
+        accounts.add(0, ALL_ACCOUNTS);
         accountCombo.setConverter(new AccountStringConverter(accounts));
         accountCombo.getItems().setAll(accounts);
         accountCombo.getSelectionModel().selectFirst();
@@ -112,7 +114,7 @@ public class ChartFrame implements Initializable {
 
             Account account = accountCombo.getValue();
             ValueRange<LocalDate> period =
-                    account == null
+                    (account == ALL_ACCOUNTS)
                             ? transactionRepository.getTransactionOpDateRange()
                             : transactionRepository.getTransactionOpDateRangeForAccount(account);
             if (period.isEmpty()) {
@@ -130,9 +132,9 @@ public class ChartFrame implements Initializable {
                         @Override
                         protected Void call() throws Exception {
                             Map<Account, List<Transaction>> transactionMap = new HashMap<>();
-                            if (account == null) {
+                            if (account == ALL_ACCOUNTS) {
                                 accountCombo.getItems().forEach(each -> {
-                                    if (each != null) {
+                                    if (each != ALL_ACCOUNTS) {
                                         transactionMap.put(each, transactionRepository.findByAccount(each));
                                     }
                                 });
@@ -207,7 +209,7 @@ public class ChartFrame implements Initializable {
             barChart.getData().add(outSeries);
 
             ValueRange<LocalDate> period =
-                    account == null
+                    account == ALL_ACCOUNTS
                             ? transactionRepository.getTransactionOpDateRange()
                             : transactionRepository.getTransactionOpDateRangeForAccount(account);
             if (period.isEmpty()) {
@@ -226,7 +228,7 @@ public class ChartFrame implements Initializable {
                         protected Void call() throws Exception {
 
                             List<TransactionVolume> incomingVolumes =
-                                    (account == null)
+                                    (account == ALL_ACCOUNTS)
                                             ? transactionRepository.getMonthlyIncomingVolumes(false)
                                             : transactionRepository.getMonthlyIncomingVolumesOfAccount(account, false);
                             for (TransactionVolume volume : incomingVolumes) {
@@ -234,12 +236,13 @@ public class ChartFrame implements Initializable {
                                 XYChart.Data<String, Number> data = new XYChart.Data<>(monthLabel, volume.getVolume());
                                 Platform.runLater(() -> {
                                     inSeries.getData().add(data);
-                                    data.getNode().addEventHandler(MOUSE_CLICKED, event -> handleMonthlyInOutChartMouseClickEvent(account, LocalDate.of(volume.getYear(), volume.getMonth(), 1), event));
+                                    data.getNode().addEventHandler(MOUSE_CLICKED, event -> handleMonthlyInOutChartMouseClickEvent(
+                                            (account == ALL_ACCOUNTS) ? null : account, of(volume.getYear(), volume.getMonth(), 1), event));
                                 });
                             }
 
                             List<TransactionVolume> outgoingVolumes =
-                                    (account == null)
+                                    (account == ALL_ACCOUNTS)
                                             ? transactionRepository.getMonthlyOutgoingVolumes(false)
                                             : transactionRepository.getMonthlyOutgoingVolumesOfAccount(account, false);
                             for (TransactionVolume volume : outgoingVolumes) {
@@ -247,7 +250,7 @@ public class ChartFrame implements Initializable {
                                 XYChart.Data<String, Number> data = new XYChart.Data<>(monthLabel, volume.getVolume().abs());
                                 Platform.runLater(() -> {
                                     outSeries.getData().add(data);
-                                    data.getNode().addEventHandler(MOUSE_CLICKED, event -> handleMonthlyInOutChartMouseClickEvent(account, LocalDate.of(volume.getYear(), volume.getMonth(), 1), event));
+                                    data.getNode().addEventHandler(MOUSE_CLICKED, event -> handleMonthlyInOutChartMouseClickEvent((account == ALL_ACCOUNTS) ? null : account, of(volume.getYear(), volume.getMonth(), 1), event));
                                 });
                             }
 
@@ -285,7 +288,7 @@ public class ChartFrame implements Initializable {
             barChart.getData().add(outSeries);
 
             ValueRange<LocalDate> period =
-                    account == null
+                    (account == ALL_ACCOUNTS)
                             ? transactionRepository.getTransactionOpDateRange()
                             : transactionRepository.getTransactionOpDateRangeForAccount(account);
             if (period.isEmpty()) {
@@ -304,26 +307,28 @@ public class ChartFrame implements Initializable {
                         protected Void call() throws Exception {
 
                             List<TransactionVolume> incomingVolumes =
-                                    (account == null)
+                                    (account == ALL_ACCOUNTS)
                                             ? transactionRepository.getYearlyIncomingVolumes(false)
                                             : transactionRepository.getYearlyIncomingVolumesOfAccount(account, false);
                             for (TransactionVolume volume : incomingVolumes) {
                                 XYChart.Data<Number, String> inData = new XYChart.Data<>(volume.getVolume(), String.valueOf(volume.getYear()));
                                 Platform.runLater(() -> {
                                     inSeries.getData().add(inData);
-                                    inData.getNode().addEventHandler(MOUSE_CLICKED, event -> handleYearlyInOutChartMouseClickEvent(account, ofYearDay(volume.getYear(), 1), event));
+                                    inData.getNode().addEventHandler(MOUSE_CLICKED, event -> handleYearlyInOutChartMouseClickEvent(
+                                            (account == ALL_ACCOUNTS) ? null : account, ofYearDay(volume.getYear(), 1), event));
                                 });
                             }
 
                             List<TransactionVolume> outgoingVolumes =
-                                    (account == null)
+                                    (account == ALL_ACCOUNTS)
                                             ? transactionRepository.getYearlyOutgoingVolumes(false)
                                             : transactionRepository.getYearlyOutgoingVolumesOfAccount(account, false);
                             for (TransactionVolume volume : outgoingVolumes) {
                                 XYChart.Data<Number, String> outData = new XYChart.Data<>(volume.getVolume().abs(), String.valueOf(volume.getYear()));
                                 Platform.runLater(() -> {
                                     outSeries.getData().add(outData);
-                                    outData.getNode().addEventHandler(MOUSE_CLICKED, event -> handleYearlyInOutChartMouseClickEvent(account, ofYearDay(volume.getYear(), 1), event));
+                                    outData.getNode().addEventHandler(MOUSE_CLICKED, event -> handleYearlyInOutChartMouseClickEvent(
+                                            (account == ALL_ACCOUNTS) ? null : account, ofYearDay(volume.getYear(), 1), event));
                                 });
                             }
 
@@ -356,7 +361,7 @@ public class ChartFrame implements Initializable {
                         @Override
                         protected Void call() throws Exception {
                             ValueRange<LocalDate> period =
-                                    accountCombo.getValue() == null
+                                    (accountCombo.getValue() == ALL_ACCOUNTS)
                                             ? transactionRepository.getTransactionOpDateRange()
                                             : transactionRepository.getTransactionOpDateRangeForAccount(accountCombo.getValue());
                             if (period.isEmpty()) {
@@ -367,7 +372,7 @@ public class ChartFrame implements Initializable {
 
                             categoryRepository.findAll().stream().sorted((c1, c2) -> c1.getName().compareTo(c2.getName())).forEach(category -> {
                                 List<Transaction> transactions =
-                                        (accountCombo.getValue() == null)
+                                        (accountCombo.getValue() == ALL_ACCOUNTS)
                                                 ? transactionRepository.findByCategory(category)
                                                 : transactionRepository.findByAccountAndCategory(accountCombo.getValue(), category);
                                 Platform.runLater(() -> {
@@ -375,7 +380,8 @@ public class ChartFrame implements Initializable {
                                     String name = format("%s [%s]", category.getName(), CurrencyFormat.getInstance().format(value));
                                     PieChart.Data data = new PieChart.Data(name, value);
                                     pieChart.getData().add(data);
-                                    data.getNode().addEventHandler(MOUSE_CLICKED, event -> handleCategoryChartMouseClickEvent(accountCombo.getValue(), category, event));
+                                    data.getNode().addEventHandler(MOUSE_CLICKED, event -> handleCategoryChartMouseClickEvent(
+                                            (accountCombo.getValue() == ALL_ACCOUNTS) ? null : accountCombo.getValue(), category, event));
                                 });
                             });
                             return null;
@@ -390,8 +396,8 @@ public class ChartFrame implements Initializable {
 
     private String getAccountLabel(Account account) {
         String accountLabel;
-        if (account == null) {
-            double balance = accountCombo.getItems().stream().flatMapToDouble(a -> DoubleStream.of(a == null ? 0.0 : a.getBalance().doubleValue())).sum();
+        if (account == ALL_ACCOUNTS) {
+            double balance = accountCombo.getItems().stream().flatMapToDouble(a -> DoubleStream.of(a == ALL_ACCOUNTS ? 0.0 : a.getBalance().doubleValue())).sum();
             accountLabel = format(" All accounts [%s]", CurrencyFormat.getInstance().format(balance));
         } else {
             accountLabel = format(" %s [%s]", account.toPresentableString(), account.getFormattedBalance());

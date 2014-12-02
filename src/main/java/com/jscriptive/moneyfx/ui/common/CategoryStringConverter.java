@@ -17,17 +17,11 @@ public class CategoryStringConverter extends StringConverter<Category> {
 
     @Override
     public String toString(Category object) {
-        if (object == null) {
-            return "All categories";
-        }
         return object.getName();
     }
 
     @Override
     public Category fromString(String string) {
-        if ("All categories".equals(string)) {
-            return null;
-        }
         return categories.stream().filter(category -> category.getName().equals(string)).findFirst().get();
     }
 }

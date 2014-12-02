@@ -25,6 +25,8 @@ import static org.apache.commons.lang3.StringUtils.right;
 @Document
 public class Account {
 
+    public static final Account ALL_ACCOUNTS = new Account(null, null, "All accounts", "All accounts");
+
     public static final String PREFIX_LAST_DIGITS = " ***";
     public static final int NUMBER_LAST_DIGITS = 4;
 
@@ -213,6 +215,6 @@ public class Account {
     }
 
     public String toPresentableString() {
-        return format("%s %s %s", getBank().getName(), getBank().getCountryCode(), getLastFourDigits());
+        return this == ALL_ACCOUNTS ? getName() : format("%s %s %s", getBank().getName(), getBank().getCountryCode(), getLastFourDigits());
     }
 }

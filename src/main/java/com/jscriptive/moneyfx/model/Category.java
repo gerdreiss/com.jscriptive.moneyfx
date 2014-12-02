@@ -11,6 +11,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document
 public class Category {
 
+    public static final Category ALL_CATEGORIES = new Category("All categories");
     public static final Category OTHER = new Category("Other");
 
     @Id

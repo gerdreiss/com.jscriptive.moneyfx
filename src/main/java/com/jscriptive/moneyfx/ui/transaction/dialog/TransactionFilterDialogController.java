@@ -19,6 +19,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import static com.jscriptive.moneyfx.model.Account.ALL_ACCOUNTS;
+import static com.jscriptive.moneyfx.model.Category.ALL_CATEGORIES;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -57,7 +59,7 @@ public class TransactionFilterDialogController implements Initializable {
         List<Account> accounts = RepositoryProvider.getInstance().getAccountRepository().findAll();
         StringConverter<Account> converter = new AccountStringConverter(accounts);
         accounts.sort((a1, a2) -> converter.toString(a1).compareTo(converter.toString(a2)));
-        accounts.add(0, null);
+        accounts.add(0, ALL_ACCOUNTS);
         accountCombo.setConverter(converter);
         accountCombo.getItems().addAll(accounts);
         accountCombo.getSelectionModel().selectFirst();
@@ -66,7 +68,7 @@ public class TransactionFilterDialogController implements Initializable {
     private void setupCategoryComboBox() {
         List<Category> categories = RepositoryProvider.getInstance().getCategoryRepository().findAll();
         categories.sort((c1, c2) -> c1.getName().compareTo(c2.getName()));
-        categories.add(0, null);
+        categories.add(0, ALL_CATEGORIES);
         categoryCombo.setConverter(new CategoryStringConverter(categories));
         categoryCombo.getItems().addAll(categories);
         categoryCombo.getSelectionModel().selectFirst();
@@ -74,8 +76,8 @@ public class TransactionFilterDialogController implements Initializable {
 
     public TransactionFilter getTransactionFilter() {
         TransactionFilter newFilter = new TransactionFilter(
-                accountCombo.getValue(),
-                categoryCombo.getValue(),
+                accountCombo.getValue() == ALL_ACCOUNTS ? null : accountCombo.getValue(),
+                categoryCombo.getValue() == ALL_CATEGORIES ? null : categoryCombo.getValue(),
                 conceptField.getText(),
                 new ValueRange<>(
                         dtOpFieldFrom.getValue(),
