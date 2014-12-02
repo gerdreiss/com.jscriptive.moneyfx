@@ -34,6 +34,7 @@ import java.util.*;
 import java.util.stream.DoubleStream;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
+import static com.jscriptive.moneyfx.util.LocalDateUtils.DATE_FORMATTER;
 import static com.jscriptive.moneyfx.util.LocalDateUtils.getMonthLabel;
 import static java.lang.Math.abs;
 import static java.lang.String.format;
@@ -226,8 +227,8 @@ public class ChartFrame implements Initializable {
 
                             List<TransactionVolume> incomingVolumes =
                                     (account == null)
-                                            ? transactionRepository.getMonthlyIncomingVolumes()
-                                            : transactionRepository.getMonthlyIncomingVolumesOfAccount(account);
+                                            ? transactionRepository.getMonthlyIncomingVolumes(false)
+                                            : transactionRepository.getMonthlyIncomingVolumesOfAccount(account, false);
                             for (TransactionVolume volume : incomingVolumes) {
                                 String monthLabel = getMonthLabel(volume.getYear(), volume.getMonth());
                                 XYChart.Data<String, Number> data = new XYChart.Data<>(monthLabel, volume.getVolume());
@@ -239,8 +240,8 @@ public class ChartFrame implements Initializable {
 
                             List<TransactionVolume> outgoingVolumes =
                                     (account == null)
-                                            ? transactionRepository.getMonthlyOutgoingVolumes()
-                                            : transactionRepository.getMonthlyOutgoingVolumesOfAccount(account);
+                                            ? transactionRepository.getMonthlyOutgoingVolumes(false)
+                                            : transactionRepository.getMonthlyOutgoingVolumesOfAccount(account, false);
                             for (TransactionVolume volume : outgoingVolumes) {
                                 String monthLabel = getMonthLabel(volume.getYear(), volume.getMonth());
                                 XYChart.Data<String, Number> data = new XYChart.Data<>(monthLabel, volume.getVolume().abs());
@@ -304,8 +305,8 @@ public class ChartFrame implements Initializable {
 
                             List<TransactionVolume> incomingVolumes =
                                     (account == null)
-                                            ? transactionRepository.getYearlyIncomingVolumes()
-                                            : transactionRepository.getYearlyIncomingVolumesOfAccount(account);
+                                            ? transactionRepository.getYearlyIncomingVolumes(false)
+                                            : transactionRepository.getYearlyIncomingVolumesOfAccount(account, false);
                             for (TransactionVolume volume : incomingVolumes) {
                                 XYChart.Data<Number, String> inData = new XYChart.Data<>(volume.getVolume(), String.valueOf(volume.getYear()));
                                 Platform.runLater(() -> {
@@ -316,8 +317,8 @@ public class ChartFrame implements Initializable {
 
                             List<TransactionVolume> outgoingVolumes =
                                     (account == null)
-                                            ? transactionRepository.getYearlyOutgoingVolumes()
-                                            : transactionRepository.getYearlyOutgoingVolumesOfAccount(account);
+                                            ? transactionRepository.getYearlyOutgoingVolumes(false)
+                                            : transactionRepository.getYearlyOutgoingVolumesOfAccount(account, false);
                             for (TransactionVolume volume : outgoingVolumes) {
                                 XYChart.Data<Number, String> outData = new XYChart.Data<>(volume.getVolume().abs(), String.valueOf(volume.getYear()));
                                 Platform.runLater(() -> {
@@ -361,8 +362,9 @@ public class ChartFrame implements Initializable {
                             if (period.isEmpty()) {
                                 return null;
                             }
-                            Platform.runLater(() ->
-                                    pieChart.setTitle(format("%s for transactions from %s until %s", pieChart.getTitle(), period.from(), period.to())));
+                            Platform.runLater(() -> pieChart.setTitle(format("%s for transactions from %s until %s",
+                                    pieChart.getTitle(), period.from().format(DATE_FORMATTER), period.to().format(DATE_FORMATTER))));
+
                             categoryRepository.findAll().stream().sorted((c1, c2) -> c1.getName().compareTo(c2.getName())).forEach(category -> {
                                 List<Transaction> transactions =
                                         (accountCombo.getValue() == null)

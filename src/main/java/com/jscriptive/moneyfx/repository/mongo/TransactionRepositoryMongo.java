@@ -1,5 +1,6 @@
 package com.jscriptive.moneyfx.repository.mongo;
 
+import com.jscriptive.moneyfx.exception.BusinessException;
 import com.jscriptive.moneyfx.model.*;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import org.springframework.data.domain.Sort;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoField;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.by;
@@ -18,11 +20,13 @@ import static java.lang.Integer.compare;
 import static java.math.BigDecimal.ZERO;
 import static java.time.temporal.ChronoField.MONTH_OF_YEAR;
 import static java.time.temporal.ChronoField.YEAR;
+import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.math.NumberUtils.*;
 import static org.springframework.data.domain.Sort.Direction.ASC;
 import static org.springframework.data.domain.Sort.Direction.DESC;
 import static org.springframework.data.mongodb.core.aggregation.Aggregation.*;
 import static org.springframework.data.mongodb.core.aggregation.Fields.field;
+import static org.springframework.data.mongodb.core.aggregation.Fields.from;
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 import static org.springframework.data.mongodb.core.query.Query.query;
 
@@ -77,43 +81,63 @@ public class TransactionRepositoryMongo extends AbstractRepositoryMongo<Transact
     }
 
     @Override
-    public List<TransactionVolume> getYearlyIncomingVolumes() {
-        return getTransactionVolumes(null, YEAR, INTEGER_ONE);
+    public List<TransactionVolume> getYearlyIncomingVolumes(boolean includeTransfers) {
+        return getTransactionVolumes(null, false, YEAR, INTEGER_ONE, includeTransfers);
     }
 
     @Override
-    public List<TransactionVolume> getYearlyOutgoingVolumes() {
-        return getTransactionVolumes(null, YEAR, INTEGER_MINUS_ONE);
+    public List<TransactionVolume> getYearlyOutgoingVolumes(boolean includeTransfers) {
+        return getTransactionVolumes(null, false, YEAR, INTEGER_MINUS_ONE, includeTransfers);
     }
 
     @Override
-    public List<TransactionVolume> getYearlyIncomingVolumesOfAccount(Account account) {
-        return getTransactionVolumes(account, YEAR, INTEGER_ONE);
+    public List<TransactionVolume> getYearlyIncomingVolumesOfAccount(Account account, boolean includeTransfers) {
+        return getTransactionVolumes(account, false, YEAR, INTEGER_ONE, includeTransfers);
     }
 
     @Override
-    public List<TransactionVolume> getYearlyOutgoingVolumesOfAccount(Account account) {
-        return getTransactionVolumes(account, YEAR, INTEGER_MINUS_ONE);
+    public List<TransactionVolume> getYearlyOutgoingVolumesOfAccount(Account account, boolean includeTransfers) {
+        return getTransactionVolumes(account, false, YEAR, INTEGER_MINUS_ONE, includeTransfers);
     }
 
     @Override
-    public List<TransactionVolume> getMonthlyIncomingVolumes() {
-        return getTransactionVolumes(null, MONTH_OF_YEAR, INTEGER_ONE);
+    public List<TransactionVolume> getMonthlyIncomingVolumes(boolean includeTransfers) {
+        return getTransactionVolumes(null, false, MONTH_OF_YEAR, INTEGER_ONE, includeTransfers);
     }
 
     @Override
-    public List<TransactionVolume> getMonthlyOutgoingVolumes() {
-        return getTransactionVolumes(null, MONTH_OF_YEAR, INTEGER_MINUS_ONE);
+    public List<TransactionVolume> getMonthlyOutgoingVolumes(boolean includeTransfers) {
+        return getTransactionVolumes(null, false, MONTH_OF_YEAR, INTEGER_MINUS_ONE, includeTransfers);
     }
 
     @Override
-    public List<TransactionVolume> getMonthlyIncomingVolumesOfAccount(Account account) {
-        return getTransactionVolumes(account, MONTH_OF_YEAR, INTEGER_ONE);
+    public List<TransactionVolume> getMonthlyIncomingVolumesOfAccount(Account account, boolean includeTransfers) {
+        return getTransactionVolumes(account, false, MONTH_OF_YEAR, INTEGER_ONE, includeTransfers);
     }
 
     @Override
-    public List<TransactionVolume> getMonthlyOutgoingVolumesOfAccount(Account account) {
-        return getTransactionVolumes(account, MONTH_OF_YEAR, INTEGER_MINUS_ONE);
+    public List<TransactionVolume> getMonthlyOutgoingVolumesOfAccount(Account account, boolean includeTransfers) {
+        return getTransactionVolumes(account, false, MONTH_OF_YEAR, INTEGER_MINUS_ONE, includeTransfers);
+    }
+
+    @Override
+    public List<TransactionVolume> getCategoryVolumes(boolean includeTransfers) {
+        return getTransactionVolumes(null, true, null, INTEGER_ZERO, includeTransfers);
+    }
+
+    @Override
+    public List<TransactionVolume> getAccountCategoryVolumes(Account account, boolean includeTransfers) {
+        return getTransactionVolumes(account, true, null, INTEGER_ZERO, includeTransfers);
+    }
+
+    @Override
+    public List<TransactionVolume> getYearlyCategoryVolumes(boolean includeTransfers) {
+        return getTransactionVolumes(null, true, YEAR, INTEGER_ZERO, includeTransfers);
+    }
+
+    @Override
+    public List<TransactionVolume> getYearlyAccountCategoryVolumes(Account account, boolean includeTransfers) {
+        return getTransactionVolumes(account, true, YEAR, INTEGER_ZERO, includeTransfers);
     }
 
     @Override
@@ -152,13 +176,16 @@ public class TransactionRepositoryMongo extends AbstractRepositoryMongo<Transact
         return mongoTemplate.findOne(query(by(account)).with(OPDATE_DESC), Transaction.class);
     }
 
-    private List<TransactionVolume> getTransactionVolumes(Account account, ChronoField chronoField, Integer zeroComparison) {
-        MatchOperation match = match(getMatchCriteria(account, zeroComparison));
-        GroupOperation group = group(getOpDateFields(chronoField)).sum("amount").as("volume");
+    private List<TransactionVolume> getTransactionVolumes(Account account, boolean groupByCategory, ChronoField chronoField, Integer zeroComparison, boolean transfers) {
+        MatchOperation match = match(getMatchCriteria(account, zeroComparison, transfers));
+        GroupOperation group = group(getGroupFields(groupByCategory, chronoField)).sum("amount").as("volume");
         Aggregation aggregation;
-        // When we aggregate for yearly volume, the workaround below is necessary because Spring Data MongoDB
-        // doesn't map dtOp.year to year although we clearly indicate a field as such a mapping. Bug?
-        if (chronoField == ChronoField.YEAR) {
+        // When we aggregate by one grouping field, the workaround below is necessary because Spring Data MongoDB
+        // doesn't map the one field although we clearly indicate a field as such a mapping. Bug?
+        if (groupByCategory && chronoField == null) {
+            ProjectionOperation project = project().and("category").previousOperation().and("volume").as("volume");
+            aggregation = newAggregation(Transaction.class, match, group, project);
+        } else if (!groupByCategory && chronoField == YEAR) {
             ProjectionOperation project = project().and("year").previousOperation().and("volume").as("volume");
             aggregation = newAggregation(Transaction.class, match, group, project);
         } else {
@@ -167,8 +194,8 @@ public class TransactionRepositoryMongo extends AbstractRepositoryMongo<Transact
         return mongoTemplate.aggregate(aggregation, Transaction.class, TransactionVolume.class).getMappedResults();
     }
 
-    private Criteria getMatchCriteria(Account account, Integer zeroComparison) {
-        Criteria match = (account == null) ? where("amount") : by(account).and("amount");
+    private Criteria getMatchCriteria(Account account, Integer zeroComparison, boolean transfers) {
+        Criteria match = account == null ? where("amount") : by(account).and("amount");
         int comparison = compare(zeroComparison, INTEGER_ZERO);
         if (comparison < 0) {
             match = match.lt(ZERO);
@@ -177,21 +204,38 @@ public class TransactionRepositoryMongo extends AbstractRepositoryMongo<Transact
         } else {
             match = match.ne(ZERO);
         }
+        if (transfers) {
+            return match;
+        }
         return match.and("isTransfer").ne(TRUE);
     }
 
-    private Fields getOpDateFields(ChronoField chronoField) {
-        switch (chronoField) {
-            case DAY_OF_YEAR:
-            case DAY_OF_MONTH:
-            case DAY_OF_WEEK:
-                return Fields.from(field("year", "dtOp.year"), field("month", "dtOp.month"), field("day", "dtOp.day"));
-            case MONTH_OF_YEAR:
-                return Fields.from(field("year", "dtOp.year"), field("month", "dtOp.month"));
-            //case YEAR:
-            //case YEAR_OF_ERA:
-            default:
-                return Fields.from(field("year", "dtOp.year"));
+    private Fields getGroupFields(boolean groupByCategory, ChronoField chronoField) {
+        if (!groupByCategory && chronoField == null) {
+            throw new BusinessException("When querying for volumes either category, or chronological field, or both have to be used as grouping fields");
         }
+        List<Field> fields = new ArrayList<>();
+        if (groupByCategory) {
+            fields.add(field("category", "category"));
+        }
+        if (chronoField != null) {
+            switch (chronoField) {
+                case DAY_OF_YEAR:
+                case DAY_OF_MONTH:
+                case DAY_OF_WEEK:
+                    fields.addAll(asList(field("year", "dtOp.year"), field("month", "dtOp.month"), field("day", "dtOp.day")));
+                    break;
+                case MONTH_OF_YEAR:
+                    fields.addAll(asList(field("year", "dtOp.year"), field("month", "dtOp.month")));
+                    break;
+                case YEAR:
+                case YEAR_OF_ERA:
+                    fields.add(field("year", "dtOp.year"));
+                    break;
+                default:
+                    break;
+            }
+        }
+        return from(fields.toArray(new Field[fields.size()]));
     }
 }

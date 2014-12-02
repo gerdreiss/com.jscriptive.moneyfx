@@ -30,21 +30,29 @@ public interface TransactionRepository {
 
     List<Transaction> findByAccountAndCategory(Account account, Category category);
 
-    List<TransactionVolume> getYearlyIncomingVolumes();
+    List<TransactionVolume> getYearlyIncomingVolumes(boolean includeTransfers);
 
-    List<TransactionVolume> getYearlyOutgoingVolumes();
+    List<TransactionVolume> getYearlyOutgoingVolumes(boolean includeTransfers);
 
-    List<TransactionVolume> getYearlyIncomingVolumesOfAccount(Account account);
+    List<TransactionVolume> getYearlyIncomingVolumesOfAccount(Account account, boolean includeTransfers);
 
-    List<TransactionVolume> getYearlyOutgoingVolumesOfAccount(Account account);
+    List<TransactionVolume> getYearlyOutgoingVolumesOfAccount(Account account, boolean includeTransfers);
 
-    List<TransactionVolume> getMonthlyIncomingVolumes();
+    List<TransactionVolume> getMonthlyIncomingVolumes(boolean includeTransfers);
 
-    List<TransactionVolume> getMonthlyOutgoingVolumes();
+    List<TransactionVolume> getMonthlyOutgoingVolumes(boolean includeTransfers);
 
-    List<TransactionVolume> getMonthlyIncomingVolumesOfAccount(Account account);
+    List<TransactionVolume> getMonthlyIncomingVolumesOfAccount(Account account, boolean includeTransfers);
 
-    List<TransactionVolume> getMonthlyOutgoingVolumesOfAccount(Account account);
+    List<TransactionVolume> getMonthlyOutgoingVolumesOfAccount(Account account, boolean includeTransfers);
+
+    List<TransactionVolume> getCategoryVolumes(boolean includeTransfers);
+
+    List<TransactionVolume> getAccountCategoryVolumes(Account account, boolean includeTransfers);
+
+    List<TransactionVolume> getYearlyCategoryVolumes(boolean includeTransfers);
+
+    List<TransactionVolume> getYearlyAccountCategoryVolumes(Account account, boolean includeTransfers);
 
     ValueRange<LocalDate> getTransactionOpDateRange();
 
