@@ -131,14 +131,7 @@ public class Account {
     }
 
     public void updateBalance(List<Transaction> transactions) {
-        transactions.forEach(trx -> addAmount(trx.getDtOp(), trx.getAmount()));
-    }
-
-    private void addAmount(LocalDate dtOp, BigDecimal amount) {
-        if (dtOp.isAfter(getBalanceDate())) {
-            setBalance(getBalance().add(amount));
-            setBalanceDate(dtOp);
-        }
+        transactions.forEach(trx -> calculateCurrentBalance(trx));
     }
 
     public BigDecimal calculateStartingBalance(List<Transaction> read) {

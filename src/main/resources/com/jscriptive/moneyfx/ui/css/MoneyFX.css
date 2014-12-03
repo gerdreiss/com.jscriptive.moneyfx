@@ -50,6 +50,7 @@
  *                                                                             *
  ******************************************************************************/
 
+#main-frame-top-button-about,
 #main-frame-top-button-backup,
 #main-frame-top-button-options,
 #main-frame-top-button-close {
@@ -58,6 +59,7 @@
     -fx-padding: 2 2 2 2;
 }
 
+#main-frame-top-button-about:hover,
 #main-frame-top-button-backup:hover,
 #main-frame-top-button-options:hover,
 #main-frame-top-button-close:hover {
@@ -65,6 +67,7 @@
     -fx-border-color: grey;
 }
 
+#main-frame-top-button-about:pressed,
 #main-frame-top-button-backup:pressed,
 #main-frame-top-button-options:pressed,
 #main-frame-top-button-close:pressed {

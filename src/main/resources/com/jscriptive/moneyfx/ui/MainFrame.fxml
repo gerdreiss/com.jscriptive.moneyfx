@@ -38,6 +38,14 @@
                     </ImageView>
                 </graphic>
             </Button>
+            <Button layoutX="48.0" layoutY="48.0" mnemonicParsing="false" onAction="#aboutButtonHit"
+                    id="main-frame-top-button-backup">
+                <graphic>
+                    <ImageView fitHeight="48.0" fitWidth="48.0" pickOnBounds="true" preserveRatio="true">
+                        <Image url="@images/PM-48.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
             <Button layoutX="48.0" layoutY="48.0" mnemonicParsing="false" onAction="#closeButtonHit"
                     id="main-frame-top-button-close">
                 <graphic>
