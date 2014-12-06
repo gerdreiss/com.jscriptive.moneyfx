@@ -2,6 +2,8 @@ package com.jscriptive.moneyfx.ui;
 
 import com.jscriptive.moneyfx.exception.TechnicalException;
 import com.jscriptive.moneyfx.model.TransactionFilter;
+import com.jscriptive.moneyfx.repository.JsonRepository;
+import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -15,13 +17,12 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
-import org.apache.commons.exec.*;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -29,6 +30,7 @@ import static com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent.SHOW_TRANSAC
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
+import static org.apache.commons.io.FileUtils.writeLines;
 
 /**
  * @author jscriptive.com
@@ -42,8 +44,11 @@ public class MainFrame extends BorderPane implements Initializable {
 
     private TransactionFilter filter;
 
+    private JsonRepository jsonRepository;
+
     @Override
     public void initialize(URL url, ResourceBundle rb) {
+        jsonRepository = RepositoryProvider.getInstance().getJsonRepository();
         tabPane.addEventHandler(SHOW_TRANSACTIONS, event -> {
             filter = event.getFilter();
             if (log.isDebugEnabled()) log.debug("ShowTransactionEvent received with filter: " + filter);
@@ -86,35 +91,12 @@ public class MainFrame extends BorderPane implements Initializable {
         if (dir == null) return;
         dir = new File(dir, "moneyfx-" + now().format(ofPattern("yyyyMMddHHmmss")));
         if (!dir.mkdirs()) return;
-
-
-        Map<String, File> map = new HashMap<>();
-        map.put("file", dir);
-        map.put("db", "moneyfx");
-        CommandLine commandLine = new CommandLine("mongodump");
-        commandLine.addArgument("--out '${file}'");
-        commandLine.addArgument("--db ${db}");
-        commandLine.setSubstitutionMap(map);
-
-
-        DefaultExecuteResultHandler resultHandler = new DefaultExecuteResultHandler();
-        ExecuteWatchdog watchdog = new ExecuteWatchdog(60 * 1000);
-        Executor executor = new DefaultExecutor();
-        executor.setExitValue(0);
-        executor.setWatchdog(watchdog);
-        executor.setWorkingDirectory(new File("/"));
+        Map<String, List<String>> data = jsonRepository.extractAll();
         try {
-            executor.execute(commandLine, resultHandler);
-            resultHandler.waitFor();
-            if (resultHandler.hasResult()) {
-                if (resultHandler.getException() == null) {
-                    openNotification("Backup", "Backup", "Backup successful", "The database has been successfully backed up to " + dir.getAbsolutePath());
-                } else {
-                    log.error("Backup failed", resultHandler.getException());
-                    openNotification("Backup", "Backup", "Backup failed", "The database backup has failed: " + resultHandler.getException().getLocalizedMessage());
-                }
+            for (Map.Entry<String, List<String>> entry : data.entrySet()) {
+                writeLines(new File(dir, entry.getKey() + ".json"), entry.getValue());
             }
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             throw new TechnicalException(e);
         }
     }
