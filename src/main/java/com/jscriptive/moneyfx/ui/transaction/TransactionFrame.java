@@ -40,6 +40,7 @@ import java.util.stream.DoubleStream;
 
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
 import static java.lang.Math.abs;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
 import static javafx.scene.control.ButtonType.CANCEL;
@@ -260,7 +261,8 @@ public class TransactionFrame implements Initializable {
             }
         });
         dataTable.setItems(transactionData);
-        Platform.runLater(() -> dataSummaryLabel.setText("Transactions: " + transactionData.size() + ", volume: " + getAbsSum(transactionData)));
+        Platform.runLater(() -> dataSummaryLabel.setText(format("Transactions: %d, volume: %s, balance: %s",
+                transactionData.size(), getTransactionVolume(transactionData), getAccountBalance(accountRepository.findAll()))));
     }
 
     private Category getDefaultCategory() {
@@ -298,7 +300,9 @@ public class TransactionFrame implements Initializable {
                             updateProgress(idx, transactions.size());
                         }
                         dataTable.setItems(transactionData);
-                        Platform.runLater(() -> dataSummaryLabel.setText("Transactions: " + transactionData.size() + ", volume: " + getAbsSum(transactionData)));
+                        Platform.runLater(() -> dataSummaryLabel.setText(format("Transactions: %d, volume: %s, balance: %s",
+                                transactionData.size(), getTransactionVolume(transactionData), getAccountBalance(accountRepository.findAll())
+                        )));
                         return null;
                     }
                 };
@@ -313,8 +317,14 @@ public class TransactionFrame implements Initializable {
         service.start();
     }
 
-    private String getAbsSum(List<TransactionItem> transactionItems) {
+    private String getTransactionVolume(List<TransactionItem> transactionItems) {
         double sum = transactionItems.parallelStream().flatMapToDouble(item -> DoubleStream.of(abs(item.getAmount().doubleValue()))).sum();
         return CurrencyFormat.getInstance().format(sum);
     }
+
+    private String getAccountBalance(List<Account> accounts) {
+        double sum = accounts.stream().flatMapToDouble(a -> DoubleStream.of(a.getBalance().doubleValue())).sum();
+        return CurrencyFormat.getInstance().format(sum);
+    }
+
 }

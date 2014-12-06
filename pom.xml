@@ -139,6 +139,7 @@
                     <mainClass>com.jscriptive.moneyfx.MoneyFX</mainClass>
                     <vendor>jscriptive.com</vendor>
                     <appName>MoneyFX</appName>
+                    <goal>deploy</goal>
                 </configuration>
             </plugin>
             <!--<plugin>-->

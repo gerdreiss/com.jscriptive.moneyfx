@@ -3,6 +3,7 @@ package com.jscriptive.moneyfx.model;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -34,6 +35,9 @@ public class Transaction {
     private BigDecimal amount;
 
     private Boolean isTransfer;
+
+    @Transient
+    private BigDecimal accountBalance;
 
     public Transaction() {
     }
@@ -116,6 +120,14 @@ public class Transaction {
 
     public void setIsTransfer(Boolean isTransfer) {
         this.isTransfer = isTransfer;
+    }
+
+    public BigDecimal getAccountBalance() {
+        return accountBalance;
+    }
+
+    public void setAccountBalance(BigDecimal accountBalance) {
+        this.accountBalance = accountBalance;
     }
 
     @Override

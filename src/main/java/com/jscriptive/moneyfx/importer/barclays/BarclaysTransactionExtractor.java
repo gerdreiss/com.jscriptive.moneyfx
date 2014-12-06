@@ -32,6 +32,9 @@ public class BarclaysTransactionExtractor implements TransactionExtractor {
 
     public static Bank BANK_BARCLAYS_SPAIN = new Bank(BARCLAYS_BANKNAME, new Country(new Locale(SPANISH_LANGCODE, SPAIN_COUNTRYCODE)));
 
+    private static final String SEARCH_RESULT_HEADER = "Lista de movimientos";
+    private static final String EXTRACT_HEADER = "Saldo y movimientos";
+
     private TransactionExtractorBarclaysSpainExtract fromExtract;
     private TransactionExtractorBarclaysSpainSearchResult fromSearchResult;
 
@@ -67,7 +70,29 @@ public class BarclaysTransactionExtractor implements TransactionExtractor {
 
     @Override
     public List<Transaction> extractTransactionData(URI file) {
-        // TODO extract data using one or the other object depending whether it's Saldo y movimientos or Lista de movimientos
-        return fromSearchResult.extractTransactionData(file);
+        String transactionFileHeader = extractTransactionFileHeader(file);
+        if (SEARCH_RESULT_HEADER.equals(transactionFileHeader)) {
+            return fromSearchResult.extractTransactionData(file);
+        } else if (EXTRACT_HEADER.equals(transactionFileHeader)) {
+            return fromExtract.extractTransactionData(file);
+        }
+        return null;
+    }
+
+    private String extractTransactionFileHeader(URI file) {
+        InputStream in = null;
+        try {
+            in = file.toURL().openStream();
+            Sheet sheet = new HSSFWorkbook(in).getSheetAt(0);
+            String transactionFileHeader = sheet.getRow(0).getCell(0).getStringCellValue();
+            if (StringUtils.isBlank(transactionFileHeader)) {
+                return null;
+            }
+            return transactionFileHeader;
+        } catch (IOException e) {
+            throw new TechnicalException(e);
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
     }
 }

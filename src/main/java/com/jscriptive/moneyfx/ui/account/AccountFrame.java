@@ -102,7 +102,7 @@ public class AccountFrame implements Initializable {
     private void loadAccountData() {
         accountData.clear();
         accountRepository.findAll().forEach(account -> accountData.add(new AccountItem(account)));
-        Platform.runLater(() -> dataSummaryLabel.setText("Accounts: " + accountData.size() + ", volume: " + getAbsSum(accountData)));
+        Platform.runLater(() -> dataSummaryLabel.setText("Accounts: " + accountData.size() + ", balance: " + getAbsSum(accountData)));
     }
 
     private void initializeColumns() {
@@ -121,6 +121,7 @@ public class AccountFrame implements Initializable {
         if (accountItem.isPresent()) {
             accountData.add(accountItem.get());
             persistAccount(accountItem.get());
+            Platform.runLater(() -> dataSummaryLabel.setText("Accounts: " + accountData.size() + ", balance: " + getAbsSum(accountData)));
         }
     }
 
@@ -134,6 +135,7 @@ public class AccountFrame implements Initializable {
             Account account = extractAccountData(file.toURI(), extractor);
             if (account != null) {
                 extractTransactionData(file.toURI(), extractor, account);
+                Platform.runLater(() -> dataSummaryLabel.setText("Accounts: " + accountData.size() + ", balance: " + getAbsSum(accountData)));
             }
             TabPane tabPane = (TabPane) dataTable.getScene().lookup("#tabPane");
             tabPane.getSelectionModel().select(1);
@@ -244,6 +246,7 @@ public class AccountFrame implements Initializable {
                 account.setBalanceDate(result.get().getBalanceDate());
                 accountRepository.save(account);
                 accountData.set(dataTable.getSelectionModel().getSelectedIndex(), result.get());
+                Platform.runLater(() -> dataSummaryLabel.setText("Accounts: " + accountData.size() + ", balance: " + getAbsSum(accountData)));
             }
         }
     }

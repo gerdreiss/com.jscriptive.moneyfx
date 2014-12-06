@@ -23,10 +23,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.chart.*;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
 
 import java.net.URL;
 import java.time.LocalDate;
@@ -41,6 +43,7 @@ import static java.lang.Math.abs;
 import static java.lang.String.format;
 import static java.time.LocalDate.of;
 import static java.time.LocalDate.ofYearDay;
+import static javafx.geometry.Pos.CENTER_RIGHT;
 import static javafx.geometry.Side.LEFT;
 import static javafx.scene.input.MouseEvent.MOUSE_CLICKED;
 
@@ -236,7 +239,13 @@ public class ChartFrame implements Initializable {
                                 XYChart.Data<String, Number> data = new XYChart.Data<>(monthLabel, volume.getVolume());
                                 Platform.runLater(() -> {
                                     inSeries.getData().add(data);
-                                    data.getNode().addEventHandler(MOUSE_CLICKED, event -> handleMonthlyInOutChartMouseClickEvent(
+                                    StackPane barNode = (StackPane) data.getNode();
+                                    Label labelNode = new Label(CurrencyFormat.getInstance().format(volume.getVolume()));
+                                    labelNode.setPrefWidth(100);
+                                    labelNode.setAlignment(CENTER_RIGHT);
+                                    labelNode.setRotate(270);
+                                    barNode.getChildren().add(labelNode);
+                                    barNode.addEventHandler(MOUSE_CLICKED, event -> handleMonthlyInOutChartMouseClickEvent(
                                             (account == ALL_ACCOUNTS) ? null : account, of(volume.getYear(), volume.getMonth(), 1), event));
                                 });
                             }
@@ -250,7 +259,13 @@ public class ChartFrame implements Initializable {
                                 XYChart.Data<String, Number> data = new XYChart.Data<>(monthLabel, volume.getVolume().abs());
                                 Platform.runLater(() -> {
                                     outSeries.getData().add(data);
-                                    data.getNode().addEventHandler(MOUSE_CLICKED, event -> handleMonthlyInOutChartMouseClickEvent((account == ALL_ACCOUNTS) ? null : account, of(volume.getYear(), volume.getMonth(), 1), event));
+                                    StackPane node = (StackPane) data.getNode();
+                                    Label labelNode = new Label(CurrencyFormat.getInstance().format(volume.getVolume()));
+                                    labelNode.setPrefWidth(100);
+                                    labelNode.setAlignment(CENTER_RIGHT);
+                                    labelNode.setRotate(270);
+                                    node.getChildren().add(labelNode);
+                                    node.addEventHandler(MOUSE_CLICKED, event -> handleMonthlyInOutChartMouseClickEvent((account == ALL_ACCOUNTS) ? null : account, of(volume.getYear(), volume.getMonth(), 1), event));
                                 });
                             }
 
@@ -314,7 +329,9 @@ public class ChartFrame implements Initializable {
                                 XYChart.Data<Number, String> inData = new XYChart.Data<>(volume.getVolume(), String.valueOf(volume.getYear()));
                                 Platform.runLater(() -> {
                                     inSeries.getData().add(inData);
-                                    inData.getNode().addEventHandler(MOUSE_CLICKED, event -> handleYearlyInOutChartMouseClickEvent(
+                                    StackPane node = (StackPane) inData.getNode();
+                                    node.getChildren().add(new Label(CurrencyFormat.getInstance().format(volume.getVolume())));
+                                    node.addEventHandler(MOUSE_CLICKED, event -> handleYearlyInOutChartMouseClickEvent(
                                             (account == ALL_ACCOUNTS) ? null : account, ofYearDay(volume.getYear(), 1), event));
                                 });
                             }
@@ -327,7 +344,9 @@ public class ChartFrame implements Initializable {
                                 XYChart.Data<Number, String> outData = new XYChart.Data<>(volume.getVolume().abs(), String.valueOf(volume.getYear()));
                                 Platform.runLater(() -> {
                                     outSeries.getData().add(outData);
-                                    outData.getNode().addEventHandler(MOUSE_CLICKED, event -> handleYearlyInOutChartMouseClickEvent(
+                                    StackPane node = (StackPane) outData.getNode();
+                                    node.getChildren().add(new Label(CurrencyFormat.getInstance().format(volume.getVolume())));
+                                    node.addEventHandler(MOUSE_CLICKED, event -> handleYearlyInOutChartMouseClickEvent(
                                             (account == ALL_ACCOUNTS) ? null : account, ofYearDay(volume.getYear(), 1), event));
                                 });
                             }
