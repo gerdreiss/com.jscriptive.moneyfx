@@ -10,6 +10,7 @@ import com.jscriptive.moneyfx.repository.CategoryRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
+import com.jscriptive.moneyfx.ui.common.YearStringConverter;
 import com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent;
 import com.jscriptive.moneyfx.util.CurrencyFormat;
 import javafx.application.Platform;
@@ -43,9 +44,11 @@ import static java.lang.Math.abs;
 import static java.lang.String.format;
 import static java.time.LocalDate.of;
 import static java.time.LocalDate.ofYearDay;
+import static java.time.temporal.ChronoUnit.YEARS;
 import static javafx.geometry.Pos.CENTER_RIGHT;
 import static javafx.geometry.Side.LEFT;
 import static javafx.scene.input.MouseEvent.MOUSE_CLICKED;
+import static org.apache.commons.lang3.math.NumberUtils.INTEGER_ZERO;
 
 /**
  * @author jscriptive.com
@@ -57,6 +60,8 @@ public class ChartFrame implements Initializable {
 
     @FXML
     private ComboBox<Account> accountCombo;
+    @FXML
+    private ComboBox<Integer> yearCombo;
 
     @FXML
     private ToggleGroup chartToggleGroup;
@@ -69,15 +74,29 @@ public class ChartFrame implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         categoryRepository = RepositoryProvider.getInstance().getCategoryRepository();
         transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
-        chartFrame.addEventHandler(TAB_SELECTION, event -> setupAccountComboBox());
+        chartFrame.addEventHandler(TAB_SELECTION, event -> {
+            setupAccountComboBox();
+            setupYearComboBox();
+        });
     }
-
 
     private void setupAccountComboBox() {
         List<Account> accounts = new ArrayList<>(RepositoryProvider.getInstance().getAccountRepository().findAll());
-        accounts.add(0, ALL_ACCOUNTS);
+        accounts.add(INTEGER_ZERO, ALL_ACCOUNTS);
         accountCombo.setConverter(new AccountStringConverter(accounts));
         accountCombo.getItems().setAll(accounts);
+        accountCombo.getSelectionModel().selectFirst();
+    }
+
+    private void setupYearComboBox() {
+        ValueRange<LocalDate> opDateRange = transactionRepository.getTransactionOpDateRange();
+        List<Integer> years = new ArrayList<>();
+        years.add(INTEGER_ZERO);
+        yearCombo.setConverter(new YearStringConverter());
+        for (LocalDate date = opDateRange.from().withDayOfYear(1); !date.isAfter(opDateRange.to()); date = date.plus(1, YEARS)) {
+            years.add(date.getYear());
+        }
+        yearCombo.getItems().setAll(years);
         accountCombo.getSelectionModel().selectFirst();
     }
 
@@ -87,6 +106,15 @@ public class ChartFrame implements Initializable {
      * @param actionEvent
      */
     public void accountChanged(ActionEvent actionEvent) {
+        ToggleButton selectedToggle = (ToggleButton) chartToggleGroup.getSelectedToggle();
+        if (selectedToggle == null) {
+            return;
+        }
+        EventHandler<ActionEvent> onAction = selectedToggle.getOnAction();
+        onAction.handle(new ActionEvent(selectedToggle, selectedToggle));
+    }
+
+    public void yearChanged(ActionEvent actionEvent) {
         ToggleButton selectedToggle = (ToggleButton) chartToggleGroup.getSelectedToggle();
         if (selectedToggle == null) {
             return;

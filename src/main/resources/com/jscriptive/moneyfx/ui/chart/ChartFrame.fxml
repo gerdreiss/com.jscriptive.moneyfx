@@ -23,6 +23,7 @@
             </fx:define>
 
             <ComboBox fx:id="accountCombo" promptText="All accounts" onAction="#accountChanged" prefHeight="34"/>
+            <ComboBox fx:id="yearCombo" promptText="All years" onAction="#yearChanged" prefHeight="34"/>
             <ToggleButton fx:id="dailyBalanceToggle" text="Daily balance" onAction="#dailyBalanceToggled" toggleGroup="$chartToggleGroup">
                 <graphic>
                     <ImageView fitHeight="24.0" fitWidth="24.0" pickOnBounds="true" preserveRatio="true">
