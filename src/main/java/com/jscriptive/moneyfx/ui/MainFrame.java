@@ -99,6 +99,7 @@ public class MainFrame extends BorderPane implements Initializable {
         } catch (IOException e) {
             throw new TechnicalException(e);
         }
+        openNotification("Backup", "Backup", "Backup successful", "The data has been successfully written to " + dir.getAbsolutePath());
     }
 
     public void aboutButtonHit(ActionEvent actionEvent) {
