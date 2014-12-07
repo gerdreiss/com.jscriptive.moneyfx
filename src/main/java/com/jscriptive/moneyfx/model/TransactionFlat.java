@@ -5,6 +5,7 @@ import java.time.LocalDate;
 
 import static com.jscriptive.moneyfx.util.BigDecimalUtils.isEqual;
 import static java.lang.String.format;
+import static org.apache.commons.lang3.StringUtils.replaceChars;
 
 /**
  * Created by jscriptive.com on 07/12/14.
@@ -96,7 +97,8 @@ public class TransactionFlat {
 
         TransactionFlat that = (TransactionFlat) o;
 
-        if (accountNumber != null ? !accountNumber.equals(that.accountNumber) : that.accountNumber != null) return false;
+        if (accountNumber != null ? !accountNumber.equals(that.accountNumber) : that.accountNumber != null)
+            return false;
         if (bankCountry != null ? !bankCountry.equals(that.bankCountry) : that.bankCountry != null) return false;
         if (bankName != null ? !bankName.equals(that.bankName) : that.bankName != null) return false;
         if (category != null ? !category.equals(that.category) : that.category != null) return false;
@@ -125,6 +127,8 @@ public class TransactionFlat {
 
     @Override
     public String toString() {
-        return format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s", bankName, bankCountry, accountNumber, category, concept, dtOp, dtVal, currency, amount.toString(), isTransfer);
+        String _concept = replaceChars(replaceChars(replaceChars(concept, (char) 32, ' '), (char) 160, ' '), ',', ' ');
+        return format("%s,%s,%s,%s,%s,%s,%s,%s,%s,%s",
+                bankName, bankCountry, accountNumber, category, _concept, dtOp, dtVal, currency, amount.toString(), isTransfer);
     }
 }
