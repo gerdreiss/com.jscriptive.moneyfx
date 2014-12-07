@@ -9,6 +9,7 @@ import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
 import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionBackupDialog;
+import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionBackupRequest;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -92,12 +93,12 @@ public class MainFrame extends BorderPane implements Initializable {
 
     public void backupButtonHit(ActionEvent actionEvent) {
         TransactionBackupDialog dlg = new TransactionBackupDialog();
-        Optional<Pair<String, File>> result = dlg.showAndWait();
+        Optional<TransactionBackupRequest> result = dlg.showAndWait();
         if (result.isPresent()) {
-            File dir = result.get().getValue();
-            dir = new File(dir, "moneyfx-" + now().format(ofPattern("yyyyMMddHHmmss")));
-            if (!dir.mkdirs()) return;
-            if ("JSON".equals(result.get().getKey())) {
+            File dir = result.get().getPath();
+            if ("JSON".equals(result.get().getFormat())) {
+                dir = new File(dir, "moneyfx-" + now().format(ofPattern("yyyyMMddHHmmss")));
+                if (!dir.mkdirs()) return;
                 Map<String, List<String>> data = jsonRepository.extractAll();
                 try {
                     for (Map.Entry<String, List<String>> entry : data.entrySet()) {
@@ -106,14 +107,16 @@ public class MainFrame extends BorderPane implements Initializable {
                 } catch (IOException e) {
                     throw new TechnicalException(e);
                 }
-            } else if ("CSV".equals(result.get().getKey())) {
+            } else if ("CSV".equals(result.get().getFormat())) {
                 List<Transaction> transactions = transactionRepository.findAll();
                 List<String> lines = transactions.parallelStream()
                         .map(Transaction::flat)
                         .sorted((f1, f2) -> f1.getDtOp().compareTo(f2.getDtOp()))
                         .map(TransactionFlat::toString)
                         .collect(toList());
-                lines.add(0, Arrays.toString(FIELD_NAMES).replace("[", "").replace("]", ""));
+                if (result.get().isHeader()) {
+                    lines.add(0, Arrays.toString(FIELD_NAMES).replace("[", "").replace("]", ""));
+                }
                 try {
                     writeLines(new File(dir, "transactions.csv"), lines);
                 } catch (IOException e) {

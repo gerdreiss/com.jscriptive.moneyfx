@@ -1,5 +1,7 @@
 package com.jscriptive.moneyfx.ui.transaction.dialog;
 
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
@@ -20,7 +22,7 @@ import static javafx.scene.layout.Priority.ALWAYS;
 /**
  * Created by jscriptive.com on 17/11/2014.
  */
-public class TransactionBackupDialog extends Dialog<Pair<String, File>> {
+public class TransactionBackupDialog extends Dialog<TransactionBackupRequest> {
 
     public TransactionBackupDialog() {
         setTitle("Backup transactions");
@@ -48,6 +50,19 @@ public class TransactionBackupDialog extends Dialog<Pair<String, File>> {
         RadioButton rb2 = new RadioButton("CSV");
         rb2.setToggleGroup(group);
 
+        CheckBox check = new CheckBox("Header");
+        check.setVisible(false);
+
+        group.selectedToggleProperty().addListener(new ChangeListener<Toggle>(){
+            public void changed(ObservableValue<? extends Toggle> ov,
+                                Toggle old_toggle, Toggle new_toggle) {
+                if (group.getSelectedToggle() != null) {
+                    RadioButton radio = (RadioButton) group.getSelectedToggle();
+                    check.setVisible("CSV".equals(radio.getText()));
+                }
+            }
+        });
+
         TextField filePathTextField = new TextField();
         filePathTextField.setEditable(false);
         filePathTextField.setPrefWidth(300);
@@ -57,8 +72,9 @@ public class TransactionBackupDialog extends Dialog<Pair<String, File>> {
         grid.add(new Label("Format:"), 0, 0);
         grid.add(rb1, 1, 0);
         grid.add(rb2, 2, 0);
+        grid.add(check, 3, 0);
         grid.add(new Label("File:"), 0, 1);
-        grid.add(filePathTextField, 1, 1, 2, 1);
+        grid.add(filePathTextField, 1, 1, 3, 1);
 
         GridPane.setHgrow(filePathTextField, ALWAYS);
 
@@ -67,7 +83,10 @@ public class TransactionBackupDialog extends Dialog<Pair<String, File>> {
         // Convert the result to a username-password-pair when the login button is clicked.
         setResultConverter(dialogButtonType -> {
             if (dialogButtonType == backupButtonType) {
-                return new Pair<>(((RadioButton) group.getSelectedToggle()).getText(), new File(filePathTextField.getText()));
+                return new TransactionBackupRequest(
+                        new File(filePathTextField.getText()),
+                        ((RadioButton) group.getSelectedToggle()).getText(),
+                        check.isSelected());
             }
             return null;
         });
