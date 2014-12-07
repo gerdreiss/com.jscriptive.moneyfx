@@ -76,6 +76,11 @@ public class TransactionRepositoryMongo extends AbstractRepositoryMongo<Transact
     }
 
     @Override
+    public List<Transaction> findByAccountAndYear(Account account, Integer year) {
+        return mongoTemplate.find(query(by(account).and("dtOp.year").is(year)).with(OPDATE_DESC), Transaction.class);
+    }
+
+    @Override
     public List<Transaction> findByAccountAndCategory(Account account, Category category) {
         return mongoTemplate.find(query(by(account).andOperator(by(category))).with(OPDATE_DESC), Transaction.class);
     }
@@ -142,38 +147,60 @@ public class TransactionRepositoryMongo extends AbstractRepositoryMongo<Transact
 
     @Override
     public ValueRange<LocalDate> getTransactionOpDateRange() {
+        return getTransactionOpDateRangeForYear(INTEGER_ZERO);
+    }
+
+    @Override
+    public ValueRange<LocalDate> getTransactionOpDateRangeForYear(Integer year) {
         if (countTransactions() == 0L) {
             return new ValueRange<>(null, null);
         }
-        Transaction earliestTransaction = findEarliestTransaction();
-        Transaction latestTransaction = findLatestTransaction();
+        Transaction earliestTransaction = findEarliestTransaction(year);
+        Transaction latestTransaction = findLatestTransaction(year);
         return new ValueRange<>(earliestTransaction.getDtOp(), latestTransaction.getDtOp());
     }
 
     @Override
     public ValueRange<LocalDate> getTransactionOpDateRangeForAccount(Account account) {
+        return getTransactionOpDateRangeForAccountAndYear(account, INTEGER_ZERO);
+    }
+
+    @Override
+    public ValueRange<LocalDate> getTransactionOpDateRangeForAccountAndYear(Account account, Integer year) {
         if (countTransactionsOfAccount(account) == 0L) {
             return new ValueRange<>(null, null);
         }
-        Transaction earliestTransaction = findEarliestTransactionOfAccount(account);
-        Transaction latestTransaction = findLatestTransactionOfAccount(account);
+        Transaction earliestTransaction = findEarliestTransactionOfAccount(account, year);
+        Transaction latestTransaction = findLatestTransactionOfAccount(account, year);
         return new ValueRange<>(earliestTransaction.getDtOp(), latestTransaction.getDtOp());
     }
 
-    private Transaction findEarliestTransaction() {
-        return mongoTemplate.findOne(new Query().with(OPDATE_ASC), Transaction.class);
+    private Transaction findEarliestTransaction(Integer year) {
+        if (INTEGER_ZERO.equals(year)) {
+            return mongoTemplate.findOne(new Query().with(OPDATE_ASC), Transaction.class);
+        }
+        return mongoTemplate.findOne(query(where("dtOp.year").is(year)).with(OPDATE_ASC), Transaction.class);
     }
 
-    private Transaction findEarliestTransactionOfAccount(Account account) {
-        return mongoTemplate.findOne(query(by(account)).with(OPDATE_ASC), Transaction.class);
+    private Transaction findEarliestTransactionOfAccount(Account account, Integer year) {
+        if (INTEGER_ZERO.equals(year)) {
+            return mongoTemplate.findOne(query(by(account)).with(OPDATE_ASC), Transaction.class);
+        }
+        return mongoTemplate.findOne(query(by(account).and("dtOp.year").is(year)).with(OPDATE_ASC), Transaction.class);
     }
 
-    private Transaction findLatestTransaction() {
-        return mongoTemplate.findOne(new Query().with(OPDATE_DESC), Transaction.class);
+    private Transaction findLatestTransaction(Integer year) {
+        if (INTEGER_ZERO.equals(year)) {
+            return mongoTemplate.findOne(new Query().with(OPDATE_DESC), Transaction.class);
+        }
+        return mongoTemplate.findOne(query(where("dtOp.year").is(year)).with(OPDATE_DESC), Transaction.class);
     }
 
-    private Transaction findLatestTransactionOfAccount(Account account) {
-        return mongoTemplate.findOne(query(by(account)).with(OPDATE_DESC), Transaction.class);
+    private Transaction findLatestTransactionOfAccount(Account account, Integer year) {
+        if (INTEGER_ZERO.equals(year)) {
+            return mongoTemplate.findOne(query(by(account)).with(OPDATE_DESC), Transaction.class);
+        }
+        return mongoTemplate.findOne(query(by(account).and("dtOp.year").is(year)).with(OPDATE_DESC), Transaction.class);
     }
 
     private List<TransactionVolume> getTransactionVolumes(Account account, boolean groupByCategory, ChronoField chronoField, Integer zeroComparison, boolean transfers) {

@@ -28,23 +28,9 @@ public interface TransactionRepository {
 
     List<Transaction> findByAccount(Account account);
 
+    List<Transaction> findByAccountAndYear(Account account, Integer year);
+
     List<Transaction> findByAccountAndCategory(Account account, Category category);
-
-    List<TransactionVolume> getYearlyIncomingVolumes(boolean includeTransfers);
-
-    List<TransactionVolume> getYearlyOutgoingVolumes(boolean includeTransfers);
-
-    List<TransactionVolume> getYearlyIncomingVolumesOfAccount(Account account, boolean includeTransfers);
-
-    List<TransactionVolume> getYearlyOutgoingVolumesOfAccount(Account account, boolean includeTransfers);
-
-    List<TransactionVolume> getMonthlyIncomingVolumes(boolean includeTransfers);
-
-    List<TransactionVolume> getMonthlyOutgoingVolumes(boolean includeTransfers);
-
-    List<TransactionVolume> getMonthlyIncomingVolumesOfAccount(Account account, boolean includeTransfers);
-
-    List<TransactionVolume> getMonthlyOutgoingVolumesOfAccount(Account account, boolean includeTransfers);
 
     List<TransactionVolume> getCategoryVolumes(boolean includeTransfers);
 
@@ -54,8 +40,28 @@ public interface TransactionRepository {
 
     List<TransactionVolume> getYearlyAccountCategoryVolumes(Account account, boolean includeTransfers);
 
+    List<TransactionVolume> getYearlyIncomingVolumes(boolean includeTransfers);
+
+    List<TransactionVolume> getYearlyOutgoingVolumes(boolean includeTransfers);
+
+    List<TransactionVolume> getMonthlyIncomingVolumes(boolean includeTransfers);
+
+    List<TransactionVolume> getMonthlyOutgoingVolumes(boolean includeTransfers);
+
+    List<TransactionVolume> getYearlyIncomingVolumesOfAccount(Account account, boolean includeTransfers);
+
+    List<TransactionVolume> getYearlyOutgoingVolumesOfAccount(Account account, boolean includeTransfers);
+
+    List<TransactionVolume> getMonthlyIncomingVolumesOfAccount(Account account, boolean includeTransfers);
+
+    List<TransactionVolume> getMonthlyOutgoingVolumesOfAccount(Account account, boolean includeTransfers);
+
     ValueRange<LocalDate> getTransactionOpDateRange();
 
+    ValueRange<LocalDate> getTransactionOpDateRangeForYear(Integer year);
+
     ValueRange<LocalDate> getTransactionOpDateRangeForAccount(Account account);
+
+    ValueRange<LocalDate> getTransactionOpDateRangeForAccountAndYear(Account account, Integer year);
 
 }
