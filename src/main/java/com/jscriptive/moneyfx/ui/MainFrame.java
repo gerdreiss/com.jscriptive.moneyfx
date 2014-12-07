@@ -21,7 +21,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
-import javafx.util.Pair;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -102,7 +101,7 @@ public class MainFrame extends BorderPane implements Initializable {
                 Map<String, List<String>> data = jsonRepository.extractAll();
                 try {
                     for (Map.Entry<String, List<String>> entry : data.entrySet()) {
-                        writeLines(new File(dir, entry.getKey() + ".json"), entry.getValue());
+                        writeLines(new File(dir, entry.getKey() + ".json"), "UTF-8", entry.getValue());
                     }
                 } catch (IOException e) {
                     throw new TechnicalException(e);
@@ -118,7 +117,7 @@ public class MainFrame extends BorderPane implements Initializable {
                     lines.add(0, Arrays.toString(FIELD_NAMES).replace("[", "").replace("]", ""));
                 }
                 try {
-                    writeLines(new File(dir, "transactions.csv"), lines);
+                    writeLines(new File(dir, "transactions.csv"), "UTF-8", lines);
                 } catch (IOException e) {
                     throw new TechnicalException(e);
                 }
