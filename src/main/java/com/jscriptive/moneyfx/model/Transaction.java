@@ -159,4 +159,18 @@ public class Transaction {
     public String toString() {
         return format("Transaction{account=%s, concept='%s', dtOp=%s, dtVal=%s, amount=%s}", account, concept, dtOp, dtVal, getFormattedAmount());
     }
+
+    public TransactionFlat flat() {
+        return new TransactionFlat(
+                getAccount().getBank().getName(),
+                getAccount().getBank().getCountryCode(),
+                getAccount().getNumber(),
+                getCategory().getName(),
+                getConcept(),
+                getDtOp(),
+                getDtVal(),
+                getAmount(),
+                getAccount().getBank().getCurrencyCode(),
+                getIsTransfer());
+    }
 }

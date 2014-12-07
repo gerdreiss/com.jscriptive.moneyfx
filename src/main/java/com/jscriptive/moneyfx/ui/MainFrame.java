@@ -1,10 +1,14 @@
 package com.jscriptive.moneyfx.ui;
 
 import com.jscriptive.moneyfx.exception.TechnicalException;
+import com.jscriptive.moneyfx.model.Transaction;
 import com.jscriptive.moneyfx.model.TransactionFilter;
+import com.jscriptive.moneyfx.model.TransactionFlat;
 import com.jscriptive.moneyfx.repository.JsonRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
+import com.jscriptive.moneyfx.repository.TransactionRepository;
 import com.jscriptive.moneyfx.ui.event.TabSelectionEvent;
+import com.jscriptive.moneyfx.ui.transaction.dialog.TransactionBackupDialog;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -15,21 +19,21 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.BorderPane;
-import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import org.apache.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
-import java.util.Map;
-import java.util.ResourceBundle;
+import java.util.*;
 
+import static com.jscriptive.moneyfx.model.TransactionFlat.FIELD_NAMES;
 import static com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent.SHOW_TRANSACTIONS;
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
 import static java.time.format.DateTimeFormatter.ofPattern;
+import static java.util.stream.Collectors.toList;
 import static org.apache.commons.io.FileUtils.writeLines;
 
 /**
@@ -45,10 +49,12 @@ public class MainFrame extends BorderPane implements Initializable {
     private TransactionFilter filter;
 
     private JsonRepository jsonRepository;
+    private TransactionRepository transactionRepository;
 
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         jsonRepository = RepositoryProvider.getInstance().getJsonRepository();
+        transactionRepository = RepositoryProvider.getInstance().getTransactionRepository();
         tabPane.addEventHandler(SHOW_TRANSACTIONS, event -> {
             filter = event.getFilter();
             if (log.isDebugEnabled()) log.debug("ShowTransactionEvent received with filter: " + filter);
@@ -85,21 +91,37 @@ public class MainFrame extends BorderPane implements Initializable {
     }
 
     public void backupButtonHit(ActionEvent actionEvent) {
-        DirectoryChooser chooser = new DirectoryChooser();
-        chooser.setTitle("Select backup directory");
-        File dir = chooser.showDialog(tabPane.getScene().getWindow());
-        if (dir == null) return;
-        dir = new File(dir, "moneyfx-" + now().format(ofPattern("yyyyMMddHHmmss")));
-        if (!dir.mkdirs()) return;
-        Map<String, List<String>> data = jsonRepository.extractAll();
-        try {
-            for (Map.Entry<String, List<String>> entry : data.entrySet()) {
-                writeLines(new File(dir, entry.getKey() + ".json"), entry.getValue());
+        TransactionBackupDialog dlg = new TransactionBackupDialog();
+        Optional<Pair<String, File>> result = dlg.showAndWait();
+        if (result.isPresent()) {
+            File dir = result.get().getValue();
+            dir = new File(dir, "moneyfx-" + now().format(ofPattern("yyyyMMddHHmmss")));
+            if (!dir.mkdirs()) return;
+            if ("JSON".equals(result.get().getKey())) {
+                Map<String, List<String>> data = jsonRepository.extractAll();
+                try {
+                    for (Map.Entry<String, List<String>> entry : data.entrySet()) {
+                        writeLines(new File(dir, entry.getKey() + ".json"), entry.getValue());
+                    }
+                } catch (IOException e) {
+                    throw new TechnicalException(e);
+                }
+            } else if ("CSV".equals(result.get().getKey())) {
+                List<Transaction> transactions = transactionRepository.findAll();
+                List<String> lines = transactions.parallelStream()
+                        .map(Transaction::flat)
+                        .sorted((f1, f2) -> f1.getDtOp().compareTo(f2.getDtOp()))
+                        .map(TransactionFlat::toString)
+                        .collect(toList());
+                lines.add(0, Arrays.toString(FIELD_NAMES).replace("[", "").replace("]", ""));
+                try {
+                    writeLines(new File(dir, "transactions.csv"), lines);
+                } catch (IOException e) {
+                    throw new TechnicalException(e);
+                }
             }
-        } catch (IOException e) {
-            throw new TechnicalException(e);
+            openNotification("Backup", "Backup", "Backup successful", "The data has been successfully written to " + dir.getAbsolutePath());
         }
-        openNotification("Backup", "Backup", "Backup successful", "The data has been successfully written to " + dir.getAbsolutePath());
     }
 
     public void aboutButtonHit(ActionEvent actionEvent) {
