@@ -12,6 +12,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.TextField;
 import javafx.util.StringConverter;
+import javafx.util.converter.IntegerStringConverter;
 
 import java.math.BigDecimal;
 import java.net.URL;
@@ -59,6 +60,7 @@ public class TransactionFilterDialogController implements Initializable {
         setupAccountComboBox();
         setupCategoryComboBox();
         setupCountRangeIndicatorComboBox();
+        setupCountRangeComboBox();
     }
 
     private void setupAccountComboBox() {
@@ -86,8 +88,15 @@ public class TransactionFilterDialogController implements Initializable {
         countRangeIndicatorCombo.getSelectionModel().selectFirst();
     }
 
+    private void setupCountRangeComboBox() {
+        countRangeCombo.setConverter(new IntegerStringConverter());
+    }
+
     public void countRangeIndicatorChanged(ActionEvent actionEvent) {
         this.countRangeCombo.setDisable(this.countRangeIndicatorCombo.getValue() == ALL);
+        if (this.countRangeCombo.isDisable()) {
+            this.countRangeCombo.getSelectionModel().clearSelection();
+        }
     }
 
     public TransactionFilter getTransactionFilter() {

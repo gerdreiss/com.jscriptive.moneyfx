@@ -74,6 +74,8 @@ public class TransactionRepositoryMongo extends AbstractRepositoryMongo<Transact
             if (filter.getCountRange().getCount() > 0) {
                 q = q.limit(filter.getCountRange().getCount());
             }
+        } else {
+            q = q.with(OPDATE_DESC);
         }
         return mongoTemplate.find(q, Transaction.class);
     }
