@@ -38,10 +38,12 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.DoubleStream;
 
+import static com.jscriptive.moneyfx.model.TransactionFilter.DEFAULT_FILTER;
 import static com.jscriptive.moneyfx.ui.event.TabSelectionEvent.TAB_SELECTION;
 import static java.lang.Math.abs;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
+import static javafx.application.Platform.runLater;
 import static javafx.scene.control.Alert.AlertType.CONFIRMATION;
 import static javafx.scene.control.ButtonType.CANCEL;
 import static javafx.scene.control.ButtonType.YES;
@@ -107,7 +109,7 @@ public class TransactionFrame implements Initializable {
     }
 
     public void filterTransactionsFired(ActionEvent actionEvent) {
-        TransactionFilterDialog dialog = new TransactionFilterDialog();
+        TransactionFilterDialog dialog = new TransactionFilterDialog(currentFilter);
         Optional<TransactionFilter> result = dialog.showAndWait();
         if (result.isPresent()) {
             currentFilter = result.get();
@@ -116,9 +118,11 @@ public class TransactionFrame implements Initializable {
     }
 
     public void contextMenuItemEditSelected(ActionEvent actionEvent) {
+        // TODO implement edit transaction
     }
 
     public void contextMenuItemDeleteSelected(ActionEvent actionEvent) {
+        // TODO implement delete transaction
     }
 
     public void categorizeTransactionsFired(ActionEvent actionEvent) {
@@ -146,14 +150,15 @@ public class TransactionFrame implements Initializable {
         if (isNotEmpty(selectedItems)) {
             List<Account> accounts = accountRepository.findAll();
             AccountStringConverter converter = new AccountStringConverter(accounts);
-            List<Transaction> toCategorize = selectedItems.stream().map(item -> new Transaction(
-                    converter.fromString(item.getAccount()),
-                    new Category(item.getCategory()),
-                    item.getConcept(),
-                    item.getDtOp(),
-                    item.getDtVal(),
-                    item.getAmount()
-            )).collect(toList());
+            List<Transaction> toCategorize =
+                    selectedItems.stream().map(item -> new Transaction(
+                            converter.fromString(item.getAccount()),
+                            new Category(item.getCategory()),
+                            item.getConcept(),
+                            item.getDtOp(),
+                            item.getDtVal(),
+                            item.getAmount()
+                    )).collect(toList());
             CategoryDialog dialog = new CategoryDialog(categoryRepository.findAll());
             Optional<Pair<Category, Boolean>> result = dialog.showAndWait();
             if (result.isPresent()) {
@@ -161,7 +166,10 @@ public class TransactionFrame implements Initializable {
                 if (category.getId() == null) {
                     categoryRepository.save(category);
                 }
-                List<Transaction> transactions = (currentFilter == null) ? transactionRepository.findAll() : transactionRepository.filterAll(currentFilter);
+                List<Transaction> transactions =
+                        (currentFilter == null)
+                                ? transactionRepository.findAll()
+                                : transactionRepository.filterAll(currentFilter);
                 toCategorize.forEach(aux -> {
                     Optional<Transaction> first = transactions.parallelStream().filter(t -> t.equals(aux)).findFirst();
                     if (first.isPresent()) {
@@ -261,7 +269,7 @@ public class TransactionFrame implements Initializable {
             }
         });
         dataTable.setItems(transactionData);
-        Platform.runLater(() -> dataSummaryLabel.setText(format("Transactions: %d, volume: %s, balance: %s",
+        runLater(() -> dataSummaryLabel.setText(format("Transactions: %d, volume: %s, balance: %s",
                 transactionData.size(), getTransactionVolume(transactionData), getAccountBalance(accountRepository.findAll()))));
     }
 
@@ -293,7 +301,10 @@ public class TransactionFrame implements Initializable {
                     @Override
                     protected Void call() throws Exception {
                         updateMessage("Loading transactions...");
-                        List<Transaction> transactions = (filter == null) ? transactionRepository.findAll() : transactionRepository.filterAll(filter);
+                        List<Transaction> transactions =
+                                (filter == null)
+                                        ? transactionRepository.filterAll(DEFAULT_FILTER)
+                                        : transactionRepository.filterAll(filter);
                         for (int idx = 0; idx < transactions.size(); idx++) {
                             Transaction trx = transactions.get(idx);
                             transactionData.add(new TransactionItem(trx));

@@ -13,7 +13,7 @@ public interface CategoryRepository {
 
     Category findByName(String name);
 
-    void save(Category category);
+    Category save(Category category);
 
     void remove(Category category);
 

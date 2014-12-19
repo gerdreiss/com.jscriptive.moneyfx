@@ -138,6 +138,9 @@ public class CriteriaBuilder {
         if (filter.filterByAmount()) {
             criteria = addAmount(criteria, filter.getAmountRange());
         }
+        if (filter.filterByCountRange()) {
+            criteria = addCountRange(criteria, filter.getCountRange());
+        }
         return criteria;
     }
 
@@ -183,6 +186,10 @@ public class CriteriaBuilder {
         } else if (amountRange.hasTo()) {
             criteria = criteria.and("amount").lte(amountRange.to());
         }
+        return criteria;
+    }
+
+    private static Criteria addCountRange(Criteria criteria, CountRange countRange) {
         return criteria;
     }
 }

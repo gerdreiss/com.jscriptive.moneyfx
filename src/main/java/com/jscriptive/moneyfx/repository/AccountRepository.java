@@ -9,11 +9,11 @@ import java.util.List;
  */
 public interface AccountRepository {
 
+    Account save(Account account);
+
+    void remove(Account account);
+
     List<Account> findAll();
 
     Account findByNumber(String number);
-
-    void save(Account account);
-
-    void remove(Account account);
 }

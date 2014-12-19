@@ -1,12 +1,11 @@
 package com.jscriptive.moneyfx.ui.transaction.dialog;
 
-import com.jscriptive.moneyfx.model.Account;
-import com.jscriptive.moneyfx.model.Category;
-import com.jscriptive.moneyfx.model.TransactionFilter;
-import com.jscriptive.moneyfx.model.ValueRange;
+import com.jscriptive.moneyfx.model.*;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.ui.common.AccountStringConverter;
 import com.jscriptive.moneyfx.ui.common.CategoryStringConverter;
+import com.jscriptive.moneyfx.ui.common.CountRangeIndicatorStringConverter;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.ComboBox;
@@ -21,6 +20,8 @@ import java.util.ResourceBundle;
 
 import static com.jscriptive.moneyfx.model.Account.ALL_ACCOUNTS;
 import static com.jscriptive.moneyfx.model.Category.ALL_CATEGORIES;
+import static com.jscriptive.moneyfx.model.CountRange.CountRangeIndicator.ALL;
+import static java.util.Arrays.asList;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 /**
@@ -46,6 +47,10 @@ public class TransactionFilterDialogController implements Initializable {
     private TextField amountFieldFrom;
     @FXML
     private TextField amountFieldTo;
+    @FXML
+    private ComboBox<CountRange.CountRangeIndicator> countRangeIndicatorCombo;
+    @FXML
+    private ComboBox<Integer> countRangeCombo;
 
     private TransactionFilter filter;
 
@@ -53,6 +58,7 @@ public class TransactionFilterDialogController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         setupAccountComboBox();
         setupCategoryComboBox();
+        setupCountRangeIndicatorComboBox();
     }
 
     private void setupAccountComboBox() {
@@ -74,6 +80,16 @@ public class TransactionFilterDialogController implements Initializable {
         categoryCombo.getSelectionModel().selectFirst();
     }
 
+    private void setupCountRangeIndicatorComboBox() {
+        countRangeIndicatorCombo.setConverter(new CountRangeIndicatorStringConverter());
+        countRangeIndicatorCombo.getItems().addAll(asList(CountRange.CountRangeIndicator.values()));
+        countRangeIndicatorCombo.getSelectionModel().selectFirst();
+    }
+
+    public void countRangeIndicatorChanged(ActionEvent actionEvent) {
+        this.countRangeCombo.setDisable(this.countRangeIndicatorCombo.getValue() == ALL);
+    }
+
     public TransactionFilter getTransactionFilter() {
         TransactionFilter newFilter = new TransactionFilter(
                 accountCombo.getValue() == ALL_ACCOUNTS ? null : accountCombo.getValue(),
@@ -87,7 +103,10 @@ public class TransactionFilterDialogController implements Initializable {
                         dtValFieldTo.getValue()),
                 new ValueRange<>(
                         isBlank(amountFieldFrom.getText()) ? null : new BigDecimal(amountFieldFrom.getText()),
-                        isBlank(amountFieldTo.getText()) ? null : new BigDecimal(amountFieldTo.getText()))
+                        isBlank(amountFieldTo.getText()) ? null : new BigDecimal(amountFieldTo.getText())),
+                countRangeCombo.getValue() == null
+                        ? new CountRange(countRangeIndicatorCombo.getValue())
+                        : new CountRange(countRangeIndicatorCombo.getValue(), countRangeCombo.getValue())
         );
         if (this.filter != null) {
             newFilter.setId(this.filter.getId());
@@ -139,6 +158,13 @@ public class TransactionFilterDialogController implements Initializable {
                 if (this.filter.getAmountRange().hasTo()) {
                     this.amountFieldTo.setText(this.filter.getAmountRange().to().toString());
                 }
+            }
+            if (this.filter.filterByCountRange()) {
+                this.countRangeIndicatorCombo.getSelectionModel().select(this.filter.getCountRange().getIndicator());
+                if (this.filter.getCountRange().getCount() != 0) {
+                    this.countRangeCombo.getSelectionModel().select(this.filter.getCountRange().getCount() / 10 - 1);
+                }
+                this.countRangeCombo.setDisable(this.filter.getCountRange().getIndicator() == ALL);
             }
         }
     }

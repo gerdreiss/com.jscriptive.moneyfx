@@ -10,7 +10,7 @@ import static org.apache.commons.lang3.StringUtils.replaceChars;
 /**
  * Created by jscriptive.com on 07/12/14.
  */
-public class TransactionFlat {
+public class FlatTransaction {
 
     public static final String BANK = "Bank";
     public static final String COUNTRY = "Country";
@@ -34,10 +34,10 @@ public class TransactionFlat {
     private String currency;
     private Boolean isTransfer;
 
-    TransactionFlat() {
+    FlatTransaction() {
     }
 
-    TransactionFlat(String bankName, String bankCountry, String accountNumber, String category, String concept, LocalDate dtOp, LocalDate dtVal, BigDecimal amount, String currency, Boolean isTransfer) {
+    FlatTransaction(String bankName, String bankCountry, String accountNumber, String category, String concept, LocalDate dtOp, LocalDate dtVal, BigDecimal amount, String currency, Boolean isTransfer) {
         this.bankName = bankName;
         this.bankCountry = bankCountry;
         this.accountNumber = accountNumber;
@@ -93,9 +93,9 @@ public class TransactionFlat {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof TransactionFlat)) return false;
+        if (!(o instanceof FlatTransaction)) return false;
 
-        TransactionFlat that = (TransactionFlat) o;
+        FlatTransaction that = (FlatTransaction) o;
 
         if (accountNumber != null ? !accountNumber.equals(that.accountNumber) : that.accountNumber != null)
             return false;

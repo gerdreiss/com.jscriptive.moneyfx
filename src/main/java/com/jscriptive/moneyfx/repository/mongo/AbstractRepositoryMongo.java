@@ -11,8 +11,9 @@ public class AbstractRepositoryMongo<E> {
     @Autowired
     protected MongoTemplate mongoTemplate;
 
-    public void save(E entity) {
+    public E save(E entity) {
         mongoTemplate.save(entity);
+        return entity;
     }
 
     public void remove(E entity) {

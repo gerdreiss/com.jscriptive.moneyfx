@@ -1,7 +1,5 @@
 package com.jscriptive.moneyfx.ui.transaction.dialog;
 
-import javafx.util.Pair;
-
 import java.io.File;
 
 /**

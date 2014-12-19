@@ -1,10 +1,8 @@
 package com.jscriptive.moneyfx.util;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 
 import static java.math.MathContext.DECIMAL32;
-import static java.math.RoundingMode.HALF_UP;
 
 /**
  * Created by jscriptive.com on 27/11/2014.

@@ -14,6 +14,8 @@ import java.time.temporal.ChronoField;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.jscriptive.moneyfx.model.CountRange.CountRangeIndicator.FIRST;
+import static com.jscriptive.moneyfx.model.CountRange.CountRangeIndicator.LAST;
 import static com.jscriptive.moneyfx.repository.mongo.util.CriteriaBuilder.by;
 import static java.lang.Boolean.TRUE;
 import static java.lang.Integer.compare;
@@ -62,7 +64,18 @@ public class TransactionRepositoryMongo extends AbstractRepositoryMongo<Transact
 
     @Override
     public List<Transaction> filterAll(TransactionFilter filter) {
-        return mongoTemplate.find(query(by(filter)).with(OPDATE_DESC), Transaction.class);
+        Query q = query(by(filter));
+        if (filter.filterByCountRange()) {
+            if (filter.getCountRange().getIndicator() == LAST) {
+                q = q.with(OPDATE_DESC);
+            } else if (filter.getCountRange().getIndicator() == FIRST) {
+                q = q.with(OPDATE_ASC);
+            }
+            if (filter.getCountRange().getCount() > 0) {
+                q = q.limit(filter.getCountRange().getCount());
+            }
+        }
+        return mongoTemplate.find(q, Transaction.class);
     }
 
     @Override

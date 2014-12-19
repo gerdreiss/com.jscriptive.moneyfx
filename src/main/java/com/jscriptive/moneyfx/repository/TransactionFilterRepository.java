@@ -12,7 +12,7 @@ public interface TransactionFilterRepository {
 
     Collection<TransactionFilter> findAll();
 
-    void save(TransactionFilter filter);
+    TransactionFilter save(TransactionFilter filter);
 
     void remove(TransactionFilter filter);
 

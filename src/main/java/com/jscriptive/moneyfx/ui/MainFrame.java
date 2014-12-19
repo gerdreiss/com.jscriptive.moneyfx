@@ -3,7 +3,7 @@ package com.jscriptive.moneyfx.ui;
 import com.jscriptive.moneyfx.exception.TechnicalException;
 import com.jscriptive.moneyfx.model.Transaction;
 import com.jscriptive.moneyfx.model.TransactionFilter;
-import com.jscriptive.moneyfx.model.TransactionFlat;
+import com.jscriptive.moneyfx.model.FlatTransaction;
 import com.jscriptive.moneyfx.repository.JsonRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
@@ -28,7 +28,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 
-import static com.jscriptive.moneyfx.model.TransactionFlat.FIELD_NAMES;
+import static com.jscriptive.moneyfx.model.FlatTransaction.FIELD_NAMES;
 import static com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent.SHOW_TRANSACTIONS;
 import static java.lang.String.format;
 import static java.time.LocalDateTime.now;
@@ -109,9 +109,9 @@ public class MainFrame extends BorderPane implements Initializable {
             } else if ("CSV".equals(result.get().getFormat())) {
                 List<Transaction> transactions = transactionRepository.findAll();
                 List<String> lines = transactions.parallelStream()
-                        .map(Transaction::flat)
+                        .map(Transaction::toFlatTransaction)
                         .sorted((f1, f2) -> f1.getDtOp().compareTo(f2.getDtOp()))
-                        .map(TransactionFlat::toString)
+                        .map(FlatTransaction::toString)
                         .collect(toList());
                 if (result.get().isHeader()) {
                     lines.add(0, Arrays.toString(FIELD_NAMES).replace("[", "").replace("]", ""));

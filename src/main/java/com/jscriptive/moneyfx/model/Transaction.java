@@ -160,8 +160,8 @@ public class Transaction {
         return format("Transaction{account=%s, concept='%s', dtOp=%s, dtVal=%s, amount=%s}", account, concept, dtOp, dtVal, getFormattedAmount());
     }
 
-    public TransactionFlat flat() {
-        return new TransactionFlat(
+    public FlatTransaction toFlatTransaction() {
+        return new FlatTransaction(
                 getAccount().getBank().getName(),
                 getAccount().getBank().getCountryCode(),
                 getAccount().getNumber(),

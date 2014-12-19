@@ -9,11 +9,11 @@ import java.util.Collection;
  */
 public interface BankRepository {
 
+    Bank save(Bank bank);
+
+    void remove(Bank bank);
+
     Collection<Bank> findAll();
 
     Bank findByName(String name);
-
-    void save(Bank bank);
-
-    void remove(Bank bank);
 }

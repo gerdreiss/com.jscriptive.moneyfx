@@ -13,7 +13,7 @@ public interface CountryRepository {
 
     Country findByCode(String code);
 
-    void save(Country country);
+    Country save(Country country);
 
     void remove(Country country);
 }

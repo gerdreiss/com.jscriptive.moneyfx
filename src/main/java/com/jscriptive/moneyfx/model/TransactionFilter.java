@@ -2,6 +2,7 @@ package com.jscriptive.moneyfx.model;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.Transient;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -9,11 +10,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
+import static com.jscriptive.moneyfx.model.CountRange.DEFAULT_RANGE;
+
 /**
  * Created by jscriptive.com on 20/11/2014.
  */
 @Document
 public class TransactionFilter {
+
+    public static final TransactionFilter DEFAULT_FILTER = new TransactionFilter(DEFAULT_RANGE);
 
     @Id
     private String id;
@@ -28,16 +33,28 @@ public class TransactionFilter {
     private ValueRange<LocalDate> dtValRange;
     private ValueRange<BigDecimal> amountRange;
 
+    @Transient
+    private CountRange countRange;
+
     public TransactionFilter() {
     }
 
+    public TransactionFilter(CountRange range) {
+        this(null, null, null, null, null, null, range);
+    }
+
     public TransactionFilter(Account account, Category category, String concept, ValueRange<LocalDate> dtOpRange, ValueRange<LocalDate> dtValRange, ValueRange<BigDecimal> amountRange) {
+        this(account, category, concept, dtOpRange, dtValRange, amountRange, null);
+    }
+
+    public TransactionFilter(Account account, Category category, String concept, ValueRange<LocalDate> dtOpRange, ValueRange<LocalDate> dtValRange, ValueRange<BigDecimal> amountRange, CountRange countRange) {
         this.setAccount(account);
         this.setCategory(category);
         this.setConcept(concept);
         this.setDtOpRange(dtOpRange);
         this.setDtValRange(dtValRange);
         this.setAmountRange(amountRange);
+        this.setCountRange(countRange);
     }
 
     public String getId() {
@@ -96,6 +113,14 @@ public class TransactionFilter {
         this.amountRange = amountRange;
     }
 
+    public CountRange getCountRange() {
+        return countRange;
+    }
+
+    public void setCountRange(CountRange countRange) {
+        this.countRange = countRange;
+    }
+
     public boolean filterByAccount() {
         return getAccount() != null;
     }
@@ -120,6 +145,10 @@ public class TransactionFilter {
         return getAmountRange() != null && (getAmountRange().hasFrom() || getAmountRange().hasTo());
     }
 
+    public boolean filterByCountRange() {
+        return getCountRange() != null;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -128,12 +157,12 @@ public class TransactionFilter {
         TransactionFilter that = (TransactionFilter) o;
 
         if (account != null ? !account.equals(that.account) : that.account != null) return false;
-        if (amountRange != null ? !amountRange.equals(that.amountRange) : that.amountRange != null) return false;
         if (category != null ? !category.equals(that.category) : that.category != null) return false;
         if (concept != null ? !concept.equals(that.concept) : that.concept != null) return false;
         if (dtOpRange != null ? !dtOpRange.equals(that.dtOpRange) : that.dtOpRange != null) return false;
-        //noinspection RedundantIfStatement
         if (dtValRange != null ? !dtValRange.equals(that.dtValRange) : that.dtValRange != null) return false;
+        //noinspection RedundantIfStatement
+        if (amountRange != null ? !amountRange.equals(that.amountRange) : that.amountRange != null) return false;
 
         return true;
     }
@@ -174,6 +203,9 @@ public class TransactionFilter {
         }
         if (filterByAmount()) {
             sb.append("amount: ").append(getAmountRange().toPresentableString()).append("; ");
+        }
+        if (filterByCountRange()) {
+            sb.append("count range: ").append(getCountRange().toString());
         }
         return sb.toString();
     }
