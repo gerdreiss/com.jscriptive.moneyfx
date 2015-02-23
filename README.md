@@ -1,2 +1,1 @@
-# com.jscriptive.moneyfx
-MoneyFX - personal finance manager
+## MoneyFX - personal finance manager
