@@ -2,4 +2,4 @@
 
 Uses MongoDB as data store. 
 
-Imports transactions using transaction files downloaded from the bank. At the moment, only Barclays Spain file formats are supported.
+Imports transactions from files downloaded from the respective bank's online services. At the moment, only Barclays Spain file formats are supported.
