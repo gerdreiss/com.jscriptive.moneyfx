@@ -1,9 +1,9 @@
 package com.jscriptive.moneyfx.ui;
 
 import com.jscriptive.moneyfx.exception.TechnicalException;
+import com.jscriptive.moneyfx.model.FlatTransaction;
 import com.jscriptive.moneyfx.model.Transaction;
 import com.jscriptive.moneyfx.model.TransactionFilter;
-import com.jscriptive.moneyfx.model.FlatTransaction;
 import com.jscriptive.moneyfx.repository.JsonRepository;
 import com.jscriptive.moneyfx.repository.RepositoryProvider;
 import com.jscriptive.moneyfx.repository.TransactionRepository;
@@ -26,7 +26,10 @@ import org.apache.log4j.Logger;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.ResourceBundle;
 
 import static com.jscriptive.moneyfx.model.FlatTransaction.FIELD_NAMES;
 import static com.jscriptive.moneyfx.ui.event.ShowTransactionsEvent.SHOW_TRANSACTIONS;
@@ -114,7 +117,7 @@ public class MainFrame extends BorderPane implements Initializable {
                         .map(FlatTransaction::toString)
                         .collect(toList());
                 if (result.get().isHeader()) {
-                    lines.add(0, Arrays.toString(FIELD_NAMES).replace("[", "").replace("]", ""));
+                    lines.add(0, String.join(",", FIELD_NAMES));
                 }
                 try {
                     writeLines(new File(dir, "transactions.csv"), "UTF-8", lines);

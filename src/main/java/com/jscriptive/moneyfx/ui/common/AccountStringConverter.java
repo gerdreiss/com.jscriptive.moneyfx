@@ -39,8 +39,8 @@ public class AccountStringConverter extends StringConverter<Account> {
 
     private boolean isAccountWithBankAndCountryAndFourDigits(String string, Account account) {
         String bankCountry = trim(substringBefore(string, PREFIX_LAST_DIGITS));
-        String bank = StringUtils.left(bankCountry, bankCountry.length() - COUNTRY_CODE_PLUS_WHITESPACE_LENGTH);
-        String country = StringUtils.right(bankCountry, COUNTRY_CODE_LENGTH);
+        String bank = left(bankCountry, bankCountry.length() - COUNTRY_CODE_PLUS_WHITESPACE_LENGTH);
+        String country = right(bankCountry, COUNTRY_CODE_LENGTH);
         String lastFourDigits = substringAfter(string, PREFIX_LAST_DIGITS);
         return account.isOfBank(bank) && account.isOfCountry(country) && account.numberEndsWith(lastFourDigits);
     }

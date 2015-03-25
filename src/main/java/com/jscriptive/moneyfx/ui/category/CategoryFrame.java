@@ -223,22 +223,20 @@ public class CategoryFrame implements Initializable {
                     category.setName(categoryResult.get().getKey().getName());
                     categoryRepository.save(category);
                     BigDecimal categorySum = selectedItem.getAmount();
-                    if (TRUE.equals(categoryResult.get().getValue())) {
-                        if (editTransactionFilter(category)) {
-                            Alert alert = new Alert(CONFIRMATION);
-                            alert.setTitle("Re-apply rule");
-                            alert.setHeaderText("Re-apply the category rule?");
-                            alert.setContentText("Should the edited category filter rule be re-applied on existing transactions?");
-                            Optional<ButtonType> result = alert.showAndWait();
-                            if (result.isPresent() && result.get() == OK) {
-                                List<Transaction> transactions = transactionRepository.findByCategory(category);
-                                Category other = categoryRepository.findByName(Category.OTHER.getName());
-                                transactions.forEach(trx -> {
-                                    trx.setCategory(other);
-                                    transactionRepository.save(trx);
-                                });
-                                categorySum = BigDecimal.valueOf(applyCategoryRule(category));
-                            }
+                    if (TRUE.equals(categoryResult.get().getValue()) && editTransactionFilter(category)) {
+                        Alert alert = new Alert(CONFIRMATION);
+                        alert.setTitle("Re-apply rule");
+                        alert.setHeaderText("Re-apply the category rule?");
+                        alert.setContentText("Should the edited category filter rule be re-applied on existing transactions?");
+                        Optional<ButtonType> result = alert.showAndWait();
+                        if (result.isPresent() && result.get() == OK) {
+                            List<Transaction> transactions = transactionRepository.findByCategory(category);
+                            Category other = categoryRepository.findByName(Category.OTHER.getName());
+                            transactions.forEach(trx -> {
+                                trx.setCategory(other);
+                                transactionRepository.save(trx);
+                            });
+                            categorySum = BigDecimal.valueOf(applyCategoryRule(category));
                         }
                     }
                     categoryData.set(selectedIndex, new CategoryItem(category, categorySum));
